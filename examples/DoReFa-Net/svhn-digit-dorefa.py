@@ -74,7 +74,7 @@ class Model(ModelDesc):
         def beforeBN(x):
             if is_training:
                 with train_summary_writer.as_default():
-                    print('x type ',type(x))
+                    print('x type ',type(np.array(x)))
                     summary.histogram('beforeBN',np.array(x),step=get_global_step_var())
             else:
                 with test_summary_writer.as_default():                    
