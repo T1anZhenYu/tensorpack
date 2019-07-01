@@ -120,9 +120,9 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      .beforeBN('beforeBN')
+                      .apply(beforeBN)
                       .BatchNorm('bn5')
-                      .afterBN('afterBN')
+                      .apply(afterBN)
                       .apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
