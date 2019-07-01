@@ -15,6 +15,7 @@ from tensorpack.tfutils.varreplace import remap_variables
 from dorefa import get_dorefa
 
 from tensorflow import summary
+import numpy as np
 
 """
 This is a tensorpack script for the SVHN results in paper:
@@ -74,19 +75,19 @@ class Model(ModelDesc):
             if is_training:
                 with train_summary_writer.as_default():
                     print('x type ',type(x))
-                    summary.histogram('beforeBN',x,step=get_global_step_var())
+                    summary.histogram('beforeBN',np.array(x),step=get_global_step_var())
             else:
                 with test_summary_writer.as_default():                    
-                    summary.histogram('beforeBN',x,step=get_global_step_var())   
+                    summary.histogram('beforeBN',np.array(x),step=get_global_step_var())   
             return x
         
         def afterBN(x):
             if is_training:
                 with train_summary_writer.as_default():
-                    summary.histogram('afterBN',x)                
+                    summary.histogram('afterBN',np.array(x))                
             else:
                 with train_summary_writer.as_default():
-                    summary.histogram('afterBN',x)     
+                    summary.histogram('afterBN',np.array(x))     
             return x                      
 
         
