@@ -78,6 +78,7 @@ class Model(ModelDesc):
             else:
                 with test_summary_writer.as_default():                    
                     summary.histogram('beforeBN',x,step=get_global_step_var())   
+            return x
         
         def afterBN(x):
             if is_training:
@@ -85,7 +86,8 @@ class Model(ModelDesc):
                     summary.histogram('afterBN',x)                
             else:
                 with train_summary_writer.as_default():
-                    summary.histogram('afterBN',x)                           
+                    summary.histogram('afterBN',x)     
+            return x                      
 
         
         image = image / 256.0
