@@ -72,13 +72,14 @@ class Model(ModelDesc):
             return fa(nonlin(x))
 
         def beforeBN(x):
+            m = tf.Variable(x)
             if is_training:
                 with train_summary_writer.as_default():
-                    print('x type ',type(x))
-                    summary.histogram('beforeBN',x,step=get_global_step_var())
+                    print('x type ',type(m))
+                    summary.histogram('beforeBN',m,step=get_global_step_var())
             else:
                 with test_summary_writer.as_default():                    
-                    summary.histogram('beforeBN',x,step=get_global_step_var())   
+                    summary.histogram('beforeBN',m,step=get_global_step_var())   
             return x
         
         def afterBN(x):
