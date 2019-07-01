@@ -14,7 +14,9 @@ from tensorpack.tfutils.varreplace import remap_variables
 
 from dorefa import get_dorefa
 
-""" 
+from tensorflow import summary
+
+"""
 This is a tensorpack script for the SVHN results in paper:
 DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients
 http://arxiv.org/abs/1606.06160
@@ -37,6 +39,7 @@ To Run:
 BITW = 1
 BITA = 2
 BITG = 4
+
 
 
 class Model(ModelDesc):
@@ -67,17 +70,29 @@ class Model(ModelDesc):
         def activate(x):
             return fa(nonlin(x))
 
-        def beforeBN(X):
-            return 
+        def beforeBN(x):
+            if is_training:
+                with train_summary_writer.as_default():
+                    print('x shape ',x.shape)
+                    summary.histogram('beforeBN',x)
+            else:
+                with test_summary_writer.as_default():                    
+                    summary.histogram('beforeBN',x)   
+        
         def afterBN(x):
-            return 
+            if is_training:
+                with train_summary_writer.as_default():
+                    print('x shape ',x.shape)
+                    summary.histogram('afterBN',x)                
+            else:
+                with train_summary_writer.as_default():
+                    summary.histogram('afterBN',x)                           
 
+        
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
                 argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
-                argscope(beforeBN),\
-                argscope(afterBN),\
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
@@ -177,6 +192,13 @@ def get_config():
 
 
 if __name__ == '__main__':
+
+    train_log_dir = './logs/tensorboard/train/'
+    test_log_dir = './logs/tensorboard/test/'
+    train_summary_writer = summary.create_file_writer(train_log_dir)
+    test_summary_writer = summary.create_file_writer(test_log_dir)
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--dorefa',
                         help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
