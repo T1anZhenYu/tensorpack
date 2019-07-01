@@ -73,16 +73,15 @@ class Model(ModelDesc):
         def beforeBN(x):
             if is_training:
                 with train_summary_writer.as_default():
-                    print('x shape ',x.shape)
-                    summary.histogram('beforeBN',x.eval(),step=get_global_step_var())
+                    print('x type ',x.type())
+                    summary.histogram('beforeBN',x,step=get_global_step_var())
             else:
                 with test_summary_writer.as_default():                    
-                    summary.histogram('beforeBN',x.eval(),step=get_global_step_var())   
+                    summary.histogram('beforeBN',x,step=get_global_step_var())   
         
         def afterBN(x):
             if is_training:
                 with train_summary_writer.as_default():
-                    print('x shape ',x.shape)
                     summary.histogram('afterBN',x)                
             else:
                 with train_summary_writer.as_default():
