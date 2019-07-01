@@ -75,7 +75,7 @@ class Model(ModelDesc):
             m = tf.Variable(x)
             if is_training:
                 with train_summary_writer.as_default():
-                    mean_moving_normal = tf.random.normal(shape=[1000], mean=(5*k), stddev=1)
+                    mean_moving_normal = tf.random.normal(shape=[1000], mean=(5), stddev=1)
                     summary.histogram('beforeBN',mean_moving_normal,step=get_global_step_var())
             else:
                 with test_summary_writer.as_default():                    
