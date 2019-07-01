@@ -14,6 +14,8 @@ from tensorpack.tfutils.varreplace import remap_variables
 
 from dorefa import get_dorefa
 
+from tensorflow import summary
+
 """
 This is a tensorpack script for the SVHN results in paper:
 DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients
@@ -37,6 +39,7 @@ To Run:
 BITW = 1
 BITA = 2
 BITG = 4
+
 
 
 class Model(ModelDesc):
@@ -66,7 +69,26 @@ class Model(ModelDesc):
 
         def activate(x):
             return fa(nonlin(x))
-
+        '''
+        def beforeBN(x):
+            if is_training:
+                with train_summary_writer.as_default():
+                    print('x shape ',x.shape)
+                    summary.histogram('beforeBN',x)
+            else:
+                with test_summary_writer.as_default():                    
+                    summary.histogram('beforeBN',x)   
+        
+        def afterBN(x):
+            if is_training:
+                with train_summary_writer.as_default():
+                    print('x shape ',x.shape)
+                    summary.histogram('afterBN',x)                
+            else:
+                with train_summary_writer.as_default():
+                    summary.histogram('afterBN',x)                           
+        '''
+        
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
@@ -98,7 +120,10 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNorm('bn5').apply(activate)
+                      #.beforeBN('beforeBN')
+                      .BatchNorm('bn5')
+                      #.afterBN('afterBN')
+                      .apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
@@ -167,6 +192,13 @@ def get_config():
 
 
 if __name__ == '__main__':
+    '''
+    train_log_dir = './logs/tensorboard/train/'
+    test_log_dir = './logs/tensorboard/test/'
+    train_summary_writer = summary.create_file_writer(train_log_dir)
+    test_summary_writer = summary.create_file_writer(test_log_dir)
+    '''
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--dorefa',
                         help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
