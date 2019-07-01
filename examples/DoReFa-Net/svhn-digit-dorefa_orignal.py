@@ -14,7 +14,7 @@ from tensorpack.tfutils.varreplace import remap_variables
 
 from dorefa import get_dorefa
 
-""" 
+"""
 This is a tensorpack script for the SVHN results in paper:
 DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients
 http://arxiv.org/abs/1606.06160
