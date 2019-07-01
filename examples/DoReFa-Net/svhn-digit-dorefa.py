@@ -67,10 +67,17 @@ class Model(ModelDesc):
         def activate(x):
             return fa(nonlin(x))
 
+        def beforeBN(X):
+            return 
+        def afterBN(x):
+            return 
+
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
                 argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
+                argscope(beforeBN),\
+                argscope(afterBN),\
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
@@ -98,7 +105,10 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNorm('bn5').apply(activate)
+                      .beforeBN('beforeBN')
+                      .BatchNorm('bn5')
+                      .afterBN('afterBN')
+                      .apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
