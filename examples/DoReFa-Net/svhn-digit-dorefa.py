@@ -75,7 +75,7 @@ class Model(ModelDesc):
             if is_training:
                 with train_summary_writer.as_default():
                     print('x type ',type(np.array(x)))
-                    summary.scalar('beforeBN',np.array(1),step=get_global_step_var())
+                    summary.histogram('beforeBN',x.item(),step=get_global_step_var())
             else:
                 with test_summary_writer.as_default():                    
                     summary.histogram('beforeBN',np.array(x),step=get_global_step_var())   
