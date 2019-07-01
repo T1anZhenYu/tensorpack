@@ -74,10 +74,10 @@ class Model(ModelDesc):
             if is_training:
                 with train_summary_writer.as_default():
                     print('x type ',type(x))
-                    summary.histogram('beforeBN',x.numpy(),step=get_global_step_var())
+                    summary.histogram('beforeBN',x,step=get_global_step_var())
             else:
                 with test_summary_writer.as_default():                    
-                    summary.histogram('beforeBN',x.numpy(),step=get_global_step_var())   
+                    summary.histogram('beforeBN',x,step=get_global_step_var())   
         
         def afterBN(x):
             if is_training:
