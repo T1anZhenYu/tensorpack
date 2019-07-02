@@ -14,9 +14,6 @@ from tensorpack.tfutils.varreplace import remap_variables
 
 from dorefa import get_dorefa
 
-from tensorflow import summary
-import numpy as np
-
 """
 This is a tensorpack script for the SVHN results in paper:
 DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients
@@ -40,7 +37,6 @@ To Run:
 BITW = 1
 BITA = 2
 BITG = 4
-
 
 
 class Model(ModelDesc):
@@ -71,21 +67,6 @@ class Model(ModelDesc):
         def activate(x):
             return fa(nonlin(x))
 
-        def beforeBN(x):
-            m = x.copy()
-            print('x datatype ',x.dtype())
-            print('m.datatype ',m.dtype())      
-            tf.summary.histogram('beforeBN',x,step=get_global_step_var())    
-            return m
-        
-        def afterBN(x):
-            m = x.copy()
-            print('x datatype ',x.dtype())
-            print('m.datatype ',m.dtype())
-            tf.summary.histogram('afterBN',x,step=get_global_step_var())    
-            return m                    
-
-        
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
@@ -117,10 +98,7 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      #.apply(beforeBN)
-                      .BatchNorm('bn5')
-                      #.apply(afterBN)
-                      .apply(activate)
+                      .BatchNorm('bn5').apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
@@ -189,13 +167,6 @@ def get_config():
 
 
 if __name__ == '__main__':
-
-    train_log_dir = './logs/tensorboard/train/'
-    test_log_dir = './logs/tensorboard/test/'
-    train_summary_writer = summary.create_file_writer(train_log_dir)
-    test_summary_writer = summary.create_file_writer(test_log_dir)
-
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--dorefa',
                         help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
