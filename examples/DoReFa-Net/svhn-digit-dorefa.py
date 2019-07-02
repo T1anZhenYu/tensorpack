@@ -72,26 +72,23 @@ class Model(ModelDesc):
             return fa(nonlin(x))
 
         def beforeBN(x):
-            '''
+            
             if is_training:
-                with train_summary_writer.as_default():
-                    
-                    summary.histogram('beforeBN',x,step=get_global_step_var())
+                with train_summary_writer.as_default():                   
+                    tf.summary.histogram('beforeBN',x)  
             else:
                 with test_summary_writer.as_default():                    
-                    summary.histogram('beforeBN',x,step=get_global_step_var())
-            '''
-            tf.summary.histogram('beforeBN',x)   
+                    tf.summary.histogram('beforeBN',x)    
             return x
         
         def afterBN(x):
             if is_training:
-                with train_summary_writer.as_default():
-                    summary.histogram('afterBN',x,step=get_global_step_var())                
+                with train_summary_writer.as_default():                   
+                    tf.summary.histogram('afterBN',x)  
             else:
-                with train_summary_writer.as_default():
-                    summary.histogram('afterBN',x,step=get_global_step_var())     
-            return x                      
+                with test_summary_writer.as_default():                    
+                    tf.summary.histogram('afterBN',x)    
+            return x                     
 
         
         image = image / 256.0
@@ -127,7 +124,7 @@ class Model(ModelDesc):
                       .apply(fg)
                       .apply(beforeBN)
                       .BatchNorm('bn5')
-                      .apply(lambda x:tf.summary.histogram('afterBN',x))
+                      .apply(afterBN)
                       .apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
