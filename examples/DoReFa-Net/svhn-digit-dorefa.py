@@ -72,7 +72,9 @@ class Model(ModelDesc):
             return fa(nonlin(x))
 
         def beforeBN(x):
-            m = x.copy()      
+            m = x.copy()
+            print('x datatype ',x.dtype())
+            print('m.datatype ',m.dtype())      
             tf.summary.histogram('beforeBN',x,step=get_global_step_var())    
             return m
         
