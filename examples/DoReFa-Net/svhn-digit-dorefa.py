@@ -72,13 +72,8 @@ class Model(ModelDesc):
             return fa(nonlin(x))
 
         def beforeBN(x):
-            
-            if is_training:
-                with train_summary_writer.as_default():                   
-                    tf.summary.histogram('beforeBN',x,step=get_global_step_var())  
-            else:
-                with test_summary_writer.as_default():                    
-                    tf.summary.histogram('beforeBN',x,step=get_global_step_var())    
+                              
+            tf.summary.histogram('beforeBN',x,step=get_global_step_var())    
             return x
         
         def afterBN(x):
