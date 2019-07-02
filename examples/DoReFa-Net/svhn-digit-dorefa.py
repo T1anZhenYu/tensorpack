@@ -77,12 +77,8 @@ class Model(ModelDesc):
             return x
         
         def afterBN(x):
-            if is_training:
-                with train_summary_writer.as_default():                   
-                    tf.summary.histogram('afterBN',x,step=get_global_step_var())  
-            else:
-                with test_summary_writer.as_default():                    
-                    tf.summary.histogram('afterBN',x,step=get_global_step_var())    
+             
+            tf.summary.histogram('afterBN',x,step=get_global_step_var())    
             return x                     
 
         
