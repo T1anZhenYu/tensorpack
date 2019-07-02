@@ -67,6 +67,9 @@ class Model(ModelDesc):
         def activate(x):
             return fa(nonlin(x))
 
+        def beforeBN(x):
+            tf.summary.histogram('beforeBN',x,step=get_global_step_var())
+            return x
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
@@ -98,6 +101,7 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
+                      .apply(beforeBN)
                       .BatchNorm('bn5').apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
