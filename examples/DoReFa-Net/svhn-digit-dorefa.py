@@ -72,14 +72,14 @@ class Model(ModelDesc):
             return fa(nonlin(x))
 
         def beforeBN(x):
-                              
+            m = x.copy()      
             tf.summary.histogram('beforeBN',x,step=get_global_step_var())    
-            return x
+            return m
         
         def afterBN(x):
-             
+            m = x.copy()
             tf.summary.histogram('afterBN',x,step=get_global_step_var())    
-            return x                     
+            return m                    
 
         
         image = image / 256.0
