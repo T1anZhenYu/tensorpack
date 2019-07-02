@@ -72,14 +72,16 @@ class Model(ModelDesc):
             return fa(nonlin(x))
 
         def beforeBN(x):
-            
+            '''
             if is_training:
                 with train_summary_writer.as_default():
                     
                     summary.histogram('beforeBN',x,step=get_global_step_var())
             else:
                 with test_summary_writer.as_default():                    
-                    summary.histogram('beforeBN',x,step=get_global_step_var())   
+                    summary.histogram('beforeBN',x,step=get_global_step_var())
+            '''
+            tf.summary.histogram('beforeBN',x)   
             return x
         
         def afterBN(x):
@@ -123,7 +125,7 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      .apply(lambda x:tf.summary.histogram('beforeBN',x))
+                      .apply(beforeBN)
                       .BatchNorm('bn5')
                       .apply(lambda x:tf.summary.histogram('afterBN',x))
                       .apply(activate)
