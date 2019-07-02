@@ -123,9 +123,9 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      .apply(beforeBN)
+                      .apply(lambda x:tf.summary.histogram('beforeBN',x))
                       .BatchNorm('bn5')
-                      .apply(afterBN)
+                      .apply(lambda x:tf.summary.histogram('afterBN',x))
                       .apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
