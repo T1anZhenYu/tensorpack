@@ -78,6 +78,8 @@ class Model(ModelDesc):
         
         def afterBN(x):
             m = x.copy()
+            print('x datatype ',x.dtype())
+            print('m.datatype ',m.dtype())
             tf.summary.histogram('afterBN',x,step=get_global_step_var())    
             return m                    
 
