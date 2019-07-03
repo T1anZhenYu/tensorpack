@@ -123,8 +123,9 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)())
+            beforeBN(beforebn)
             afterbn = (LinearWrap(beforebn).BatchNorm('bn5')())
-
+            afterBN(afterbn)
             logits = (LinearWrap(afterbn).apply(activate)
                       
                       # 5
@@ -133,8 +134,8 @@ class Model(ModelDesc):
                       .apply(fg).BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
-            beforeBN(beforebn)
-            afterBN(afterbn)
+            
+            
         tf.nn.softmax(logits, name='output')
 
         # compute the number of failed samples
