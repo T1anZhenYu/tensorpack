@@ -39,7 +39,9 @@ BITW = 1
 BITA = 2
 BITG = 4
 
-
+def get_mean(x):
+    #[batch,height,width,channels]
+    return tf.reduce_mean(x,1,2)
 class Model(ModelDesc):
     def inputs(self):
         return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
@@ -73,12 +75,16 @@ class Model(ModelDesc):
             print(x.shape)
             print('tf parameter')
             print(inspect.signature(tf.summary.scalar))
-            tf.summary.scalar('BN',x[0,0,0,0],None,'1')
+            m = get_mean(x)
+            tf.summary.scalar('BN',m[0,0],None,'1')
 
             return x
         def afterBN(x):
-            tf.summary.histogram('BN',x[0,0,0,0],None,'2')
-            return x          
+            m = get_mean(x)
+            tf.summary.histogram('BN',m[0,0],None,'2')
+            return x 
+
+
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
