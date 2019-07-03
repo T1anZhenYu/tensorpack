@@ -73,11 +73,11 @@ class Model(ModelDesc):
             print(x.shape)
             print('tf parameter')
             print(inspect.signature(tf.summary.scalar))
-            tf.summary.scalar('BN',5,family='1')
+            tf.summary.scalar('BN',5,description='1')
 
             return x
         def afterBN(x):
-            tf.summary.histogram('BN',4,family='2')
+            tf.summary.histogram('BN',4,description='2')
             return x          
         image = image / 256.0
 
