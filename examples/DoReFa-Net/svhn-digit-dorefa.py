@@ -97,7 +97,7 @@ class Model(ModelDesc):
         with remap_variables(binarize_weight), \
                 argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
                 argscope(Conv2D, use_bias=False):
-            logits = (LinearWrap(image)
+            beforebn = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
                       .MaxPooling('pool0', 2, padding='SAME')
                       .apply(activate)
@@ -122,11 +122,10 @@ class Model(ModelDesc):
                       .BatchNorm('bn4').apply(activate)
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
-                      .apply(fg)
-                      .apply(beforeBN)
-                      .BatchNorm('bn5')
-                      .apply(afterBN)
-                      .apply(activate)
+                      .apply(fg)())
+            afterbn = (beforebn.BatchNorm('bn5')())
+
+            logits = (afterbn.apply(activate)
                       
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
@@ -134,6 +133,8 @@ class Model(ModelDesc):
                       .apply(fg).BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
+        beforeBN(beforebn)
+        afterBN(afterbn)
         tf.nn.softmax(logits, name='output')
 
         # compute the number of failed samples
