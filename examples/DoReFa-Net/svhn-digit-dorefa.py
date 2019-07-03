@@ -72,28 +72,22 @@ class Model(ModelDesc):
             return fa(nonlin(x))
 
         def beforeBN(x):
-            f = open('result.txt','a')
             z = x
             m = get_mean(x)
-            print('m shape ',m.shape)
-            f.write('beforeBN')
             if m.shape[0]!= None:
                 for i in range(m.shape[0]):
                     for j in range(5):
-                        f.write('BeforeBN-channel{0}:{1}\n'.format(str(j),str(m[i][0])))
-            f.close()
+                        logger.info('\nBeforeBN-channel{0}:{1}\n'.format(str(j),str(m[i][0])))
             return z
 
         def afterBN(x):
-            f = open('result.txt','a')
             z = x
             m = get_mean(x)
-            f.write('afterBN')
+
             if m.shape[0]!=None:
                 for i in range(m.shape[0]):
                     for j in range(5):
-                        f.write('afterBN-channel{0}:{1}\n'.format(str(j),str(m[i][0])))
-            f.close()
+                        logger.info('\nafterBN-channel{0}:{1}\n'.format(str(j),str(m[i][0])))
             return z
 
 
