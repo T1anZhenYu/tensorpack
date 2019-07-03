@@ -123,9 +123,9 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)())
-            afterbn = (beforebn.BatchNorm('bn5')())
+            afterbn = (LinearWrap(beforebn).BatchNorm('bn5')())
 
-            logits = (afterbn.apply(activate)
+            logits = (LinearWrap(afterbn).apply(activate)
                       
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
