@@ -133,8 +133,8 @@ class Model(ModelDesc):
                       .apply(fg).BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
-        beforeBN(beforebn)
-        afterBN(afterbn)
+            beforeBN(beforebn)
+            afterBN(afterbn)
         tf.nn.softmax(logits, name='output')
 
         # compute the number of failed samples
