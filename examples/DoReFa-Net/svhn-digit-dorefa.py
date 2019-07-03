@@ -39,7 +39,7 @@ BITW = 1
 BITA = 2
 BITG = 4
 
-f = open('result.txt','w')
+
 def get_mean(x):
     #[batch,height,width,channels]
     return tf.reduce_mean(tf.reduce_mean(x,1),1)
@@ -72,6 +72,7 @@ class Model(ModelDesc):
             return fa(nonlin(x))
 
         def beforeBN(x):
+            f = open('result.txt','a')
             z = x
             m = get_mean(x)
             print('m shape ',m.shape)
@@ -79,15 +80,18 @@ class Model(ModelDesc):
                 for i in range(m.shape[0]):
                     for j in range(5):
                         f.write('BeforeBN-channel{0}:{1}'.format(str(j),str(m[i][0])))
+            f.close()
             return z
 
         def afterBN(x):
+            f = open('result.txt','a')
             z = x
             m = get_mean(x)
             if m.shape[0]!=None:
                 for i in range(m.shape[0]):
                     for j in range(5):
                         f.write('afterBN-channel{0}:{1}'.format(str(j),str(m[i][0])))
+            f.close()
             return z
 
 
@@ -204,4 +208,4 @@ if __name__ == '__main__':
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
     launch_train_with_config(config, SimpleTrainer())
-    f.close()
+
