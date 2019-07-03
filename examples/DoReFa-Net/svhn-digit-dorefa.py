@@ -123,6 +123,7 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)())
+            print(beforebn)
             beforeBN(beforebn)
             afterbn = (LinearWrap(beforebn).BatchNorm('bn5')())
             afterBN(afterbn)
