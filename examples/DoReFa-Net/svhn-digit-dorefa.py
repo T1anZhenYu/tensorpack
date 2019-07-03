@@ -72,7 +72,7 @@ class Model(ModelDesc):
             return fa(nonlin(x))
 
         def beforeBN(x):
-            z = x.copy()
+            z = x
             m = get_mean(x)
             print('m shape ',m.shape)
             if m.shape[0]!= None:
@@ -82,7 +82,7 @@ class Model(ModelDesc):
             return z
 
         def afterBN(x):
-            z = x.copy(x)
+            z = x
             m = get_mean(x)
             if m.shape[0]!=None:
                 for i in range(m.shape[0]):
