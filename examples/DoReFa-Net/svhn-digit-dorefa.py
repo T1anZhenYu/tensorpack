@@ -68,8 +68,13 @@ class Model(ModelDesc):
             return fa(nonlin(x))
 
         def beforeBN(x):
-            tf.summary.histogram('beforeBN',x)
+            print('x shape')
+            print(x.shape)
+            tf.summary.scalar('BN',5,family='beforeBN')
             return x
+        def afterBN(x):
+            tf.summary.histogram('BN',4,family='beforeBN')
+            return x          
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
