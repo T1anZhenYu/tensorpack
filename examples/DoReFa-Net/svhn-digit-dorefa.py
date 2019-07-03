@@ -74,6 +74,7 @@ class Model(ModelDesc):
         def beforeBN(x):
             z = x
             m = get_mean(x)
+            logger.info('in beforeBN, m shape {}'.format(m.shape))
             if m.shape[0]!= None:
                 for i in range(m.shape[0]):
                     for j in range(5):
