@@ -43,6 +43,20 @@ BITG = 4
 def get_mean(x):
     #[batch,height,width,channels]
     return tf.reduce_mean(tf.reduce_mean(x,1),1)
+
+class MyCallback(Callback):
+    def _setup_graph(self):
+        t = self.graph.get_tensor_by_name('conv0/output:0')
+        self._fetches = tf.train.SessionRunArgs(fetches=[t])
+
+    def _before_run(self, _):
+        return self._fetches
+
+    def _after_run(self, _, rv):
+        t = rv.results
+        np.save('output-{}.txt'.format(self.global_step), t)
+
+
 class Model(ModelDesc):
     def inputs(self):
         return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
@@ -123,10 +137,9 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)())
-            print(beforebn)
-            beforeBN(beforebn)
+
             afterbn = (LinearWrap(beforebn).BatchNorm('bn5')())
-            afterBN(afterbn)
+
             logits = (LinearWrap(afterbn).apply(activate)
                       
                       # 5
