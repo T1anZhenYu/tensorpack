@@ -71,9 +71,10 @@ class Model(ModelDesc):
         def beforeBN(x):
             print('x shape')
             print(x.shape)
-            tf.summary.scalar('BN',5,family='1')
             print('tf parameter')
             print(inspect.signature(tf.summary.scalar))
+            tf.summary.scalar('BN',5,family='1')
+
             return x
         def afterBN(x):
             tf.summary.histogram('BN',4,family='2')
