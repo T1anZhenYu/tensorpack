@@ -122,9 +122,9 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      #.apply(beforeBN)
+                      .apply(beforeBN)
                       .BatchNorm('bn5')
-                      #.apply(afterBN)
+                      .apply(afterBN)
                       .apply(activate)
                       
                       # 5
