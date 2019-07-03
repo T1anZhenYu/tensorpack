@@ -126,7 +126,7 @@ class Model(ModelDesc):
                       .BatchNorm('bn5')
                       .apply(afterBN)
                       .apply(activate)
-                      .
+                      
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
