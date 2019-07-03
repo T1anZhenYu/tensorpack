@@ -13,6 +13,7 @@ from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 
 from dorefa import get_dorefa
+import inspect 
 
 """
 This is a tensorpack script for the SVHN results in paper:
@@ -70,10 +71,12 @@ class Model(ModelDesc):
         def beforeBN(x):
             print('x shape')
             print(x.shape)
-            tf.summary.scalar('BN',5,family='beforeBN')
+            tf.summary.scalar('BN',5)
+            print('tf parameter')
+            print(inspect.signiture(tf.summary.scalar))
             return x
         def afterBN(x):
-            tf.summary.histogram('BN',4,family='beforeBN')
+            tf.summary.histogram('BN',4)
             return x          
         image = image / 256.0
 
