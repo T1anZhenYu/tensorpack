@@ -74,17 +74,18 @@ class Model(ModelDesc):
         def beforeBN(x):
             m = get_mean(x)
             print('m shape ',m.shape)
-            for i in range(m.shape[0]):
-                for j in range(5):
-                    f.write('BeforeBN-channel%s:%s'.format(str(j),str(m[i][0])))
-
-
+            if m.shape[0]!= None:
+                for i in range(m.shape[0]):
+                    for j in range(5):
+                        f.write('BeforeBN-channel%s:%s'.format(str(j),str(m[i][0])))
             return x
+            
         def afterBN(x):
             m = get_mean(x)
-            for i in range(m.shape[0]):
-                for j in range(5):
-                    f.write('afterBN-channel%s:%s'.format(str(j),str(m[i][0])))
+            if m.shape[0]!=None:
+                for i in range(m.shape[0]):
+                    for j in range(5):
+                        f.write('afterBN-channel%s:%s'.format(str(j),str(m[i][0])))
             return x 
 
 
