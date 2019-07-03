@@ -76,6 +76,7 @@ class Model(ModelDesc):
             z = x
             m = get_mean(x)
             print('m shape ',m.shape)
+            f.write('beforeBN')
             if m.shape[0]!= None:
                 for i in range(m.shape[0]):
                     for j in range(5):
@@ -87,6 +88,7 @@ class Model(ModelDesc):
             f = open('result.txt','a')
             z = x
             m = get_mean(x)
+            f.write('afterBN')
             if m.shape[0]!=None:
                 for i in range(m.shape[0]):
                     for j in range(5):
