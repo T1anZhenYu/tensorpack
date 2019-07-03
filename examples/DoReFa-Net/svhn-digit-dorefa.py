@@ -41,7 +41,7 @@ BITG = 4
 
 def get_mean(x):
     #[batch,height,width,channels]
-    return tf.reduce_mean(x,1,2)
+    return tf.reduce_mean(tf.reduce_mean(x,1),1)
 class Model(ModelDesc):
     def inputs(self):
         return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
