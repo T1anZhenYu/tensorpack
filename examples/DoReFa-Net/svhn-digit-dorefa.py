@@ -72,21 +72,23 @@ class Model(ModelDesc):
             return fa(nonlin(x))
 
         def beforeBN(x):
+            z = x.copy()
             m = get_mean(x)
             print('m shape ',m.shape)
             if m.shape[0]!= None:
                 for i in range(m.shape[0]):
                     for j in range(5):
                         f.write('BeforeBN-channel%s:%s'.format(str(j),str(m[i][0])))
-            return x
-            
+            return z
+
         def afterBN(x):
+            z = x.copy(x)
             m = get_mean(x)
             if m.shape[0]!=None:
                 for i in range(m.shape[0]):
                     for j in range(5):
                         f.write('afterBN-channel%s:%s'.format(str(j),str(m[i][0])))
-            return x 
+            return z
 
 
         image = image / 256.0
@@ -122,6 +124,7 @@ class Model(ModelDesc):
                       .apply(fg)
                       .apply(beforeBN)
                       .BatchNorm('bn5').apply(activate)
+                      .appley(afterBN)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
