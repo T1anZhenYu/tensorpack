@@ -80,7 +80,7 @@ class Model(ModelDesc):
             if m.shape[0]!= None:
                 for i in range(m.shape[0]):
                     for j in range(5):
-                        f.write('BeforeBN-channel{0}:{1}'.format(str(j),str(m[i][0])))
+                        f.write('BeforeBN-channel{0}:{1}\n'.format(str(j),str(m[i][0])))
             f.close()
             return z
 
@@ -92,7 +92,7 @@ class Model(ModelDesc):
             if m.shape[0]!=None:
                 for i in range(m.shape[0]):
                     for j in range(5):
-                        f.write('afterBN-channel{0}:{1}'.format(str(j),str(m[i][0])))
+                        f.write('afterBN-channel{0}:{1}\n'.format(str(j),str(m[i][0])))
             f.close()
             return z
 
