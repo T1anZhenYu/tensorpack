@@ -11,6 +11,7 @@ from tensorpack import *
 from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
+from tensorpack.callbacks import DumpTensors
 
 from dorefa import get_dorefa
 import inspect 
@@ -44,17 +45,7 @@ def get_mean(x):
     #[batch,height,width,channels]
     return tf.reduce_mean(tf.reduce_mean(x,1),1)
 
-class MyCallback(Callback):
-    def _setup_graph(self):
-        t = self.graph.get_tensor_by_name('conv0/output:0')
-        self._fetches = tf.train.SessionRunArgs(fetches=[t])
 
-    def _before_run(self, _):
-        return self._fetches
-
-    def _after_run(self, _, rv):
-        t = rv.results
-        np.save('output-{}.txt'.format(self.global_step), t)
 
 
 class Model(ModelDesc):
@@ -136,11 +127,11 @@ class Model(ModelDesc):
                       .BatchNorm('bn4').apply(activate)
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
-                      .apply(fg)())
+                      .apply(fg)
 
-            afterbn = (LinearWrap(beforebn).BatchNorm('bn5')())
+                      .BatchNorm('bn5')())
 
-            logits = (LinearWrap(afterbn).apply(activate)
+                      .apply(activate)
                       
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
@@ -149,7 +140,7 @@ class Model(ModelDesc):
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
             
-            
+        DumpTensors(['conv5/output:0'])
         tf.nn.softmax(logits, name='output')
 
         # compute the number of failed samples
