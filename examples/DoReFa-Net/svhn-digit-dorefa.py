@@ -129,7 +129,7 @@ class Model(ModelDesc):
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
 
-                      .BatchNorm('bn5')())
+                      .BatchNorm('bn5')()
 
                       .apply(activate)
                       
@@ -140,7 +140,7 @@ class Model(ModelDesc):
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
             
-        DumpTensors(['conv5/output:0'])
+        
         tf.nn.softmax(logits, name='output')
 
         # compute the number of failed samples
@@ -169,7 +169,7 @@ class Model(ModelDesc):
 
 
 def get_config():
-    logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
+    logger.set_logger_dir(os.path.join('dorefa_log', 'svhn-dorefa-{}'.format(args.dorefa)))
 
     # prepare dataset
     d1 = dataset.SVHNDigit('train')
@@ -194,6 +194,7 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
+            DumpTensors(['conv5/output:0']),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong_tensor')])
         ],

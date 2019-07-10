@@ -168,6 +168,7 @@ class DumpTensors(ProcessTensors):
         super(DumpTensors, self).__init__(names, fn)
 
 
+
 class DumpTensorAsImage(Callback):
     """
     Dump a tensor to image(s) to ``logger.get_logger_dir()`` once triggered.
