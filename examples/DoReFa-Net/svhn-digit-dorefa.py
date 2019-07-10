@@ -128,9 +128,7 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-
-                      .BatchNorm('bn5')()
-
+                      .BatchNorm('bn5')
                       .apply(activate)
                       
                       # 5
