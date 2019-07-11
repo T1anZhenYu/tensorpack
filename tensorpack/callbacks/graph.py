@@ -141,6 +141,14 @@ class ProcessTensors(Callback):
         results = rv.results
         self._fn(*results)
 
+class SaveScalarToTxt(ProcessTensors):
+    def __init__(self, names): 
+        assert isinstance(names, (list, tuple)), names
+        self._names = names
+        dir = logger.get_logger_dir()
+        def fn(*args):
+            f = open()
+            m = torch.mean()
 
 class DumpTensors(ProcessTensors):
     """
