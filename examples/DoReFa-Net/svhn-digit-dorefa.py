@@ -73,8 +73,10 @@ class Model(ModelDesc):
                 return tf.nn.relu(x)
             return tf.clip_by_value(x, 0.0, 1.0)
 
-        def activate(x):
-            return fa(nonlin(x))
+        def activate(x,name = 'otherQa'):
+            y = fa(nonlin(x))
+            y.op.name = name
+            return y
 
         def beforeBN(x):
             z = x
@@ -129,7 +131,7 @@ class Model(ModelDesc):
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
                       .BatchNorm('bn5')
-                      .apply(activate)
+                      .apply(activate,'bn5Qa')
                       
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
@@ -192,8 +194,7 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-            DumpTensors(['conv5/output:0']),
-            DumpTensors(['bn5/output:0']),
+            DumpTensors(['conv5/output:0','bn5Qa']),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong_tensor')])
         ],
