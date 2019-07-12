@@ -74,8 +74,8 @@ class Model(ModelDesc):
             return tf.clip_by_value(x, 0.0, 1.0)
 
         def activate(x,name = 'otherQa'):
-            with tf.name_scope(name):
-                y = fa(nonlin(x))
+            
+            y = tf.identity(fa(nonlin(x)),name=name)
 
             return y
 
