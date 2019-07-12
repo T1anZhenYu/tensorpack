@@ -146,9 +146,49 @@ class SaveScalarToTxt(ProcessTensors):
         assert isinstance(names, (list, tuple)), names
         self._names = names
         dir = logger.get_logger_dir()
+
+        def draw(pic,name):
+            #fig = matplotlib.figure.Figure(figsize=(64,64))
+
+            plt.figure(figsize=(16,16))
+            hm = sn.heatmap(pic,annot=True,fmt='.2f',cbar = False,linewidth=0.5,annot_kws={'size':12,'ha':'center'},cmap = 'inferno')
+            plt.savefig('./img/'+name+'.jpg')
+            plt.show()
+
+        def standard_bn(x):
+            mu = torch.mean(x,dim = 0,keepdim = True)
+
+            sigma = x.norm(2,dim = 0,keepdim =True)
+
+            return (x-mu)/sigma
+
         def fn(*args):
-            f = open()
-            m = torch.mean()
+            layer = self._names.split('/')[-1]
+            f = open('layer'+layer+'.txt','a')
+            m = torch.mean(torch.mean(args,1),1)
+            v = torch.var(torch.var(args,1),1)
+            s = standard_bn(args)
+
+            channel = 5
+
+
+            for j in range(channel):
+                if self._names[0]=='c':
+                    f.write('beforeBN_sample_ch{}:{}:{}:{}:{}\n'.\
+                        format(str(self.global_step),str(self.global_step),str(j),str(m[0][j].item()),\
+                            str(v[0][j].item())))
+                    if self.global_step %90 == 0:
+                        draw(s[0,:,:,j].cpu().detach().numpy(),'beforeBN{}:{}:{}:{}'.format(layer,str(self.global_step),str(int(self.global_step/10)),str(j)))
+                        draw(args[0,:,:,j].cpu().detach().numpy(),'beforeBN{}:{}:{}:{}'.format(layer,str(self.global_step),str(int(self.global_step/10)),str(j)))
+                else:
+                    f.write('afterBN_sample_ch{}:{}:{}:{}:{}\n'.\
+                        format(str(self.global_step),str(self.global_step),str(j),str(m[0][j].item()),\
+                            str(v[0][j].item()))) 
+                    if self.global_step %90 == 0:
+                        draw(args[0,:,:,j].cpu().detach().numpy(),'beforeBN{}:{}:{}:{}'.format(layer,str(self.global_step),str(int(self.global_step/10)),str(j)))
+                 
+            f.close()              
+
 
 class DumpTensors(ProcessTensors):
     """

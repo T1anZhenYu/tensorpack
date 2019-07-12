@@ -193,6 +193,7 @@ def get_config():
         callbacks=[
             ModelSaver(),
             DumpTensors(['conv5/output:0']),
+            DumpTensors(['bn5/output:0']),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong_tensor')])
         ],
