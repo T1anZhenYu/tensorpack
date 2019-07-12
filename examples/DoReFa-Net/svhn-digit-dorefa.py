@@ -74,8 +74,9 @@ class Model(ModelDesc):
             return tf.clip_by_value(x, 0.0, 1.0)
 
         def activate(x,name = 'otherQa'):
-            y = fa(nonlin(x))
-            print(y.op.name)
+            with tf.name_scope(name):
+                y = fa(nonlin(x))
+
             return y
 
         def beforeBN(x):
@@ -194,7 +195,7 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-            DumpTensors(['conv4/output:0','conv5/input:0']),
+            DumpTensors(['conv4/output:0','bn5/output:0','bn5Qa']),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong_tensor')])
         ],
