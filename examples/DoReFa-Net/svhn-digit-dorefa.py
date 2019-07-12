@@ -75,7 +75,7 @@ class Model(ModelDesc):
 
         def activate(x,name = 'otherQa'):
             y = fa(nonlin(x))
-            y.op.name = name
+            print(y.op.name)
             return y
 
         def beforeBN(x):
