@@ -88,65 +88,44 @@ class Model(ModelDesc):
 
         image = image / 256.0
 
-        with remap_variables(binarize_weight), \
-                argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
-                argscope(Conv2D, use_bias=False):
-            x, loos1 = (LinearWrap(image)
-                      .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
-                      .MaxPooling('pool0', 2, padding='SAME')
-                      .apply(activate)
-                      # 18
-                      .Conv2D('conv1', 64, 3, padding='SAME')
-                      .apply(fg)
-                      .apply(bn_loss,'loss1')()
-                      #.BatchNorm('bn1').apply(activate)
-              )
+        with remap_variables(binarize_weight): 
+            x = Conv2D('conv0',image,48,5,padding='VALID', use_bias=True)
+            x = MaxPooling('pool0', x,2, padding='SAME')
+            x = activate(x)
 
-            x,loss2 = (LinearWrap(x)
-                      .apply(activate)
-                      .Conv2D('conv2', 64, 3, padding='SAME')
-                      .apply(fg)
-                      .apply(bn_loss,'loss2')()
-                      #.BatchNorm('bn2')
-              )
-            x,loss3 = (LinearWrap(x)
+            x = Conv2D('conv1', 64, 3, padding='SAME',use_bias=False)
+            x = fg(x)
+            x = BatchNorm('bn1',x)
+            x = activate(x)
 
-                      .MaxPooling('pool1', 2, padding='SAME')
-                      .apply(activate)
-                      # 9
-                      .Conv2D('conv3', 128, 3, padding='VALID')
-                      .apply(fg)
-                      .apply(bn_loss,'loss3')()
-                      #.BatchNorm('bn3').apply(activate)
-              )
-            x,loss4 = (LinearWrap(x)
-                      .apply(activate)
-                      .Conv2D('conv4', 128, 3, padding='SAME')
-                      .apply(fg)
-                      .apply(bn_loss,'loss4')()
-                      #.BatchNorm('bn4').apply(activate)                        
-              )
-            x,loss5 = (LinearWrap(x)
-                      .apply(activate) 
-                      .Conv2D('conv5', 128, 3, padding='VALID')
-                      .apply(fg)
-                      .apply(bn_loss)()
-                      #.BatchNorm('bn5')
-              )
+            x = Conv2D('conv2', x,64, 3, padding='SAME',use_bias=False)
+            x = fg(x)
+            x = BatchNorm('bn2',x)
+            x = activate(x)
 
-            x,loss6 = (LinearWrap(x)
-                      .apply(activate)
-                      # 5
-                      .Dropout(rate=0.5 if is_training else 0.0)
-                      .Conv2D('conv6', 512, 5, padding='VALID')
-                      .apply(fg)
-                      .apply(bn_loss,'loss5')())
+            x = Conv2D('conv3',x,128, 3, padding='VALID',use_bias=False)
+            x = fg(x)
+            x = BatchNorm('bn3',x)
+            x = activate(x)
 
-            x,logits = (LinearWrap(x)
-                      #.BatchNorm('bn6')
-                      .apply(nonlin)
-                      .FullyConnected('fc1', 10)())
-            
+            x = Conv2D('conv4',x,128, 3, padding='SAME',use_bias = False)
+            x = fg(x)
+            x = BatchNorm('bn4',x)
+            x = activate(x)
+
+            x = Conv2D('conv5',x, 128, 3, padding='VALID',use_bias = False)
+            x = fg(x)
+            x = BatchNorm('bn5',x)
+            x = activate(x)
+
+            x = Dropout(x,rate=0.5 if is_training else 0.0)
+            x = Conv2D('conv6',x, 512, 5, padding='VALID',use_bias = False)
+            x = fg(x)
+            x = BatchNorm('bn6',x)
+            x = nonlin(x)
+            logits = FullyConnected('fc1',x,10)
+
+ 
             '''
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
@@ -193,7 +172,7 @@ class Model(ModelDesc):
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
 
         cost = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=label)
-        cost = tf.reduce_mean(cost, name='cross_entropy_loss')+loos1+loss2+loss3+loss4+loss5+loss6
+        cost = tf.reduce_mean(cost, name='cross_entropy_loss')
         # weight decay on all W of fc layers
         wd_cost = regularize_cost('fc.*/W', l2_regularizer(1e-7))
 
@@ -238,7 +217,7 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-            DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
+            #DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong_tensor')])
         ],
