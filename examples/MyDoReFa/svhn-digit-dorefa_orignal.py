@@ -11,10 +11,8 @@ from tensorpack import *
 from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
-from tensorpack.callbacks import DumpTensors
 
 from dorefa import get_dorefa
-import inspect 
 
 """
 This is a tensorpack script for the SVHN results in paper:
@@ -39,13 +37,6 @@ To Run:
 BITW = 1
 BITA = 2
 BITG = 4
-
-
-def get_mean(x):
-    #[batch,height,width,channels]
-    return tf.reduce_mean(tf.reduce_mean(x,1),1)
-
-
 
 
 class Model(ModelDesc):
@@ -73,12 +64,8 @@ class Model(ModelDesc):
                 return tf.nn.relu(x)
             return tf.clip_by_value(x, 0.0, 1.0)
 
-        def activate(x,name = 'otherQa'):
-            
-            y = tf.identity(fa(nonlin(x)),name=name)
-
-            return y
-
+        def activate(x):
+            return fa(nonlin(x))
 
         image = image / 256.0
 
@@ -111,17 +98,13 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNorm('bn5')
-                      .apply(activate,'bn5Qa')
-                      
+                      .BatchNorm('bn5').apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
                       .apply(fg).BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
-            
-        
         tf.nn.softmax(logits, name='output')
 
         # compute the number of failed samples
@@ -150,7 +133,7 @@ class Model(ModelDesc):
 
 
 def get_config():
-    logger.set_logger_dir(os.path.join('dorefa_log', 'svhn-dorefa-{}'.format(args.dorefa)))
+    logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
 
     # prepare dataset
     d1 = dataset.SVHNDigit('train')
@@ -175,7 +158,6 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-            DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong_tensor')])
         ],
@@ -194,4 +176,3 @@ if __name__ == '__main__':
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
     launch_train_with_config(config, SimpleTrainer())
-
