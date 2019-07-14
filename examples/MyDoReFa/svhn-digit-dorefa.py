@@ -65,7 +65,7 @@ def run_image(model, sess_init, inputs):
         names = [words[i] for i in ret]
         print(f + ":")
         print(list(zip(names, prob[ret])))
-        
+
 def get_mean(x):
     #[batch,height,width,channels]
     return tf.reduce_mean(tf.reduce_mean(x,1),1)
@@ -215,7 +215,11 @@ class Model(ModelDesc):
         tf.summary.scalar('lr', lr)
         return tf.train.AdamOptimizer(lr, epsilon=1e-5)
 
-
+def get_data(dataset_name):
+    isTrain = dataset_name == 'train'
+    augmentors = fbresnet_augmentor(isTrain)
+    return get_imagenet_dataflow(
+        args.data, dataset_name, BATCH_SIZE, augmentors)
 def get_config():
     logger.set_logger_dir(os.path.join('dorefa_log', 'svhn-dorefa-{}'.format(args.dorefa)))
 
@@ -263,6 +267,20 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
+
+    if args.gpu:
+        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+
+    if args.run:
+        assert args.load.endswith('.npz')
+        run_image(Model(), DictRestore(dict(np.load(args.load))), args.run)
+        sys.exit()
+    if args.eval:
+        print('####################################################in eval')
+        BATCH_SIZE = 128
+        ds = get_data('val')
+        eval_classification(Model(), get_model_loader(args.load), ds)
+        sys.exit()
     config = get_config()
     launch_train_with_config(config, SimpleTrainer())
 
