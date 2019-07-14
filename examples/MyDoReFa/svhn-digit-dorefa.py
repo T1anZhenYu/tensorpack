@@ -46,8 +46,10 @@ def get_mean(x):
     return tf.reduce_mean(tf.reduce_mean(x,1),1)
 
 
-def standard_bn(x):
+def naive_bn(x):
     m , var = tf.nn.moments(x,-1,keep_dims = True)  
+    return (x-m)/(var+0.00001)
+
 class Model(ModelDesc):
     def inputs(self):
         return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
@@ -79,12 +81,74 @@ class Model(ModelDesc):
 
             return y
 
+        def bn_loss(x,name='loss'):
+            label = naive_bn(x)
+            loss = tf.identity(tf.losses.mean_squared_error(x,label),name=name)
+            return x,loss
 
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
                 argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
                 argscope(Conv2D, use_bias=False):
+            x, loos1 = (LinearWrap(image)
+                      .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
+                      .MaxPooling('pool0', 2, padding='SAME')
+                      .apply(activate)
+                      # 18
+                      .Conv2D('conv1', 64, 3, padding='SAME')
+                      .apply(fg)
+                      .apply(bn_loss,'loss1')()
+                      #.BatchNorm('bn1').apply(activate)
+              )
+
+            x,loss2 = (LinearWrap(x)
+                      .apply(activate)
+                      .Conv2D('conv2', 64, 3, padding='SAME')
+                      .apply(fg)
+                      .apply(bn_loss,'loss2')()
+
+              )
+            x,loss3 = (LinearWrap(x)
+                      #.BatchNorm('bn2')
+                      .MaxPooling('pool1', 2, padding='SAME')
+                      .apply(activate)
+                      # 9
+                      .Conv2D('conv3', 128, 3, padding='VALID')
+                      .apply(fg)
+                      .apply(bn_loss,'loss3')()
+                      #.BatchNorm('bn3').apply(activate)
+              )
+            x,loss4 = (LinearWrap(x)
+                      .apply(activate)
+                      .Conv2D('conv4', 128, 3, padding='SAME')
+                      .apply(fg)
+                      .apply(bn_loss,'loss4')()
+                      #.BatchNorm('bn4').apply(activate)                        
+              )
+            x,loss5 = (LinearWrap(x)
+                      .apply(activate) 
+                      .Conv2D('conv5', 128, 3, padding='VALID')
+                      .apply(fg)
+                      .apply(bn_loss)()
+                      #.BatchNorm('bn5')
+              )
+            x,loss6 = (LinearWrap(x)
+                      .apply(activate)
+                      # 5
+                      .Dropout(rate=0.5 if is_training else 0.0)
+                      .Conv2D('conv6', 512, 5, padding='VALID')
+                      .apply(fg)
+                      .apply(bn_loss,'loss5')())
+            x,logits = (LinearWrap(x)
+                      #.BatchNorm('bn6')
+                      .apply(nonlin)
+                      .FullyConnected('fc1', 10)())
+           
+
+
+             
+            '''
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
                       .MaxPooling('pool0', 2, padding='SAME')
@@ -92,26 +156,26 @@ class Model(ModelDesc):
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNorm('bn1').apply(activate)
+                      #.BatchNorm('bn1').apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNorm('bn2')
+                      #.BatchNorm('bn2')
                       .MaxPooling('pool1', 2, padding='SAME')
                       .apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNorm('bn3').apply(activate)
+                      #.BatchNorm('bn3').apply(activate)
                       # 7
 
                       .Conv2D('conv4', 128, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNorm('bn4').apply(activate)
+                      #.BatchNorm('bn4').apply(activate)
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNorm('bn5')
+                      #.BatchNorm('bn5')
                       .apply(activate,'bn5Qa')
                       
                       # 5
@@ -121,7 +185,7 @@ class Model(ModelDesc):
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
             
-        
+              '''
         tf.nn.softmax(logits, name='output')
 
         # compute the number of failed samples
@@ -130,7 +194,7 @@ class Model(ModelDesc):
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
 
         cost = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=label)
-        cost = tf.reduce_mean(cost, name='cross_entropy_loss')
+        cost = tf.reduce_mean(cost, name='cross_entropy_loss')+loos1+loss2+loss3+loss4+loss5+loss6
         # weight decay on all W of fc layers
         wd_cost = regularize_cost('fc.*/W', l2_regularizer(1e-7))
 
@@ -175,7 +239,7 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-            DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
+            #DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong_tensor')])
         ],
