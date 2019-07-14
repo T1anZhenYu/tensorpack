@@ -46,8 +46,8 @@ def get_mean(x):
     return tf.reduce_mean(tf.reduce_mean(x,1),1)
 
 
-
-
+def standard_bn(x):
+    m , var = tf.nn.moments(x,-1,keep_dims = True)  
 class Model(ModelDesc):
     def inputs(self):
         return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
