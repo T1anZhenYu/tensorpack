@@ -93,7 +93,7 @@ class Model(ModelDesc):
             x = MaxPooling('pool0', x,2, padding='SAME')
             x = activate(x)
 
-            x = Conv2D('conv1', 64, 3, padding='SAME',use_bias=False)
+            x = Conv2D('conv1', x,64, 3, padding='SAME',use_bias=False)
             x = fg(x)
             x = BatchNorm('bn1',x)
             x = activate(x)
