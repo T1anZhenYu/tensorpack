@@ -40,7 +40,32 @@ BITW = 1
 BITA = 2
 BITG = 4
 
+def run_image(model, sess_init, inputs):
+    pred_config = PredictConfig(
+        model=model,
+        session_init=sess_init,
+        input_names=['input'],
+        output_names=['output']
+    )
+    predictor = OfflinePredictor(pred_config)
+    meta = dataset.ILSVRCMeta()
+    words = meta.get_synset_words_1000()
 
+    transformers = imgaug.AugmentorList(fbresnet_augmentor(isTrain=False))
+    for f in inputs:
+        assert os.path.isfile(f), f
+        img = cv2.imread(f).astype('float32')
+        assert img is not None
+
+        img = transformers.augment(img)[np.newaxis, :, :, :]
+        outputs = predictor(img)[0]
+        prob = outputs[0]
+        ret = prob.argsort()[-10:][::-1]
+
+        names = [words[i] for i in ret]
+        print(f + ":")
+        print(list(zip(names, prob[ret])))
+        
 def get_mean(x):
     #[batch,height,width,channels]
     return tf.reduce_mean(tf.reduce_mean(x,1),1)
@@ -228,9 +253,13 @@ def get_config():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dorefa',
-                        help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
-                        default='1,2,4')
+    parser.add_argument('--gpu', help='the physical ids of GPUs to use')
+    parser.add_argument('--load', help='load a checkpoint, or a npz (given as the pretrained model)')
+    parser.add_argument('--data', help='ILSVRC dataset dir')
+    parser.add_argument('--dorefa', required=True,
+                        help='number of bits for W,A,G, separated by comma. W="t" means TTQ')
+    parser.add_argument('--run', help='run on a list of images with the pretrained model', nargs='*')
+    parser.add_argument('--eval', action='store_true')
     args = parser.parse_args()
 
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
