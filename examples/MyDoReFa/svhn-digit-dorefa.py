@@ -107,10 +107,10 @@ class Model(ModelDesc):
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .apply(fg)
                       .apply(bn_loss,'loss2')()
-
+                      #.BatchNorm('bn2')
               )
             x,loss3 = (LinearWrap(x)
-                      #.BatchNorm('bn2')
+
                       .MaxPooling('pool1', 2, padding='SAME')
                       .apply(activate)
                       # 9
@@ -133,6 +133,7 @@ class Model(ModelDesc):
                       .apply(bn_loss)()
                       #.BatchNorm('bn5')
               )
+
             x,loss6 = (LinearWrap(x)
                       .apply(activate)
                       # 5
@@ -140,14 +141,12 @@ class Model(ModelDesc):
                       .Conv2D('conv6', 512, 5, padding='VALID')
                       .apply(fg)
                       .apply(bn_loss,'loss5')())
+
             x,logits = (LinearWrap(x)
                       #.BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
-           
-
-
-             
+            
             '''
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
@@ -239,7 +238,7 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-            #DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
+            DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong_tensor')])
         ],
