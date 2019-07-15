@@ -165,7 +165,7 @@ class Model(ModelDesc):
 
         add_param_summary(('.*/W', ['histogram', 'rms']))
         total_cost = tf.add_n([cost, wd_cost,loss1,loss2,loss3,loss4,loss5,loss6], name='cost')
-        add_moving_summary(cost, wd_cost, total_cost)
+        add_moving_summary(cost, wd_cost, total_cost,loss1,loss2,loss3,loss4,loss5,loss6)
         return total_cost
 
     def optimizer(self):
