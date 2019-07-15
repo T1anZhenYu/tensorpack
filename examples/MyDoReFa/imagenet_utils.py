@@ -275,7 +275,7 @@ def eval_classification(model, sessinit, dataflow):
         model=model,
         session_init=sessinit,
         input_names=['input', 'label'],
-        output_names=['wrong-top1', 'wrong-top5']
+        output_names=['wrong_tensor_top1']
     )
     acc1, acc5 = RatioCounter(), RatioCounter()
 
