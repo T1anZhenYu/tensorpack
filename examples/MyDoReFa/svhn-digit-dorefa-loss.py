@@ -250,5 +250,7 @@ if __name__ == '__main__':
         data_test = BatchData(data_test, 128, remainder=True)
         eval_classification(Model(), get_model_loader(args.load), data_test)
         sys.exit()
+    if args.load:
+        config.session_init = SaverRestore(args.load)
     launch_train_with_config(config, SimpleTrainer())
 
