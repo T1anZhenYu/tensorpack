@@ -240,7 +240,7 @@ if __name__ == '__main__':
     if args.eval:
         print('####################################################in eval')
         BATCH_SIZE = 128
-        ds = get_data('test)
+        ds = get_data('test')
         eval_classification(Model(), get_model_loader(args.load), ds)
         sys.exit()
     config = get_config()
