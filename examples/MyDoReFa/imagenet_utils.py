@@ -277,13 +277,13 @@ def eval_classification(model, sessinit, dataflow):
         input_names=['input', 'label'],
         output_names=['wrong_tensor_top1']
     )
-    acc1, acc5 = RatioCounter(), RatioCounter()
+    acc1 = RatioCounter()
 
     # This does not have a visible improvement over naive predictor,
     # but will have an improvement if image_dtype is set to float32.
     pred = FeedfreePredictor(pred_config, StagingInput(QueueInput(dataflow), device='/gpu:0'))
     for _ in tqdm.trange(dataflow.size()):
-        top1 = pred()
+        top1 = pred()[0]
         batch_size = top1.shape[0]
         acc1.feed(top1.sum(), batch_size)
         #acc5.feed(top5.sum(), batch_size)
