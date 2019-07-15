@@ -416,7 +416,7 @@ class ImageNetModel(ModelDesc):
                 x = tf.logical_not(tf.nn.in_top_k(logits, label, topk))
             return tf.cast(x, tf.float32, name=name)
 
-        wrong = prediction_incorrect(logits, label, 1, name='wrong_tensor')
+        wrong = prediction_incorrect(logits, label, 1, name='wrong_tensor_top1')
         add_moving_summary(tf.reduce_mean(wrong, name='train-error-top1'))
 
         return loss
