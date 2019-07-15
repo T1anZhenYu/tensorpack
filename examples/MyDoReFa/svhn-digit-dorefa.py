@@ -151,45 +151,6 @@ class Model(ModelDesc):
             x = nonlin(x)
             logits = FullyConnected('fc1',x,10)
 
- 
-            '''
-            logits = (LinearWrap(image)
-                      .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
-                      .MaxPooling('pool0', 2, padding='SAME')
-                      .apply(activate)
-                      # 18
-                      .Conv2D('conv1', 64, 3, padding='SAME')
-                      .apply(fg)
-                      #.BatchNorm('bn1').apply(activate)
-
-                      .Conv2D('conv2', 64, 3, padding='SAME')
-                      .apply(fg)
-                      #.BatchNorm('bn2')
-                      .MaxPooling('pool1', 2, padding='SAME')
-                      .apply(activate)
-                      # 9
-                      .Conv2D('conv3', 128, 3, padding='VALID')
-                      .apply(fg)
-                      #.BatchNorm('bn3').apply(activate)
-                      # 7
-
-                      .Conv2D('conv4', 128, 3, padding='SAME')
-                      .apply(fg)
-                      #.BatchNorm('bn4').apply(activate)
-
-                      .Conv2D('conv5', 128, 3, padding='VALID')
-                      .apply(fg)
-                      #.BatchNorm('bn5')
-                      .apply(activate,'bn5Qa')
-                      
-                      # 5
-                      .Dropout(rate=0.5 if is_training else 0.0)
-                      .Conv2D('conv6', 512, 5, padding='VALID')
-                      .apply(fg).BatchNorm('bn6')
-                      .apply(nonlin)
-                      .FullyConnected('fc1', 10)())
-            
-              '''
         tf.nn.softmax(logits, name='output')
 
         # compute the number of failed samples
@@ -279,7 +240,7 @@ if __name__ == '__main__':
     if args.eval:
         print('####################################################in eval')
         BATCH_SIZE = 128
-        ds = get_data('val')
+        ds = get_data('test)
         eval_classification(Model(), get_model_loader(args.load), ds)
         sys.exit()
     config = get_config()
