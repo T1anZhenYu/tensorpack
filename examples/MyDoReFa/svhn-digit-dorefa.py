@@ -237,12 +237,17 @@ if __name__ == '__main__':
         assert args.load.endswith('.npz')
         run_image(Model(), DictRestore(dict(np.load(args.load))), args.run)
         sys.exit()
+
+    config = get_config()
     if args.eval:
         print('####################################################in eval')
         BATCH_SIZE = 128
-        ds = get_data('test')
-        eval_classification(Model(), get_model_loader(args.load), ds)
+        #ds = get_data('test')
+        data_test = dataset.SVHNDigit('test')
+        augmentors = [imgaug.Resize((40, 40))]
+        data_test = AugmentImageComponent(data_test, augmentors)
+        data_test = BatchData(data_test, 128, remainder=True)
+        eval_classification(Model(), get_model_loader(args.load), data_test)
         sys.exit()
-    config = get_config()
     launch_train_with_config(config, SimpleTrainer())
 
