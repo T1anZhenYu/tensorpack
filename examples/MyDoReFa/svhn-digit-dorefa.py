@@ -210,7 +210,9 @@ def get_config():
             ModelSaver(),
             #DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
             InferenceRunner(data_test,
-                            [ScalarStats('cost'), ClassificationError('wrong_tensor')])
+                            [ScalarStats('cost'), ClassificationError('wrong_tensor'),
+                            ClassificationError('wrong-top1', 'val-error-top1'),
+                             ClassificationError('wrong-top5', 'val-error-top5')])
         ],
         model=Model(),
         max_epoch=200,
