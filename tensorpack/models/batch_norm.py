@@ -249,13 +249,13 @@ def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 xn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
             else:
                 #quantize BN during inference
-                print('in quantize BN')
+                logger.info('in quantize BN')
                 quan_points = get_quan_point()
                 beta, gamma, moving_mean, moving_var = get_bn_variables(
                     num_chan, scale, center, beta_initializer, gamma_initializer)
                 quan_points = gamma/moving_var*quan_pioints - gamma * moving_mean \
                 / moving_var + beta
-                print('quan_points is ',quan_points)
+                logger.info('quan_points is ',quan_points)
                 quan_values = [round((quan_points[i]-0.005)*(2**bit_activation-1))\
                 /(float(2**bit_activation-1)) for i in range(len(quan_points))]
 
