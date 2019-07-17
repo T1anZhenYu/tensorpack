@@ -79,8 +79,7 @@ class Model(ModelDesc):
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNorm('bn1')
-                      .apply(activate)
+                      .BatchNorm('bn1').apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .apply(fg)

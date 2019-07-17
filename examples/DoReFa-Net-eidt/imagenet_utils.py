@@ -275,7 +275,7 @@ def eval_classification(model, sessinit, dataflow):
         model=model,
         session_init=sessinit,
         input_names=['input', 'label'],
-        output_names=['wrong_tensor_top1']
+        output_names=['wrong-top1']
     )
     acc1 = RatioCounter()
 
@@ -283,13 +283,13 @@ def eval_classification(model, sessinit, dataflow):
     # but will have an improvement if image_dtype is set to float32.
     pred = FeedfreePredictor(pred_config, StagingInput(QueueInput(dataflow), device='/gpu:0'))
     for _ in tqdm.trange(dataflow.size()):
-        top1 = pred()[0]
+        top1 = pred()
         batch_size = top1.shape[0]
         acc1.feed(top1.sum(), batch_size)
-        #acc5.feed(top5.sum(), batch_size)
+
 
     print("Top1 Error: {}".format(acc1.ratio))
-    #print("Top5 Error: {}".format(acc5.ratio))
+
 
 
 class ImageNetModel(ModelDesc):
@@ -416,9 +416,11 @@ class ImageNetModel(ModelDesc):
                 x = tf.logical_not(tf.nn.in_top_k(logits, label, topk))
             return tf.cast(x, tf.float32, name=name)
 
-        wrong = prediction_incorrect(logits, label, 1, name='wrong_tensor_top1')
+        wrong = prediction_incorrect(logits, label, 1, name='wrong-top1')
         add_moving_summary(tf.reduce_mean(wrong, name='train-error-top1'))
 
+        wrong = prediction_incorrect(logits, label, 5, name='wrong-top5')
+        add_moving_summary(tf.reduce_mean(wrong, name='train-error-top5'))
         return loss
 
     def create_predict_config(self, session_init):
