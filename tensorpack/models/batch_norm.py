@@ -66,7 +66,7 @@ def internal_update_bn_ema(xn, batch_mean, batch_var,
         'decay': 'momentum',
         'use_local_stat': 'training'
     })
-def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
+def BatchNorm1(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
               center=True, scale=True,
               beta_initializer=tf.zeros_initializer(),
               gamma_initializer=tf.ones_initializer(),
