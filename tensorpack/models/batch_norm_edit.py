@@ -167,7 +167,8 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
     """
     # parse training/ctx
     def get_quan_point():
-        return np.array([(2**bit_activation-i+0.5)/(2**bit_activation-1) for i in range(2**bit_activation,1,-1)])
+        return np.array([(2**bit_activation-i+0.5)/(2**bit_activation-1) \
+            for i in range(2**bit_activation,1,-1)])
 
     ctx = get_current_tower_context()
     if training is None:
@@ -256,7 +257,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                     num_chan, scale, center, beta_initializer, gamma_initializer)
                 quan_values = np.array([round((quan_points[i]-0.005)*(2**bit_activation-1))\
                 /(float(2**bit_activation-1)) for i in range(len(quan_points))])
-                np.append(quan_values,1.,axis=-1)
+                np.append(quan_values,np.array([1.]),axis=-1)
 
                 channel_num = beta.shape[0]
                 quan_points = np.expand_dims(quan_points,axis = 0)
