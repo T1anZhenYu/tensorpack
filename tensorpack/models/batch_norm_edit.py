@@ -253,7 +253,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 quan_points = get_quan_point()
                 beta, gamma, moving_mean, moving_var = get_bn_variables(
                     num_chan, scale, center, beta_initializer, gamma_initializer)
-                quan_points = gamma/moving_var*quan_pioints - gamma * moving_mean \
+                quan_points = gamma/moving_var*quan_points - gamma * moving_mean \
                 / moving_var + beta
                 print('quan_points is ',quan_points)
                 quan_values = [round((quan_points[i]-0.005)*(2**bit_activation-1))\

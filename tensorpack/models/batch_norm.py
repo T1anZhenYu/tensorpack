@@ -37,6 +37,10 @@ def get_bn_variables(n_out, use_scale, use_bias, beta_init, gamma_init):
                                   initializer=tf.constant_initializer(), trainable=False)
     moving_var = tf.get_variable('variance/EMA', [n_out],
                                  initializer=tf.constant_initializer(1.0), trainable=False)
+
+    if get_current_tower_context().is_main_training_tower:
+        for v in [moving_mean, moving_var]:
+            tf.add_to_collection(tf.GraphKeys.MODEL_VARIABLES, v)
     return beta, gamma, moving_mean, moving_var
 
 
@@ -56,6 +60,15 @@ def internal_update_bn_ema(xn, batch_mean, batch_var,
         return tf.identity(xn, name='output')
 
 
+try:
+    # When BN is used as an activation, keras layers try to autograph.convert it
+    # This leads to massive warnings so we disable it.
+    from tensorflow.python.autograph.impl.api import do_not_convert as disable_autograph
+except ImportError:
+    def disable_autograph():
+        return lambda x: x
+
+
 @layer_register()
 @convert_to_tflayer_args(
     args_names=[],
@@ -66,6 +79,7 @@ def internal_update_bn_ema(xn, batch_mean, batch_var,
         'decay': 'momentum',
         'use_local_stat': 'training'
     })
+@disable_autograph()
 def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
               center=True, scale=True,
               beta_initializer=tf.zeros_initializer(),
@@ -74,25 +88,21 @@ def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
               data_format='channels_last',
               ema_update='default',
               sync_statistics=None,
-              internal_update=None,
-              bit_activation=2):
+              internal_update=None):
     """
     A more powerful version of `tf.layers.batch_normalization`. It differs from
     the offical one in the following aspects:
-
     1. Accepts an alternative ``data_format`` option when ``axis`` is None. For 2D input, this argument will be ignored.
     2. Default value for ``momentum`` and ``epsilon`` is different.
     3. Default value for ``training`` is automatically obtained from tensorpack's ``TowerContext``.
        User-provided value can overwrite this behavior.
     4. Support the ``ema_update`` option, which covers broader use cases than the standard EMA update.
     5. Support the ``sync_statistics`` option, which implements "SyncBN" and is very useful in small-batch models.
-
     Args:
         training (bool): if True, use per-batch statistics to normalize. Otherwise, use stored EMA
             to normalize. By default, it is equal to `get_current_tower_context().is_training`.
             This is not a good argument name, but it is what the Tensorflow layer uses.
         ema_update (str): Only effective when ``training=True``. It has the following options:
-
           * "default": same as "collection". Because this is the default behavior in tensorflow.
           * "skip": do not update EMA. This can be useful when you reuse a batch norm layer in several places
             but do not want them to all update your EMA.
@@ -102,61 +112,46 @@ def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
             on the BatchNorm layer.
           * "internal": EMA is updated inside this layer itself by control dependencies.
             In common cases, it has similar speed to "collection". But it covers more cases, e.g.:
-
             1. BatchNorm is used inside dynamic control flow.
                The collection-based update does not support dynamic control flows.
             2. BatchNorm layer is sometimes unused (e.g., in GANs you have two networks to train alternatively).
                Putting all update ops into a single collection will waste a lot of compute.
             3. Other part of the model relies on the "updated" EMA. The collection-based method does not update
                EMA immediately.
-
             Corresponding TF issue: https://github.com/tensorflow/tensorflow/issues/14699
         sync_statistics (str or None): one of None, "nccl", or "horovod". It determines how to compute the
           "per-batch statistics" when ``training==True``.
-
           * None: it uses statistics of the input tensor to normalize during training.
             This is the standard way BatchNorm was implemented in most frameworks.
-
           * "nccl": this layer must be used under tensorpack's multi-GPU trainers.
             It uses the aggregated statistics of the whole batch (across all GPUs) to normalize.
-
           * "horovod": this layer must be used under tensorpack's :class:`HorovodTrainer`.
             It uses the aggregated statistics of the whole batch (across all MPI ranks) to normalize.
             Note that on single machine this is significantly slower than the "nccl" implementation.
-
           When not None, each GPU computes its own E[x] and E[x^2],
           which are then averaged among all GPUs to compute global mean & variance.
           Therefore each GPU needs to have the same batch size.
-
           The synchronization is based on the current variable scope + the name of the layer
           (`BatchNorm('name', input)`). Therefore, you need to make sure that:
-
           1. The BatchNorm layer on different GPUs needs to have the same name, so that
              statistics can be synchronized. If names do not match, this layer will hang.
           2. A BatchNorm layer cannot be reused within one tower.
           3. A BatchNorm layer needs to be executed for the same number of times by all GPUs.
              If different GPUs execute one BatchNorm layer for different number of times
              (e.g., if some GPUs do not execute it), this layer may hang.
-
           This option is also known as "SyncBN" or "Cross-GPU BatchNorm" as mentioned in:
           `MegDet: A Large Mini-Batch Object Detector <https://arxiv.org/abs/1711.07240>`_.
           Corresponding TF issue: https://github.com/tensorflow/tensorflow/issues/18222.
-
           When `sync_statistics` is enabled, `ema_update` is set to "internal" automatically.
           This is to avoid running `UPDATE_OPS`, which requires synchronization.
-
         internal_update: deprecated option. Don't use.
-
     Variable Names:
-
     * ``beta``: the bias term. Will be zero-inited by default.
     * ``gamma``: the scale term. Will be one-inited by default.
     * ``mean/EMA``: the moving average of mean.
     * ``variance/EMA``: the moving average of variance.
-
     Note:
         This layer is more flexible than the standard "BatchNorm" layer and provides more features:
-
         1. No matter whether you're doing training or not, you can set the ``training`` argument
            to use batch statistics or EMA statistics.
            i.e., you can use batch statistics during inference, or use EMA statistics during training.
@@ -165,9 +160,6 @@ def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
         2. As long as `training=True`, `sync_statistics` and `ema_update` option will take effect.
     """
     # parse training/ctx
-    def get_quan_point():
-        return [(2**bit_activation-i+0.5)/(2**bit_activation-1) for i in range(2**bit_activation,1,-1)]
-
     ctx = get_current_tower_context()
     if training is None:
         training = ctx.is_training
@@ -244,29 +236,8 @@ def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 # non-fused does not support fp16; fused does not support all layouts.
                 # we made our best guess here
                 tf_args['fused'] = True
-            if training:
-                layer = tf.layers.BatchNormalization(**tf_args)
-                xn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
-            else:
-                #quantize BN during inference
-                logger.info('in quantize BN')
-                quan_points = get_quan_point()
-                beta, gamma, moving_mean, moving_var = get_bn_variables(
-                    num_chan, scale, center, beta_initializer, gamma_initializer)
-                quan_points = gamma/moving_var*quan_pioints - gamma * moving_mean \
-                / moving_var + beta
-                logger.info('quan_points is ',quan_points)
-                quan_values = [round((quan_points[i]-0.005)*(2**bit_activation-1))\
-                /(float(2**bit_activation-1)) for i in range(len(quan_points))]
-
-                quan_values.append(1.)
-
-                xn = np.piecewise(inputs,[inputs<=quan_points[0],\
-                    np.logical_and(inputs<=quan_points[1], inputs>quan_points[0]),\
-                   np.logical_and(inputs<=quan_points[2], inputs>quan_points[1])\
-                   ,inputs>quan_points[2]],quan_values)
-
-
+            layer = tf.layers.BatchNormalization(**tf_args)
+            xn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
 
         # Add EMA variables to the correct collection
         if ctx.is_main_training_tower:
@@ -401,19 +372,15 @@ def BatchRenorm(x, rmax, dmax, momentum=0.9, epsilon=1e-5,
     `Batch Renormalization: Towards Reducing Minibatch Dependence in Batch-Normalized Models
     <https://arxiv.org/abs/1702.03275>`_.
     This implementation is a wrapper around `tf.layers.batch_normalization`.
-
     Args:
         x (tf.Tensor): a NHWC or NC tensor.
         rmax, dmax (tf.Tensor): a scalar tensor, the maximum allowed corrections.
         decay (float): decay rate of moving average.
         epsilon (float): epsilon to avoid divide-by-zero.
         use_scale, use_bias (bool): whether to use the extra affine transformation or not.
-
     Returns:
         tf.Tensor: a tensor named ``output`` with the same shape of x.
-
     Variable Names:
-
     * ``beta``: the bias term.
     * ``gamma``: the scale term. Input will be transformed by ``x * gamma + beta``.
     * ``moving_mean, renorm_mean, renorm_mean_weight``: See TF documentation.
