@@ -266,14 +266,14 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 channel_num = beta.shape[0]
                 quan_points = np.expand_dims(quan_points,axis = 0)
                 quan_points = np.repeat(quan_points,channel_num,axis=0)
- 
+                print('originnal gamma is ',gamma.shape)
                 print('gamma is ',gamma_.shape)
                 print('moving_var is ',moving_var_[0])
                 print('moving_mean is ',moving_mean_.shape)
                 print('quan_points shape is ',quan_points.shape)
                 part1 = gamma_/moving_var_
                 print('part1 is ',part1.shape)
-                pritn('part1 value ',part1[0])
+                print('part1 value ',part1[0])
                 quan_points = gamma_/moving_var_*quan_points - gamma_ * moving_mean_ \
                 / moving_var_ + beta_
                 print('after correction quan_points is \n',quan_points.shape)
