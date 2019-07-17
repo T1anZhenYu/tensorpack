@@ -15,6 +15,7 @@ from ..utils.argtools import get_data_format
 from ..utils.develop import log_deprecated
 from .common import VariableHolder, layer_register
 from .tflayer import convert_to_tflayer_args, rename_get_variable
+import numpy as np 
 
 __all__ = ['BatchNormEidt', 'BatchRenormEidt']
 
@@ -166,7 +167,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
     """
     # parse training/ctx
     def get_quan_point():
-        return [(2**bit_activation-i+0.5)/(2**bit_activation-1) for i in range(2**bit_activation,1,-1)]
+        return np.array([(2**bit_activation-i+0.5)/(2**bit_activation-1) for i in range(2**bit_activation,1,-1)])
 
     ctx = get_current_tower_context()
     if training is None:
@@ -253,19 +254,20 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 quan_points = get_quan_point()
                 beta, gamma, moving_mean, moving_var = get_bn_variables(
                     num_chan, scale, center, beta_initializer, gamma_initializer)
-                print('beta ',beta.shape)
-                print('gamma ',gamma.shape)
-                print('moving_mean ',moving_mean.shape)
-                print('moving_var ',moving_var.shape)
-                print('quan_points ',quan_points.shape)
+                quan_points = np.expand_dims(quan_points,axis = 0)
+                quan_points = np.repeat(quan_points,beta.shape[0])
+
+                print('quan_points is ',quan_points)
+                quan_values = np.array([round((quan_points[i]-0.005)*(2**bit_activation-1))\
+                /(float(2**bit_activation-1)) for i in range(len(quan_points))])
+                quan_values.append(np.repeat(np.expand_dims(np.array([1.],axis=0)),\
+                    beta.shape[0],axis=-1))
+                print('quan_values is ',quan_values)               
                 quan_points = gamma/moving_var*quan_points - gamma * moving_mean \
                 / moving_var + beta
-                print('quan_points is ',quan_points)
-                quan_values = [round((quan_points[i]-0.005)*(2**bit_activation-1))\
-                /(float(2**bit_activation-1)) for i in range(len(quan_points))]
-
-                quan_values.append(1.)
-
+                print('after correction quan_points is \n',quan_points)
+                print('input ',input.shape)
+                
                 xn = np.piecewise(inputs,[inputs<=quan_points[0],\
                     np.logical_and(inputs<=quan_points[1], inputs>quan_points[0]),\
                    np.logical_and(inputs<=quan_points[2], inputs>quan_points[1])\
