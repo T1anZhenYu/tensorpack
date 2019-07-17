@@ -269,9 +269,9 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
 
                 print('quan_points is ',quan_points)
                 print('quan_values is ',quan_values)  
-                print('gamma is ',gamma.shape)
-                print('moving_var is ',moving_var[0])
-                print('moving_mean is ',moving_mean.shape)
+                print('gamma is ',gamma_.shape)
+                print('moving_var is ',moving_var_[0])
+                print('moving_mean is ',moving_mean_.shape)
                 print('quan_points shape is ',quan_points.shape)
                 part1 = gamma_/moving_var_*quan_points
                 print('part1 is ',part1[0,0])
