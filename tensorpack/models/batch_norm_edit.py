@@ -16,7 +16,7 @@ from ..utils.develop import log_deprecated
 from .common import VariableHolder, layer_register
 from .tflayer import convert_to_tflayer_args, rename_get_variable
 
-__all__ = ['BatchNorm', 'BatchRenorm']
+__all__ = ['BatchNormEidt', 'BatchRenorm']
 
 # decay: being too close to 1 leads to slow start-up. torch use 0.9.
 # eps: torch: 1e-5. Lasagne: 1e-4
