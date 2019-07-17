@@ -201,6 +201,11 @@ if __name__ == '__main__':
     if args.eval:
         BATCH_SIZE = 128
         data_test = dataset.SVHNDigit('test')
+        augmentors = [
+        imgaug.Resize((40, 40)),
+        imgaug.Brightness(30),
+        imgaug.Contrast((0.5, 1.5)),
+        ]
         data_test = AugmentImageComponent(data_test, augmentors)
         data_test = BatchData(data_test, 128, remainder=True)
         eval_classification(Model(), get_model_loader(args.load), data_test)
