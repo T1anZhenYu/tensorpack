@@ -14,6 +14,7 @@ from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 from tensorpack.callbacks import DumpTensors
 from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor, get_imagenet_dataflow
+from tensorpack.models import BatchNormEidt
 from dorefa import get_dorefa
 import inspect 
 
