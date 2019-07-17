@@ -8,6 +8,7 @@ import argparse
 import os
 import tensorflow as tf
 
+import sys
 from tensorpack import *
 from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
