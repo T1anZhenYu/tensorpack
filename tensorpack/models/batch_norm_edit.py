@@ -16,7 +16,7 @@ from ..utils.develop import log_deprecated
 from .common import VariableHolder, layer_register
 from .tflayer import convert_to_tflayer_args, rename_get_variable
 
-__all__ = ['BatchNormEidt', 'BatchRenorm']
+__all__ = ['BatchNormEidt', 'BatchRenormEidt']
 
 # decay: being too close to 1 leads to slow start-up. torch use 0.9.
 # eps: torch: 1e-5. Lasagne: 1e-4
@@ -393,7 +393,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
         'gamma_init': 'gamma_initializer',
         'decay': 'momentum'
     })
-def BatchRenorm(x, rmax, dmax, momentum=0.9, epsilon=1e-5,
+def BatchRenormEidt(x, rmax, dmax, momentum=0.9, epsilon=1e-5,
                 center=True, scale=True, gamma_initializer=None,
                 data_format='channels_last'):
     """
