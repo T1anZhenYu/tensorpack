@@ -88,7 +88,7 @@ class Model(ModelDesc):
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
-                argscope(BatchNormEidt, momentum=0.9, epsilon=1e-4), \
+                argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
@@ -97,17 +97,17 @@ class Model(ModelDesc):
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNormEidt('bn1').apply(activate)
+                      .BatchNorm('bn1').apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNormEidt('bn2')
+                      .BatchNorm('bn2')
                       .MaxPooling('pool1', 2, padding='SAME')
                       .apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNormEidt('bn3').apply(activate)
+                      .BatchNorm('bn3').apply(activate)
                       # 7
 
                       .Conv2D('conv4', 128, 3, padding='SAME')
@@ -116,13 +116,13 @@ class Model(ModelDesc):
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNormEidt('bn5')
+                      .BatchNorm('bn5')
                       .apply(activate)
                       
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
-                      .apply(fg).BatchNormEidt('bn6')
+                      .apply(fg).BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
             

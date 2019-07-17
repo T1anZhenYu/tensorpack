@@ -74,7 +74,8 @@ def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
               data_format='channels_last',
               ema_update='default',
               sync_statistics=None,
-              internal_update=None):
+              internal_update=None,
+              bit_activation=2):
     """
     A more powerful version of `tf.layers.batch_normalization`. It differs from
     the offical one in the following aspects:
@@ -164,6 +165,9 @@ def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
         2. As long as `training=True`, `sync_statistics` and `ema_update` option will take effect.
     """
     # parse training/ctx
+    def get_quan_point():
+        return [(2**bit_activation-i+0.5)/(2**bit_activation-1) for i in range(2**bit_activation,1,-1)]
+
     ctx = get_current_tower_context()
     if training is None:
         training = ctx.is_training
@@ -240,8 +244,29 @@ def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 # non-fused does not support fp16; fused does not support all layouts.
                 # we made our best guess here
                 tf_args['fused'] = True
-            layer = tf.layers.BatchNormalization(**tf_args)
-            xn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
+            if training:
+                layer = tf.layers.BatchNormalization(**tf_args)
+                xn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
+            else:
+                #quantize BN during inference
+                print('in quantize BN')
+                quan_points = get_quan_point()
+                beta, gamma, moving_mean, moving_var = get_bn_variables(
+                    num_chan, scale, center, beta_initializer, gamma_initializer)
+                quan_points = gamma/moving_var*quan_pioints - gamma * moving_mean \
+                / moving_var + beta
+                print('quan_points is ',quan_points)
+                quan_values = [round((quan_points[i]-0.005)*(2**bit_activation-1))\
+                /(float(2**bit_activation-1)) for i in range(len(quan_points))]
+
+                quan_values.append(1.)
+
+                xn = np.piecewise(inputs,[inputs<=quan_points[0],\
+                    np.logical_and(inputs<=quan_points[1], inputs>quan_points[0]),\
+                   np.logical_and(inputs<=quan_points[2], inputs>quan_points[1])\
+                   ,inputs>quan_points[2]],quan_values)
+
+
 
         # Add EMA variables to the correct collection
         if ctx.is_main_training_tower:
