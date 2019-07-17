@@ -15,6 +15,8 @@ if STATICA_HACK:
     from .pool import *
     from .regularize import *
 
+    from .batch_norm_edit import *
+
 
 from pkgutil import iter_modules
 import os
