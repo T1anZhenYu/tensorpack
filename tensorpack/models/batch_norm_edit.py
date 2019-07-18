@@ -259,8 +259,6 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 /(float(2**bit_activation-1)) for i in range(len(quan_points))])
                 quan_values = np.append(quan_values,np.array([1.]),axis=-1)
 
-
-
                 beta0, gamma0, moving_mean0, moving_var0 = get_bn_variables(
                     num_chan, scale, center, beta_initializer, gamma_initializer)
 
@@ -274,33 +272,10 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 moving_var_ = tf.identity(moving_var0)
                 moving_var_ = tf.expand_dims(moving_var_,axis = -1)
                 channel_num = beta0.shape[0]
-                '''
-                quan_points = np.expand_dims(quan_points,axis = 0)
-                quan_points = np.repeat(quan_points,channel_num,axis=0)
-                '''
-                print('originnal gamma is ',gamma.shape)
-                print('type beta ',type(beta))
-                print('beta ',beta)
-                print('type beta_ ',type(beta_))
-                print('beta_ ',beta_)
-
-                print('gamma_ is ',gamma_.shape)
-                print('moving_var is ',moving_var_[0])
-                print('moving_mean is ',moving_mean_.shape)
-                print('quan_points shape is ',quan_points.shape)
-
-                part1 = gamma_/moving_var_
-                print('part1 is ',part1.shape)
-                print('part1 value ',part1[0])
 
                 quan_points = gamma_/moving_var_*quan_points - gamma_ * moving_mean_ \
                 / moving_var_ + beta_
          
-                print('after correction quan_points is \n',quan_points)
-                print('quan_points shape ',quan_points.shape)
-                print('a quan_points value ',quan_points[0][0])
-                print('input type',type(inputs))
-
                 for i in range(channel_num):
                     label1 = tf.cast(inputs[:,:,:,i]<=quan_points[i][0],dtype=tf.float32)
                     label2 = tf.cast(tf.math.logical_and(inputs[:,:,:,i]<=quan_points[i][1],\
