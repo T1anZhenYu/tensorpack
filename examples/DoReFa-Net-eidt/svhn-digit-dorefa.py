@@ -76,12 +76,23 @@ class Model(ModelDesc):
                 return tf.nn.relu(x)
             return tf.clip_by_value(x, 0.0, 1.0)
 
-
+        def beforbn(x):
+            if is_training:
+                return x
+            else:
+                y = tf.identity(x,name='beforbn')
+                return x
         def activate(x):
             if is_training:
                 return fa(nonlin(x))
             else:
                 return x
+        def afterbn(x):
+            if is_training:
+                return x 
+            else:
+                y = tf.identity(x,name='afterbn')
+                return x                
 
 
 
@@ -181,6 +192,7 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
+            DumpTensors(['beforbn:0','afterbn:0']),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')])
         ],
