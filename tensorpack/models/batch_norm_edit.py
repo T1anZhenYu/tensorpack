@@ -292,15 +292,15 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 quan_points = gamma_/moving_var_*quan_points - gamma_ * moving_mean_ \
                 / moving_var_ + beta_
          
-                print('after correction quan_points is \n',quan_points[0])
-                print('input ',inputs.shape)
+                print('after correction quan_points is \n',quan_points)
+                print('quan_points shape ',quan_points.shape)
                 print('a quan_points value ',quan_points[0][0])
                 xn = np.array([[[[]]]])
                 for i in range(channel_num):
-                    np.append(xn,np.piecewise(inputs[:,:,:,i],[inputs[:,:,:,i]<=quan_points[i,0],\
-                        np.logical_and(inputs[:,:,:,i]<=quan_points[i,1], inputs[:,:,:,i]>quan_points[i,0]),\
-                       np.logical_and(inputs[:,:,:,i]<=quan_points[i,2], inputs[:,:,:,i]>quan_points[i,1])\
-                       ,inputs[:,:,:,i]>quan_points[i,2]],quan_values[:]),axis = -1)
+                    np.append(xn,np.piecewise(inputs[:,:,:,i],[inputs[:,:,:,i]<=quan_points[0][i],\
+                        np.logical_and(inputs[:,:,:,i]<=quan_points[1][i], inputs[:,:,:,i]>quan_points[0][i]),\
+                       np.logical_and(inputs[:,:,:,i]<=quan_points[2][i], inputs[:,:,:,i]>quan_points[0][i])\
+                       ,inputs[:,:,:,i]>quan_points[2][i]],quan_values[:]),axis = -1)
                 print('xn shape ',xn.shape)
 
 
