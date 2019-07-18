@@ -81,7 +81,7 @@ class Model(ModelDesc):
                 return x
             else:
                 y = tf.identity(x,name='beforbn')
-                return x
+                return y
         def activate(x):
             if is_training:
                 return fa(nonlin(x))
@@ -92,7 +92,7 @@ class Model(ModelDesc):
                 return x 
             else:
                 y = tf.identity(x,name='afterbn')
-                return x                
+                return y               
 
 
 
