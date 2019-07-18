@@ -255,10 +255,12 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 quan_points = get_quan_point()
                 beta, gamma, moving_mean, moving_var = get_bn_variables(
                     num_chan, scale, center, beta_initializer, gamma_initializer)
+                '''
                 beta_ = np.expand_dims(beta,axis=0)
                 gamma_ = np.expand_dims(gamma,axis=0)
                 moving_mean_ = np.expand_dims(moving_mean,axis=0)
                 moving_var_ = np.expand_dims(moving_var,axis=0)
+                '''
                 quan_values = np.array([round((quan_points[i]-0.005)*(2**bit_activation-1))\
                 /(float(2**bit_activation-1)) for i in range(len(quan_points))])
                 quan_values = np.append(quan_values,np.array([1.]),axis=-1)
@@ -267,16 +269,20 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 quan_points = np.expand_dims(quan_points,axis = 0)
                 quan_points = np.repeat(quan_points,channel_num,axis=0)
                 print('originnal gamma is ',gamma.shape)
+                '''
                 print('gamma is ',gamma_.shape)
                 print('moving_var is ',moving_var_[0])
                 print('moving_mean is ',moving_mean_.shape)
                 print('quan_points shape is ',quan_points.shape)
+
                 part1 = gamma_/moving_var_
                 print('part1 is ',part1.shape)
                 print('part1 value ',part1[0])
+
                 quan_points = gamma_/moving_var_*quan_points - gamma_ * moving_mean_ \
                 / moving_var_ + beta_
-                print('after correction quan_points is \n',quan_points.shape)
+                '''
+                print('after correction quan_points is \n',quan_points[0])
                 print('input ',inputs.shape)
                 print('a quan_points value ',quan_points[0][0])
                 xn = np.array([[[[]]]])
