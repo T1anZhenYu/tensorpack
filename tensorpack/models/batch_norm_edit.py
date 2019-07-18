@@ -252,8 +252,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 xn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
             else:
                 #quantize BN during inference
-                layer = tf.layers.BatchNormalization(**tf_args)
-                xnn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
+
                 print('in quantize BN')
                 quan_points = get_quan_point()
 
@@ -262,11 +261,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 /(float(2**bit_activation-1)) for i in range(len(quan_points))])
                 quan_values = np.append(quan_values,np.array([1.]),axis=-1)
 
-                beta0 = layer.beta
-                gamma0 = layer.gamma
-                moving_mean0 = layer.moving_mean
-                moving_var0 = layer.moving_variance
-                #beta0, gamma0, moving_mean0, moving_var0 = get_bn_variables(num_chan, scale, center, beta_initializer, gamma_initializer)
+                beta0, gamma0, moving_mean0, moving_var0 = get_bn_variables(num_chan, scale, center, beta_initializer, gamma_initializer)
 
                 beta_ = tf.identity(beta0,name='beta_')
 

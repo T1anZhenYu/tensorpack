@@ -123,7 +123,7 @@ class Model(ModelDesc):
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
-                      .apply(fg).BatchNormEidt('bn6')
+                      .apply(fg).BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
             
