@@ -257,7 +257,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 add_moving_summary(tf.identity(quan_points[0],name='origin_quan_points_0'))
                 add_moving_summary(tf.identity(quan_points[1],name='origin_quan_points_1'))
                 add_moving_summary(tf.identity(quan_points[2],name='origin_quan_points_2'))
-                add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
+                #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
                 quan_values = np.array([round((quan_points[i]-0.005)*(2**bit_activation-1))\
                 /(float(2**bit_activation-1)) for i in range(len(quan_points))])
                 quan_values = np.append(quan_values,np.array([1.]),axis=-1)
@@ -282,7 +282,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 add_moving_summary(tf.identity(quan_points[0],name='quan_points_0'))
                 add_moving_summary(tf.identity(quan_points[1],name='quan_points_1'))
                 add_moving_summary(tf.identity(quan_points[2],name='quan_points_2'))
-                add_moving_summary(tf.identity(quan_points[3],name='quan_points_3'))               
+                #add_moving_summary(tf.identity(quan_points[3],name='quan_points_3'))               
                 b,w,h,c = inputs.shape
 
                 inputs = tf.reshape(inputs,[-1,c])
