@@ -271,18 +271,20 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
                 moving_var_ = tf.identity(moving_var0)
                 moving_var_ = tf.expand_dims(moving_var_,axis = -1)
-                channel_num = beta0.shape[0]
+
 
                 quan_points = gamma_/moving_var_*quan_points - gamma_ * moving_mean_ \
                 / moving_var_ + beta_
 
-
-                label1 = tf.cast(tf.less_equal(inputs<=quan_points[:][0]),dtype=tf.float32)
-                label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs<=quan_points[:][1]),\
-                    tf.math.greater(inputs>quan_points[:][0])),dtype=tf.float32)
-                label3 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs<=quan_points[:][2]),\
-                    tf.math.greater(inputs>quan_points[:][1])),dtype=tf.float32)
-                label4 = tf.cast(tf.math.greater(inputs,quan_points[:][2]),dtype=tf.float32)
+                b,w,h,c = inputs.shape
+                print()
+                inputs = tf.reshape(-1,c)
+                label1 = tf.cast(tf.less_equal(inputs<=quan_points[:,0]),dtype=tf.float32)
+                label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs<=quan_points[:,1]),\
+                    tf.math.greater(inputs>quan_points[:,0])),dtype=tf.float32)
+                label3 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs<=quan_points[:,2]),\
+                    tf.math.greater(inputs>quan_points[:,1])),dtype=tf.float32)
+                label4 = tf.cast(tf.math.greater(inputs,quan_points[:,2]),dtype=tf.float32)
                 xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
                 label4*quan_values[3]
 
