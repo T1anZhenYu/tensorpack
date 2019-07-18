@@ -257,13 +257,13 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                     num_chan, scale, center, beta_initializer, gamma_initializer)
                 beta_ = tf.identity(beta)
 
-                beta_ = np.expand_dims(beta,axis=0)
+                beta_ = np.expand_dims(beta,axis=0).transpose(1,0)
                 gamma_ = tf.identity(gamma)
-                gamma_ = np.expand_dims(gamma,axis=0)
+                gamma_ = np.expand_dims(gamma,axis=0).transpose(1,0)
                 moving_mean_ = tf.identity(moving_mean)
-                moving_mean_ = np.expand_dims(moving_mean,axis=0)
+                moving_mean_ = np.expand_dims(moving_mean,axis=0).transpose(1,0)
                 moving_var_ = tf.identity(moving_var)
-                moving_var_ = np.expand_dims(moving_var,axis = 0)
+                moving_var_ = np.expand_dims(moving_var,axis = 0).transpose(1,0)
 
                 quan_values = np.array([round((quan_points[i]-0.005)*(2**bit_activation-1))\
                 /(float(2**bit_activation-1)) for i in range(len(quan_points))])
