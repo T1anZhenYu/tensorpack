@@ -270,8 +270,10 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 quan_values = np.append(quan_values,np.array([1.]),axis=-1)
 
                 channel_num = beta.shape[0]
+                '''
                 quan_points = np.expand_dims(quan_points,axis = 0)
                 quan_points = np.repeat(quan_points,channel_num,axis=0)
+                '''
                 print('originnal gamma is ',gamma.shape)
                 print('type beta ',type(beta))
                 print('beta ',beta)
@@ -292,7 +294,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
          
                 print('after correction quan_points is \n',quan_points[0])
                 print('input ',inputs.shape)
-                print('a quan_points value ',quan_points[0][0])
+                print('a quan_points value ',quan_points[0,0])
                 xn = np.array([[[[]]]])
                 for i in range(channel_num):
                     np.append(xn,np.piecewise(inputs[:,:,:,i],[inputs[:,:,:,i]<=quan_points[i,0],\
