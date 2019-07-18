@@ -261,17 +261,17 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
 
 
 
-                beta, gamma, moving_mean, moving_var = get_bn_variables(
+                beta0, gamma0, moving_mean0, moving_var0 = get_bn_variables(
                     num_chan, scale, center, beta_initializer, gamma_initializer)
 
-                beta_ = tf.identity(beta)
+                beta_ = tf.identity(beta0)
 
                 beta_ = tf.expand_dims(beta_,axis=-1)
-                gamma_ = tf.identity(gamma)
+                gamma_ = tf.identity(gamma0)
                 gamma_ = tf.expand_dims(gamma_,axis=-1)
-                moving_mean_ = tf.identity(moving_mean)
+                moving_mean_ = tf.identity(moving_mean0)
                 moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
-                moving_var_ = tf.identity(moving_var)
+                moving_var_ = tf.identity(moving_var0)
                 moving_var_ = tf.expand_dims(moving_var_,axis = -1)
                 channel_num = beta.shape[0]
                 '''
@@ -310,13 +310,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                     label4 = tf.cast(inputs[:,:,:,i]>quan_points[i][2],dtype=tf.float32)
                     xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
                     label4*quan_values[3]
-                '''
-                for i in range(channel_num):
-                    np.append(xn,np.piecewise(inputs[:,:,:,i],[inputs[:,:,:,i]<=quan_points[0][i],\
-                        np.logical_and(inputs[:,:,:,i]<=quan_points[1][i], inputs[:,:,:,i]>quan_points[0][i]),\
-                       np.logical_and(inputs[:,:,:,i]<=quan_points[2][i], inputs[:,:,:,i]>quan_points[0][i])\
-                       ,inputs[:,:,:,i]>quan_points[2][i]],quan_values[:]),axis = -1)
-                '''
+
                 print('xn',xn)
 
 
@@ -337,12 +331,19 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 ret = tf.identity(xn, name='output')
         else:
             ret = tf.identity(xn, name='output')
+        if training:
+            vh = ret.variables = VariableHolder(
+                moving_mean=layer.moving_mean,
+                mean=layer.moving_mean,  # for backward-compatibility
+                moving_variance=layer.moving_variance,
+                variance=layer.moving_variance)  # for backward-compatibility
+        else:
+             vh = ret.variables = VariableHolder(
+                moving_mean=moving_mean0,
+                mean=moving_mean0,  # for backward-compatibility
+                moving_variance=moving_var0,
+                variance=moving_var0)  # for backward-compatibility           
 
-        vh = ret.variables = VariableHolder(
-            moving_mean=layer.moving_mean,
-            mean=layer.moving_mean,  # for backward-compatibility
-            moving_variance=layer.moving_variance,
-            variance=layer.moving_variance)  # for backward-compatibility
         if scale:
             vh.gamma = layer.gamma
         if center:
