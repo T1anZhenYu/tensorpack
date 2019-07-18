@@ -76,27 +76,12 @@ class Model(ModelDesc):
                 return tf.nn.relu(x)
             return tf.clip_by_value(x, 0.0, 1.0)
 
-        def beforbn(x):
-            if is_training:
-                return x
-            else:
-                y = tf.identity(x,name='beforbn')
-                return y
         def activate(x):
             if is_training:
                 return fa(nonlin(x))
             else:
                 return x
-        def afterbn(x):
-            if is_training:
-                return x 
-            else:
-                y = tf.identity(x,name='afterbn')
-                return y               
-
-
-
-
+            
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
@@ -113,9 +98,9 @@ class Model(ModelDesc):
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .apply(fg)
-                      .apply(beforbn)
+
                       .BatchNormEidt('bn2')
-                      .apply(afterbn)
+
                       .MaxPooling('pool1', 2, padding='SAME')
                       .apply(activate)
                       # 9
@@ -194,7 +179,7 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-            DumpTensors(['beforbn:0','afterbn:0']),
+
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')])
         ],
