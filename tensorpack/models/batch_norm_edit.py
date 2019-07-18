@@ -252,7 +252,8 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 xn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
             else:
                 #quantize BN during inference
-
+                layer = tf.layers.BatchNormalization(**tf_args)
+                xnn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
                 print('in quantize BN')
                 quan_points = get_quan_point()
 
