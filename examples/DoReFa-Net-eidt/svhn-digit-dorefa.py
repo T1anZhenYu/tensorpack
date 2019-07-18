@@ -113,7 +113,9 @@ class Model(ModelDesc):
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .apply(fg)
+                      .apply(beforbn)
                       .BatchNormEidt('bn2')
+                      .apply(afterbn)
                       .MaxPooling('pool1', 2, padding='SAME')
                       .apply(activate)
                       # 9
