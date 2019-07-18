@@ -263,7 +263,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
 
                 beta, gamma, moving_mean, moving_var = get_bn_variables(
                     num_chan, scale, center, beta_initializer, gamma_initializer)
-                
+
                 beta_ = tf.identity(beta)
 
                 beta_ = tf.expand_dims(beta_,axis=-1)
@@ -284,7 +284,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 print('type beta_ ',type(beta_))
                 print('beta_ ',beta_)
 
-                print('gamma is ',gamma_.shape)
+                print('gamma_ is ',gamma_.shape)
                 print('moving_var is ',moving_var_[0])
                 print('moving_mean is ',moving_mean_.shape)
                 print('quan_points shape is ',quan_points.shape)
@@ -300,16 +300,16 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 print('quan_points shape ',quan_points.shape)
                 print('a quan_points value ',quan_points[0][0])
                 print('input type',type(inputs))
-                xn  = np.array([[[[]]]])
+
                 for i in range(channel_num):
-                    label1 = inputs[:,:,:,i]<=quan_points[0][i]
-                    label2 = inputs[:,:,:,i]<=quan_points[1][i]
-                    label3 = inputs[:,:,:,i]<=quan_points[2][i]
-                    label4 = inputs[:,:,:,i]>quan_points[2][i]
-                    xn[label4]=quan_values[-1]
-                    xn[label3]=quan_values[-2]
-                    xn[label2]=quan_values[1]
-                    xn[label1]=quan_values[0]
+                    label1 = tf.cast(inputs[:,:,:,i]<=quan_points[i][0],dtype=tf.float32)
+                    label2 = tf.cast(tf.math.logical_and(inputs[:,:,:,i]<=quan_points[i][1],\
+                        inputs[:,:,:,i]>quan_points[i][0]),dtype=tf.float32)
+                    label3 = tf.cast(tf.math.logical_and(inputs[:,:,:,i]<=quan_points[i][2],\
+                        inputs[:,:,:,i]>quan_points[i][1]),dtype=tf.float32)
+                    label4 = tf.cast(inputs[:,:,:,i]>quan_points[i][2],dtype=tf.float32)
+                    xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
+                    label4*quan_values[3]
                 '''
                 for i in range(channel_num):
                     np.append(xn,np.piecewise(inputs[:,:,:,i],[inputs[:,:,:,i]<=quan_points[0][i],\
@@ -317,7 +317,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                        np.logical_and(inputs[:,:,:,i]<=quan_points[2][i], inputs[:,:,:,i]>quan_points[0][i])\
                        ,inputs[:,:,:,i]>quan_points[2][i]],quan_values[:]),axis = -1)
                 '''
-                print('xn shape ',xn.shape)
+                print('xn',xn)
 
 
 
