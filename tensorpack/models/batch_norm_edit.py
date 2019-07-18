@@ -287,7 +287,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 label4 = tf.cast(tf.math.greater(inputs,quan_points[:,2]),dtype=tf.float32)
                 xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
                 label4*quan_values[3]
-
+                xn = tf.reshape(xn,[-1,w,h,c])
 
                 print('xn',xn)
 
