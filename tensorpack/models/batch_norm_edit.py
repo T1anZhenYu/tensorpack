@@ -271,13 +271,16 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
                 moving_var_ = tf.identity(moving_var0)
                 moving_var_ = tf.expand_dims(moving_var_,axis = -1)
-
-
+                print('origin quan_points is ',quan_points)
+                print('gamma_ is ',gamma_)
+                print('beta_ is ',beta_)
+                print('moving_mean_ is ',moving_mean_)
+                print('moving_var_ is ',moving_var_)
                 quan_points = gamma_/moving_var_*quan_points - gamma_ * moving_mean_ \
                 / moving_var_ + beta_
-
+                print('corrected quan_points is ',quan_points)
                 b,w,h,c = inputs.shape
-                print('inputs shape ',b,' ',w,' ',' ',h,' ',c)
+                print('inputs is ',inputs[:,:,:,0])
                 inputs = tf.reshape(inputs,[-1,c])
                 label1 = tf.cast(tf.less_equal(inputs,quan_points[:,0]),dtype=tf.float32)
                 label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,quan_points[:,1]),\
@@ -289,7 +292,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 label4*quan_values[3]
                 xn = tf.reshape(xn,[-1,w,h,c])
 
-                print('xn',xn)
+                print('xn',xn[:,:,:,0])
 
 
 
