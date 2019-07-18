@@ -278,7 +278,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
 
                 b,w,h,c = inputs.shape
                 print('inputs shape ',b,' ',w,' ',' ',h,' ',c)
-                inputs = tf.reshape(-1,inputs.shape[-1])
+                inputs = tf.reshape(inputs,[-1,c])
                 label1 = tf.cast(tf.less_equal(inputs<=quan_points[:,0]),dtype=tf.float32)
                 label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs<=quan_points[:,1]),\
                     tf.math.greater(inputs>quan_points[:,0])),dtype=tf.float32)
