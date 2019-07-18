@@ -273,7 +273,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
                 moving_var_ = tf.identity(moving_var0)
                 moving_var_ = tf.expand_dims(moving_var_,axis = -1)
-                channel_num = beta.shape[0]
+                channel_num = beta0.shape[0]
                 '''
                 quan_points = np.expand_dims(quan_points,axis = 0)
                 quan_points = np.repeat(quan_points,channel_num,axis=0)
