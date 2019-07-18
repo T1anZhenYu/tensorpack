@@ -297,7 +297,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 print('quan_points shape ',quan_points.shape)
                 print('a quan_points value ',quan_points[0][0])
                 print('input type',type(inputs))
-                xn  = tf.identity(inputs)
+                xn  = np.array([[[[]]]])
                 for i in range(channel_num):
                     label1 = inputs[:,:,:,i]<=quan_points[0][i]
                     label2 = inputs[:,:,:,i]<=quan_points[1][i]
