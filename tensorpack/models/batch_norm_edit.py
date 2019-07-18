@@ -6,7 +6,7 @@ import re
 import six
 from ..compat import tfv1 as tf  # this should be avoided first in model code
 from tensorflow.python.training import moving_averages
-
+from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from ..tfutils.collection import backup_collection, restore_collection
 from ..tfutils.common import get_tf_version_tuple
 from ..tfutils.tower import get_current_tower_context
@@ -262,21 +262,28 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 beta0, gamma0, moving_mean0, moving_var0 = get_bn_variables(
                     num_chan, scale, center, beta_initializer, gamma_initializer)
 
-                beta_ = tf.identity(beta0)
-
+                beta_ = tf.identity(beta0,name='beta_')
+                add_moving_summary(beta_[0])
                 beta_ = tf.expand_dims(beta_,axis=-1)
-                gamma_ = tf.identity(gamma0)
+                gamma_ = tf.identity(gamma0,name='gamma_')
+                add_moving_summary(gamma_[0])
                 gamma_ = tf.expand_dims(gamma_,axis=-1)
-                moving_mean_ = tf.identity(moving_mean0)
+                moving_mean_ = tf.identity(moving_mean0,name='moving_mean_')
+                add_moving_summary(moving_mean_[0])
                 moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
-                moving_var_ = tf.identity(moving_var0)
+                moving_var_ = tf.identity(moving_var0,name='moving_var')
+                add_moving_summary(moving_var_[0])
                 moving_var_ = tf.expand_dims(moving_var_,axis = -1)
 
                 quan_points = moving_var_/gamma_*quan_points -beta_*moving_var_/gamma_ + moving_mean_
-
+                add_moving_summary(tf.identity(quan_points[0],name='quan_points 0'))
+                add_moving_summary(tf.identity(quan_points[1],name='quan_points 1'))
+                add_moving_summary(tf.identity(quan_points[2],name='quan_points 2'))
+                add_moving_summary(tf.identity(quan_points[3],name='quan_points 3'))               
                 b,w,h,c = inputs.shape
 
                 inputs = tf.reshape(inputs,[-1,c])
+                add_param_summary(tf.identity(inputs,name='inputs'))
                 label1 = tf.cast(tf.less_equal(inputs,quan_points[:,0]),dtype=tf.float32)
                 label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,quan_points[:,1]),\
                     tf.math.greater(inputs,quan_points[:,0])),dtype=tf.float32)
@@ -285,8 +292,9 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 label4 = tf.cast(tf.math.greater(inputs,quan_points[:,2]),dtype=tf.float32)
                 xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
                 label4*quan_values[3]
-                xn = tf.reshape(xn,[-1,w,h,c])
 
+                xn = tf.reshape(xn,[-1,w,h,c])
+                add_param_summary(tf.identity(xn,name='output'))
                 print('xn',xn[:,:,:,0])
 
 
