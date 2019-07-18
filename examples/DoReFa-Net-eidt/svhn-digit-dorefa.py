@@ -76,13 +76,14 @@ class Model(ModelDesc):
                 return tf.nn.relu(x)
             return tf.clip_by_value(x, 0.0, 1.0)
 
-        def activate(x):
+        def activate(x,name = 'activate'):
+
             if is_training:
-                return fa(nonlin(x))
+                return tf.identity(fa(nonlin(x)),name=name)
             else:
-                logger.info('in Inference, dont quantize activate')
-                print('in Inference, dont quantize activate')
-                return x
+                logger.info('in Inference, step ',get_global_step_var())
+
+                return tf.identity(x,name=name)
             
         image = image / 256.0
 
@@ -118,7 +119,7 @@ class Model(ModelDesc):
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
                       .BatchNormEidt('bn5')
-                      .apply(activate)
+                      .apply(activate,'bn5Qa')
                       
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
@@ -181,7 +182,7 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-
+            DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')])
         ],
