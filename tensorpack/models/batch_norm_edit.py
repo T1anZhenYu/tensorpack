@@ -253,7 +253,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
             else:
                 #quantize BN during inference
                 layer = tf.layers.BatchNormalization(**tf_args)
-                #xn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
+                xnn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
                 print('in quantize BN')
                 quan_points = get_quan_point()
 
@@ -318,26 +318,17 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 ret = tf.identity(xn, name='output')
         else:
             ret = tf.identity(xn, name='output')
-        if training:
-            vh = ret.variables = VariableHolder(
-                moving_mean=layer.moving_mean,
-                mean=layer.moving_mean,  # for backward-compatibility
-                moving_variance=layer.moving_variance,
-                variance=layer.moving_variance)  # for backward-compatibility
-            if scale:
-                vh.gamma = layer.gamma
-            if center:
-                vh.beta = layer.beta
-        else:
-            vh = ret.variables = VariableHolder(
-                moving_mean=moving_mean0,
-                mean=moving_mean0,  # for backward-compatibility
-                moving_variance=moving_var0,
-                variance=moving_var0)  # for backward-compatibility
-            if scale:
-                vh.gamma = gamma0
-            if center:
-                vh.beta = beta0          
+
+        vh = ret.variables = VariableHolder(
+            moving_mean=layer.moving_mean,
+            mean=layer.moving_mean,  # for backward-compatibility
+            moving_variance=layer.moving_variance,
+            variance=layer.moving_variance)  # for backward-compatibility
+        if scale:
+            vh.gamma = layer.gamma
+        if center:
+            vh.beta = layer.beta
+        
 
     else:
         red_axis = [0] if ndims == 2 else ([0, 2, 3] if axis == 1 else [0, 1, 2])
