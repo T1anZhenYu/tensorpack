@@ -256,8 +256,9 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 beta, gamma, moving_mean, moving_var = get_bn_variables(
                     num_chan, scale, center, beta_initializer, gamma_initializer)
                 beta_ = tf.identity(beta)
+
+                beta_ = np.expand_dims(beta,axis=-1)
                 '''
-                beta_ = np.expand_dims(beta,axis=0)
                 gamma_ = np.expand_dims(gamma,axis=0)
                 moving_mean_ = np.expand_dims(moving_mean,axis=0)
                 moving_var_ = np.expand_dims(moving_var,axis=0)
