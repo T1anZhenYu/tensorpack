@@ -275,7 +275,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
 
                 quan_points = gamma_/moving_var_*quan_points - gamma_ * moving_mean_ \
                 / moving_var_ + beta_
-         
+                xn = tf.tensor([[[[]]]])
                 for i in range(channel_num):
                     label1 = tf.cast(inputs[:,:,:,i]<=quan_points[i][0],dtype=tf.float32)
                     label2 = tf.cast(tf.math.logical_and(inputs[:,:,:,i]<=quan_points[i][1],\
@@ -283,8 +283,8 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                     label3 = tf.cast(tf.math.logical_and(inputs[:,:,:,i]<=quan_points[i][2],\
                         inputs[:,:,:,i]>quan_points[i][1]),dtype=tf.float32)
                     label4 = tf.cast(inputs[:,:,:,i]>quan_points[i][2],dtype=tf.float32)
-                    xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
-                    label4*quan_values[3]
+                    xn = tf.concat([xn,label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
+                    label4*quan_values[3]],-1) 
 
                 print('xn',xn)
 
