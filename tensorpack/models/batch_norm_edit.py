@@ -277,8 +277,8 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 moving_var_ = tf.identity(moving_var0,name='moving_var')
                 add_moving_summary(moving_var_[0])
                 moving_var_ = tf.expand_dims(moving_var_,axis = -1)
-
-                quan_points = moving_var_/gamma_*quan_points -beta_*moving_var_/gamma_ + moving_mean_
+                quan_points = moving_var_*gamma_*quan_points +beta_*moving_var_ + moving_mean_
+                #quan_points = moving_var_/gamma_*quan_points -beta_*moving_var_/gamma_ + moving_mean_
                 add_moving_summary(tf.identity(quan_points[0],name='quan_points_0'))
                 add_moving_summary(tf.identity(quan_points[1],name='quan_points_1'))
                 add_moving_summary(tf.identity(quan_points[2],name='quan_points_2'))
