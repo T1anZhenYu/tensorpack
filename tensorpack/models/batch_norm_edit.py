@@ -327,10 +327,6 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
             if center:
                 vh.beta = beta0          
 
-        if scale:
-            vh.gamma = layer.gamma
-        if center:
-            vh.beta = layer.beta
     else:
         red_axis = [0] if ndims == 2 else ([0, 2, 3] if axis == 1 else [0, 1, 2])
 
