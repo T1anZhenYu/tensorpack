@@ -254,22 +254,25 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
 
                 print('in quantize BN')
                 quan_points = get_quan_point()
-                beta, gamma, moving_mean, moving_var = get_bn_variables(
-                    num_chan, scale, center, beta_initializer, gamma_initializer)
-                beta_ = tf.identity(beta)
-
-                beta_ = np.expand_dims(beta_,axis=-1)
-                gamma_ = tf.identity(gamma)
-                gamma_ = np.expand_dims(gamma_,axis=-1)
-                moving_mean_ = tf.identity(moving_mean)
-                moving_mean_ = np.expand_dims(moving_mean_,axis=-1)
-                moving_var_ = tf.identity(moving_var)
-                moving_var_ = np.expand_dims(moving_var_,axis = -1)
 
                 quan_values = np.array([round((quan_points[i]-0.005)*(2**bit_activation-1))\
                 /(float(2**bit_activation-1)) for i in range(len(quan_points))])
                 quan_values = np.append(quan_values,np.array([1.]),axis=-1)
 
+
+
+                beta, gamma, moving_mean, moving_var = get_bn_variables(
+                    num_chan, scale, center, beta_initializer, gamma_initializer)
+                
+                beta_ = tf.identity(beta)
+
+                beta_ = tf.expand_dims(beta_,axis=-1)
+                gamma_ = tf.identity(gamma)
+                gamma_ = tf.expand_dims(gamma_,axis=-1)
+                moving_mean_ = tf.identity(moving_mean)
+                moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
+                moving_var_ = tf.identity(moving_var)
+                moving_var_ = tf.expand_dims(moving_var_,axis = -1)
                 channel_num = beta.shape[0]
                 '''
                 quan_points = np.expand_dims(quan_points,axis = 0)
