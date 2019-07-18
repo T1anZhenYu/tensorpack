@@ -265,7 +265,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 beta0 = layer.beta
                 gamma0 = layer.gamma
                 moving_mean0 = layer.moving_mean
-                moving_var0 = layer.moving_var
+                moving_var0 = layer.moving_variance
                 #beta0, gamma0, moving_mean0, moving_var0 = get_bn_variables(num_chan, scale, center, beta_initializer, gamma_initializer)
 
                 beta_ = tf.identity(beta0,name='beta_')
