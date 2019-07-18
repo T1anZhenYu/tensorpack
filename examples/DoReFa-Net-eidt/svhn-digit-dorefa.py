@@ -80,6 +80,8 @@ class Model(ModelDesc):
             if is_training:
                 return fa(nonlin(x))
             else:
+                logger.info('in Inference, dont quantize activate')
+                print('in Inference, dont quantize activate')
                 return x
             
         image = image / 256.0
