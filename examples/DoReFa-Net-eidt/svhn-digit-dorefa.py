@@ -77,12 +77,7 @@ class Model(ModelDesc):
             return tf.clip_by_value(x, 0.0, 1.0)
 
         def activate(x,name = 'activate'):
-
-            if is_training:
-                return tf.identity(fa(nonlin(x)),name=name)
-            else:
-                print('in Inference')
-                return tf.identity(x,name=name)
+            return tf.identity(fa(nonlin(x)),name=name)
 
         def afterbn(x,name):
             '''
