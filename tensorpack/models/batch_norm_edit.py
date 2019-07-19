@@ -421,7 +421,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
             vh.gamma = gamma
         if center:
             vh.beta = beta
-    return ret,beta0, gamma0, moving_mean0, moving_var0
+    return ret
 
 
 @layer_register()
