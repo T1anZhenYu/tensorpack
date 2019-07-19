@@ -78,11 +78,9 @@ class Model(ModelDesc):
 
         def activate(x,name = 'activate'):
 
-            if is_training:
-                return tf.identity(fa(nonlin(x)),name=name)
-            else:
 
-                return tf.identity(x,name=name)
+            return tf.identity(fa(nonlin(x)),name=name)
+
 
         def afterbn(x,name):
             '''
