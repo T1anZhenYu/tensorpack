@@ -5,6 +5,7 @@
 
 import argparse
 import os
+import sys
 import tensorflow as tf
 from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor, get_imagenet_dataflow
 from tensorpack import *
