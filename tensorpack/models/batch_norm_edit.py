@@ -323,7 +323,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
             if center:
                 vh.beta = layer.beta
         else:
-             vh = ret.variables = VariableHolder(
+            vh = ret.variables = VariableHolder(
                 moving_mean=moving_mean0,
                 mean=moving_mean0,  # for backward-compatibility
                 moving_variance=moving_var0,
