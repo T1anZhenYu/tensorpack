@@ -265,26 +265,29 @@ def fbresnet_mapper(isTrain):
 ====== Model & Evaluation =======
 """
 
-
+import time 
+import os
 def eval_classification(model, sessinit, dataflow):
 
     pred_config = PredictConfig(
         model=model,
         session_init=sessinit,
         input_names=['input', 'label'],
-        output_names=['wrong-top1']
+        output_names=['wrong-top1','bn5/output:0']
     )
     acc1 = RatioCounter()
 
 
     pred = FeedfreePredictor(pred_config, StagingInput(QueueInput(dataflow), device='/gpu:0'))
     for _ in tqdm.trange(dataflow.size()):
-        top1 = pred()[0]
+        top1,afbn5 = pred()[0]
 
         batch_size = top1.shape[0]
         acc1.feed(top1.sum(), batch_size)
-
-
+        dir = logger.get_logger_dir()
+        fname = os.path.join(
+                dir, 'afbn5-{}.npz'.format(int(time.time())))
+        np.savez(fname, **dic)
     print("Top1 Error: {}".format(acc1.ratio))
 
 
