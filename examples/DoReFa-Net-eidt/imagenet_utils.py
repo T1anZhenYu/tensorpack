@@ -274,7 +274,7 @@ def eval_classification(model, sessinit, dataflow):
         session_init=sessinit,
         input_names=['input', 'label'],
         output_names=['wrong-top1','bn5/output:0','conv5/output:0','bn5Qa:0',\
-        'afbn5/beta:0','afbn5/gamma:0','afbn5/moving_mean:0','afbn5/moving_var:0']
+        'bn5/moving_mean:0','afbn5/gamma:0','afbn5/moving_mean:0','afbn5/moving_var:0']
     )
     acc1 = RatioCounter()
 
