@@ -104,7 +104,7 @@ class Model(ModelDesc):
         tf.nn.softmax(logits, name='output')
 
         # compute the number of failed samples
-        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong_tensor')
+        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
 
