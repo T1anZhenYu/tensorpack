@@ -281,7 +281,7 @@ def eval_classification(model, sessinit, dataflow):
     pred = FeedfreePredictor(pred_config, StagingInput(QueueInput(dataflow), device='/gpu:0'))
 
     for _ in tqdm.trange(dataflow.size()):
-        top1,afbn5,beforbn5 ,afquan5= pred()
+        top1,afbn5,beforbn5= pred()
         dic ={}
         dic['bn5/output:0']=afbn5
         dic['conv5/output:0']=beforbn5   
