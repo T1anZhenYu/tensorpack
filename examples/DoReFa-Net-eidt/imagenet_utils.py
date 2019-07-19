@@ -273,6 +273,9 @@ def eval_classification(model, sessinit, dataflow):
     """
     pred_config = PredictConfig(
         model=model,
+        callbacks=[
+            DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
+        ]
         session_init=sessinit,
         input_names=['input', 'label'],
         output_names=['wrong-top1']
