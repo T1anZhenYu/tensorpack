@@ -181,7 +181,7 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-            DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
+            #DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')])
         ],
