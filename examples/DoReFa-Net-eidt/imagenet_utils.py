@@ -281,7 +281,8 @@ def eval_classification(model, sessinit, dataflow):
     pred = FeedfreePredictor(pred_config, StagingInput(QueueInput(dataflow), device='/gpu:0'))
     for _ in tqdm.trange(dataflow.size()):
         top1,afbn5 = pred()
-
+        dic ={}
+        dic['afbn5']=afbn5
         batch_size = top1.shape[0]
         acc1.feed(top1.sum(), batch_size)
         dir = logger.get_logger_dir()
