@@ -81,8 +81,6 @@ class Model(ModelDesc):
             if is_training:
                 return tf.identity(fa(nonlin(x)),name=name)
             else:
-                logger.info('in Inference, step ',get_global_step_var())
-
                 return tf.identity(x,name=name)
             
         image = image / 256.0
