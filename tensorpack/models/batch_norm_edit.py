@@ -312,7 +312,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 ret = tf.identity(xn, name='output')
         else:
             ret = tf.identity(xn, name='output')
-        if is_training:
+        if training:
             vh = ret.variables = VariableHolder(
                 moving_mean=layer.moving_mean,
                 mean=layer.moving_mean,  # for backward-compatibility
