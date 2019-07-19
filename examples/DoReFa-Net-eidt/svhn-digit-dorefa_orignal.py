@@ -1,4 +1,3 @@
-#!/usr/
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # File: svhn-digit-dorefa.py
@@ -8,33 +7,25 @@ import argparse
 import os
 import tensorflow as tf
 
-import sys
 from tensorpack import *
 from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
-from tensorpack.callbacks import DumpTensors
-from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor, get_imagenet_dataflow
-#from tensorpack.models.batch_norm_edit import BatchNormEidt
+
 from dorefa import get_dorefa
-import inspect 
 
 """
 This is a tensorpack script for the SVHN results in paper:
 DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients
 http://arxiv.org/abs/1606.06160
-
 The original experiements are performed on a proprietary framework.
 This is our attempt to reproduce it on tensorpack.
-
 Accuracy:
     With (W,A,G)=(1,1,4), can reach 3.1~3.2% error after 150 epochs.
     With (W,A,G)=(1,2,4), error is 3.0~3.1%.
     With (W,A,G)=(32,32,32), error is about 2.3%.
-
 Speed:
     With quantization, 60 batch/s on 1 1080Ti. (4721 batch / epoch)
-
 To Run:
     ./svhn-digit-dorefa.py --dorefa 1,2,4
 """
@@ -42,13 +33,6 @@ To Run:
 BITW = 1
 BITA = 2
 BITG = 4
-
-
-def get_mean(x):
-    #[batch,height,width,channels]
-    return tf.reduce_mean(tf.reduce_mean(x,1),1)
-
-
 
 
 class Model(ModelDesc):
@@ -76,25 +60,13 @@ class Model(ModelDesc):
                 return tf.nn.relu(x)
             return tf.clip_by_value(x, 0.0, 1.0)
 
-        def activate(x,name = 'activate'):
+        def activate(x):
+            return fa(nonlin(x))
 
-
-            return tf.identity(fa(nonlin(x)),name=name)
-
-
-        def afterbn(x,name):
-            '''
-            beta = tf.identity(x[1],name='beta')
-            gamma = tf.identity(x[2],name='gamma')
-            moving_mean = tf.identity(x[3],name='moving_mean')   
-            moving_var = tf.identity(x[4],name='moving_var')  
-            '''
-            return x      
-            
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
-                argscope(BatchNormEidt, momentum=0.9, epsilon=1e-4), \
+                argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
@@ -103,48 +75,36 @@ class Model(ModelDesc):
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNorm('bn1')
-                      .apply(afterbn,'afbn1')
-                      .apply(activate)
+                      .BatchNorm('bn1').apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .apply(fg)
                       .BatchNorm('bn2')
-                      .apply(afterbn,'afbn2')
                       .MaxPooling('pool1', 2, padding='SAME')
                       .apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNorm('bn3')
-                      .apply(afterbn,'afbn3')
-                      .apply(activate)
+                      .BatchNorm('bn3').apply(activate)
                       # 7
 
                       .Conv2D('conv4', 128, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNorm('bn4')
-                      .apply(afterbn,'afbn4')
-                      .apply(activate)
+                      .BatchNorm('bn4').apply(activate)
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNorm('bn5')
-                      .apply(afterbn,'afbn5')
-                      .apply(activate,'bn5Qa')
-                      
+                      .BatchNorm('bn5').apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
                       .apply(fg).BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
-            
-        
         tf.nn.softmax(logits, name='output')
 
         # compute the number of failed samples
-        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
+        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong_tensor')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
 
@@ -169,7 +129,7 @@ class Model(ModelDesc):
 
 
 def get_config():
-    logger.set_logger_dir(os.path.join('dorefa_log', 'svhn-dorefa-{}'.format(args.dorefa)))
+    logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
 
     # prepare dataset
     d1 = dataset.SVHNDigit('train')
@@ -194,9 +154,8 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-            #DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
             InferenceRunner(data_test,
-                            [ScalarStats('cost'), ClassificationError('wrong-top1')])
+                            [ScalarStats('cost'), ClassificationError('wrong_tensor')])
         ],
         model=Model(),
         max_epoch=200,
@@ -230,4 +189,3 @@ if __name__ == '__main__':
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
     launch_train_with_config(config, SimpleTrainer())
-
