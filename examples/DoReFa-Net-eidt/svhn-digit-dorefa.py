@@ -83,6 +83,13 @@ class Model(ModelDesc):
             else:
 
                 return tf.identity(x,name=name)
+
+        def afterbn(x,beta, gamma, moving_mean, moving_var,name):
+            beta = tf.identity(beta,name=name+'beta')
+            gamma = tf.identity(gamma,name=name+'gamma')
+            moving_mean = tf.identity(moving_mean,name=name+'moving_mean')   
+            moving_var = tf.identity(moving_var,name=name+'moving_var')  
+            return x       
             
         image = image / 256.0
 
@@ -96,28 +103,34 @@ class Model(ModelDesc):
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNormEidt('bn1').apply(activate)
+                      .BatchNormEidt('bn1')
+                      .apply(afterbn,'afbn1')
+                      .apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .apply(fg)
-
                       .BatchNormEidt('bn2')
-
+                      .apply(afterbn,'afbn2')
                       .MaxPooling('pool1', 2, padding='SAME')
                       .apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNormEidt('bn3').apply(activate)
+                      .BatchNormEidt('bn3')
+                      .apply(afterbn,'afbn3')
+                      .apply(activate)
                       # 7
 
                       .Conv2D('conv4', 128, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNormEidt('bn4').apply(activate)
+                      .BatchNormEidt('bn4')
+                      .apply(afterbn,'afbn4')
+                      .apply(activate)
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
                       .BatchNormEidt('bn5')
+                      .apply(afterbn,'afbn5')
                       .apply(activate,'bn5Qa')
                       
                       # 5
