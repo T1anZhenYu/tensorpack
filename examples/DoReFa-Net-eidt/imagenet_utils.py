@@ -280,6 +280,7 @@ def eval_classification(model, sessinit, dataflow):
 
 
     pred = FeedfreePredictor(pred_config, StagingInput(QueueInput(dataflow), device='/gpu:0'))
+
     for _ in tqdm.trange(dataflow.size()):
         top1,afbn5,beforbn5 ,afquan5,beta,gamma,moving_mean,moving_var= pred()
         dic ={}
@@ -298,6 +299,8 @@ def eval_classification(model, sessinit, dataflow):
         fname = os.path.join(
                 dir, 'afbn5-{}.npz'.format(int(time.time())))
         np.savez(fname, **dic)
+
+
     print("Top1 Error: {}".format(acc1.ratio))
 
 
