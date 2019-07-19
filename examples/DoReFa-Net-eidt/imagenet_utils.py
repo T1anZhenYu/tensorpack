@@ -267,23 +267,16 @@ def fbresnet_mapper(isTrain):
 
 
 def eval_classification(model, sessinit, dataflow):
-    """
-    Eval a classification model on the dataset. It assumes the model inputs are
-    named "input" and "label", and contains "wrong-top1" and "wrong-top5" in the graph.
-    """
+
     pred_config = PredictConfig(
         model=model,
-        callbacks=[
-            DumpTensors(['conv5/output:0','bn5/output:0','bn5Qa:0']),
-        ]
         session_init=sessinit,
         input_names=['input', 'label'],
         output_names=['wrong-top1']
     )
     acc1 = RatioCounter()
 
-    # This does not have a visible improvement over naive predictor,
-    # but will have an improvement if image_dtype is set to float32.
+
     pred = FeedfreePredictor(pred_config, StagingInput(QueueInput(dataflow), device='/gpu:0'))
     for _ in tqdm.trange(dataflow.size()):
         top1 = pred()[0]
