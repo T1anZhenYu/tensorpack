@@ -81,7 +81,7 @@ class Model(ModelDesc):
             if is_training:
                 return tf.identity(fa(nonlin(x)),name=name)
             else:
-                tf.print(x)
+
                 return tf.identity(x,name=name)
             
         image = image / 256.0
