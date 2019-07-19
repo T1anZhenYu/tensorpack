@@ -81,7 +81,7 @@ class Model(ModelDesc):
             if is_training:
                 return tf.identity(fa(nonlin(x)),name=name)
             else:
-
+                print('in Inference')
                 return tf.identity(x,name=name)
 
         def afterbn(x,name):

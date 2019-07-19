@@ -254,13 +254,13 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 layer = tf.layers.BatchNormalization(**tf_args)
                 xnn = layer.apply(inputs, training=training, scope=tf.get_variable_scope())
 
-                a1 = inputs[0,0,0,:]
-                a2 = inputs[1,1,1,:]
-                b1 = xnn[0,0,0,:]
-                b2 = xnn[1,1,1,:]
+                i1 = inputs[0,0,0,:]
+                i2 = inputs[1,1,1,:]
+                x1 = xnn[0,0,0,:]
+                x2 = xnn[1,1,1,:]
 
-                mean0 = a1-b1*(a1-a2)/(b1-b2)
-                var0 = (a1-a2)/(b1-b2)
+                mean0 = i1-x1*(i1-i2)/(x1-x2)
+                var0 = (i1-i2)/(x1-x2)
                 #quantize BN during inference
                 print('in quantize BN')
                 quan_points = get_quan_point()
@@ -272,15 +272,12 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
 
 
                 moving_mean_ = tf.identity(mean0,name='moving_mean_')
-
                 moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
                 moving_var_ = tf.identity(var0,name='moving_var')
-
                 moving_var_ = tf.expand_dims(moving_var_,axis = -1)
+
                 quan_points = moving_var_*quan_points + moving_mean_
-                #quan_points = moving_var_*gamma_*quan_points +beta_*moving_var_ + moving_mean_
-                
-                #add_moving_summary(tf.identity(quan_points[3],name='quan_points_3'))               
+             
                 b,w,h,c = inputs.shape
 
                 inputs = tf.transpose(tf.reshape(inputs,[-1,c]))
@@ -295,7 +292,6 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                 label4*quan_values[3]
                 xn = tf.reshape(tf.transpose(xn),[-1,w,h,c])
 
-                print('xn',xn[:,:,:,0])
 
 
 
