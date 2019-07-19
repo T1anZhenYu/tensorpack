@@ -288,6 +288,7 @@ def eval_classification(model, sessinit, dataflow):
         batch_size = top1.shape[0]
         acc1.feed(top1.sum(), batch_size)
         dir = logger.get_logger_dir()
+        print('dir is \n\n\n',dir)
         fname = os.path.join(
                 dir, 'afbn5-{}.npz'.format(int(time.time())))
         np.savez(fname, **dic)
