@@ -85,10 +85,10 @@ class Model(ModelDesc):
                 return tf.identity(x,name=name)
 
         def afterbn(x,name):
-            beta = tf.identity(x[1],name=name+'beta')
-            gamma = tf.identity(x[2],name=name+'gamma')
-            moving_mean = tf.identity(x[3],name=name+'moving_mean')   
-            moving_var = tf.identity(x[4],name=name+'moving_var')  
+            beta = tf.identity(x[1],name='beta')
+            gamma = tf.identity(x[2],name='gamma')
+            moving_mean = tf.identity(x[3],name='moving_mean')   
+            moving_var = tf.identity(x[4],name='moving_var')  
             return x[0]       
             
         image = image / 256.0
