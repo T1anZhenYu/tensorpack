@@ -68,7 +68,7 @@ def internal_update_bn_ema(xn, batch_mean, batch_var,
         'decay': 'momentum',
         'use_local_stat': 'training'
     })
-def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
+def BatchNormEidt2(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
               center=True, scale=True,
               beta_initializer=tf.zeros_initializer(),
               gamma_initializer=tf.ones_initializer(),
@@ -427,7 +427,7 @@ def BatchNormEidt(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
         'gamma_init': 'gamma_initializer',
         'decay': 'momentum'
     })
-def BatchRenormEidt(x, rmax, dmax, momentum=0.9, epsilon=1e-5,
+def BatchRenormEidt2(x, rmax, dmax, momentum=0.9, epsilon=1e-5,
                 center=True, scale=True, gamma_initializer=None,
                 data_format='channels_last'):
     """
