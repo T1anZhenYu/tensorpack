@@ -91,7 +91,7 @@ class Model(ModelDesc):
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
-                argscope(BatchNormEidt2, momentum=0.9, epsilon=1e-4), \
+                argscope(BatchNormEidt, momentum=0.9, epsilon=1e-4), \
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
@@ -100,33 +100,33 @@ class Model(ModelDesc):
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNormEidt2('bn1')
+                      .BatchNormEidt('bn1')
                       .apply(afterbn,'afbn1')
                       .apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNormEidt2('bn2')
+                      .BatchNormEidt('bn2')
                       .apply(afterbn,'afbn2')
                       .MaxPooling('pool1', 2, padding='SAME')
                       .apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNormEidt2('bn3')
+                      .BatchNormEidt('bn3')
                       .apply(afterbn,'afbn3')
                       .apply(activate)
                       # 7
 
                       .Conv2D('conv4', 128, 3, padding='SAME')
                       .apply(fg)
-                      .BatchNormEidt2('bn4')
+                      .BatchNormEidt('bn4')
                       .apply(afterbn,'afbn4')
                       .apply(activate)
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
                       .apply(fg)
-                      .BatchNormEidt2('bn5')
+                      .BatchNormEidt('bn5')
                       .apply(afterbn,'afbn5')
                       .apply(activate,'bn5Qa')
                       
