@@ -101,19 +101,18 @@ def get_dorefa(bitW, bitA, bitG):
             label4*quan_values[3]
             output = tf.reshape(tf.transpose(xn),[-1,w,h,c])
         @tf.custom_gradient
-        def _identity(inputs):
 
-            def grad_fg(x):
-                rank = x.get_shape().ndims
-                assert rank is not None
-                bn_z = 1/(tf.math.sqrt(batch_variance))*(batch_size-1)/batch_size - \
-                tf.math.square((inputs-batch_mean)/(tf.math.sqrt(batch_variance)))*2/batch_size
 
-                return x * bn_z
+        def grad_fg(x):
+            rank = x.get_shape().ndims
+            assert rank is not None
+            bn_z = 1/(tf.math.sqrt(batch_variance))*(batch_size-1)/batch_size - \
+            tf.math.square((inputs-batch_mean)/(tf.math.sqrt(batch_variance)))*2/batch_size
 
-            return  tf.identity(inputs),grad_fg
+            return x * bn_z
 
-        return output,_identity(x)[-1]
+
+        return output,grad_fg
 
     return fw, fa, fg
 
