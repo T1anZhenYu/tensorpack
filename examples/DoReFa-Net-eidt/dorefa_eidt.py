@@ -113,10 +113,7 @@ def get_dorefa(bitW, bitA, bitG):
 
             return  tf.identity(inputs),grad_fg
 
-
-        a,grad_fg = _identity(x)
-
-        return output,grad_fg
+        return output,_identity(x)[-1]
 
     return fw, fa, fg
 
