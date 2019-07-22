@@ -40,7 +40,7 @@ def get_dorefa(bitW, bitA, bitG):
             return x
         return quantize(x, bitA)
 
-    def fg(x,name):#bitG == 32
+    def fg(x,name,training):#bitG == 32
         @tf.custom_gradient
         def _identity(inputs):
 
