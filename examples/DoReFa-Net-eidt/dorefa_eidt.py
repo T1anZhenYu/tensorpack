@@ -45,7 +45,7 @@ def get_dorefa(bitW, bitA, bitG):
 
     def fg(x,name,training,momentum = 0.9):#bitG == 32
                     #quantize BN during inference
-        print('in quantize BN')
+
         quan_points = get_quan_point()
 
         #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
@@ -62,15 +62,23 @@ def get_dorefa(bitW, bitA, bitG):
                 dtype=tf.float32, initializer=tf.ones_initializer(),trainable=False)
 
             if training:
+                print('in training')
                 batch_mean, batch_variance = tf.nn.moments(x, axes=[0,1,2])
+                batch_mean = tf.identity(batch_mean,name='batch_mean')
+                batch_mean = tf.expand_dims(batch_mean,axis=-1)
+                batch_variance = tf.identity(batch_variance,name='batch_mean')
+                batch_variance = tf.expand_dims(batch_variance,axis=-1)
+                
                 moving_mean.assign(momentum*moving_mean+batch_mean)
                 moving_var.assign(momentum*moving_var+batch_variance)
+                print('batch_mean shape ',batch_mean.shape)
+                print('batch_variance ',batch_variance.shape)
 
                 quan_points = batch_variance*quan_points + batch_mean
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_variance))
             else:
 
-
+                print('in inference')
                 moving_mean_ = tf.identity(moving_mean,name='moving_mean_')
                 moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
                 moving_var_ = tf.identity(moving_var,name='moving_var')
