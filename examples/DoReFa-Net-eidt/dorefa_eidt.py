@@ -98,10 +98,10 @@ def get_dorefa(bitW, bitA, bitG):
 
                 return x * bn_z
 
-            return  grad_fg
+            return  inputs,grad_fg
 
 
-        grad_fg = _identity(x)
+        a,grad_fg = _identity(x)
 
         return output,grad_fg
 
