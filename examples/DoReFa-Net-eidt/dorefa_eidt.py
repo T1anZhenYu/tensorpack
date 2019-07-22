@@ -79,9 +79,9 @@ def get_dorefa(bitW, bitA, bitG):
 
                 print('in inference')
                 moving_mean_ = tf.identity(moving_mean,name='moving_mean_')
-                moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
+
                 moving_var_ = tf.identity(moving_var,name='moving_var')
-                moving_var_ = tf.expand_dims(moving_var_,axis = -1)
+
 
                 quan_points = moving_var_*quan_points + moving_mean_
             
