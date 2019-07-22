@@ -61,6 +61,7 @@ def get_dorefa(bitW, bitA, bitG):
             return input, grad_fg
 
         return _identity(x)
+
     return fw, fa, fg
 
 
