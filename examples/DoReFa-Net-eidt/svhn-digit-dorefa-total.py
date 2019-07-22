@@ -79,13 +79,13 @@ class Model(ModelDesc):
                       .BatchNorm('bn1').apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
-                      .apply(fg,'fg2'is_training)
+                      .apply(fg,'fg2',is_training)
                       .BatchNorm('bn2')
                       .MaxPooling('pool1', 2, padding='SAME')
                       .apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')
-                      .apply(fg,'fg3'is_training)
+                      .apply(fg,'fg3',is_training)
                       .BatchNorm('bn3').apply(activate)
                       # 7
 
