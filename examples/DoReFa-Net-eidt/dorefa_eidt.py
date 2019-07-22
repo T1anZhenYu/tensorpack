@@ -41,8 +41,15 @@ def get_dorefa(bitW, bitA, bitG):
         return quantize(x, bitA)
 
     def fg(x,name,training,momentum = 0.9):#bitG == 32
+                    #quantize BN during inference
+        print('in quantize BN')
+        quan_points = get_quan_point()
 
-        with tf.variable_scope(name):
+        #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
+        quan_values = np.array([round((quan_points[i]-0.005)*(2**bit_activation-1))\
+        /(float(2**bit_activation-1)) for i in range(len(quan_points))])
+        quan_values = np.append(quan_values,np.array([1.]),axis=-1)
+        with tf.variable_scope(name,reuse=tf.AUTO_REUSE):
             shape = x.get_shape().as_list()
             num_chan = shape[-1]
             batch_size = shape[0]
@@ -56,16 +63,10 @@ def get_dorefa(bitW, bitA, bitG):
                 moving_mean.assign(momentum*moving_mean+batch_mean)
                 moving_var.assign(momentum*moving_var+batch_variance)
 
-                output = (x-batch_mean)/(tf.math.sqrt(batch_variance))
+                quan_points = batch_variance*quan_points + batch_mean
+                #output = (x-batch_mean)/(tf.math.sqrt(batch_variance))
             else:
-                #quantize BN during inference
-                print('in quantize BN')
-                quan_points = get_quan_point()
 
-                #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
-                quan_values = np.array([round((quan_points[i]-0.005)*(2**bit_activation-1))\
-                /(float(2**bit_activation-1)) for i in range(len(quan_points))])
-                quan_values = np.append(quan_values,np.array([1.]),axis=-1)
 
                 moving_mean_ = tf.identity(moving_mean,name='moving_mean_')
                 moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
@@ -74,19 +75,19 @@ def get_dorefa(bitW, bitA, bitG):
 
                 quan_points = moving_var_*quan_points + moving_mean_
              
-                b,w,h,c = x.shape
+            b,w,h,c = x.shape
 
-                inputs = tf.transpose(tf.reshape(x,[-1,c]))
+            inputs = tf.transpose(tf.reshape(x,[-1,c]))
 
-                label1 = tf.cast(tf.less_equal(inputs,tf.expand_dims(quan_points[:,0],axis=-1)),dtype=tf.float32)
-                label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,1],axis=-1)),\
-                    tf.math.greater(inputs,tf.expand_dims(quan_points[:,0],axis=-1))),dtype=tf.float32)
-                label3 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),\
-                    tf.math.greater(inputs,tf.expand_dims(quan_points[:,1],axis=-1))),dtype=tf.float32)
-                label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
-                xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
-                label4*quan_values[3]
-                output = tf.reshape(tf.transpose(xn),[-1,w,h,c])
+            label1 = tf.cast(tf.less_equal(inputs,tf.expand_dims(quan_points[:,0],axis=-1)),dtype=tf.float32)
+            label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,1],axis=-1)),\
+                tf.math.greater(inputs,tf.expand_dims(quan_points[:,0],axis=-1))),dtype=tf.float32)
+            label3 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),\
+                tf.math.greater(inputs,tf.expand_dims(quan_points[:,1],axis=-1))),dtype=tf.float32)
+            label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
+            xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
+            label4*quan_values[3]
+            output = tf.reshape(tf.transpose(xn),[-1,w,h,c])
         @tf.custom_gradient
         def _identity(inputs):
 
@@ -98,7 +99,7 @@ def get_dorefa(bitW, bitA, bitG):
 
                 return x * bn_z
 
-            return  inputs,grad_fg
+            return  tf.identity(inputs),grad_fg
 
 
         a,grad_fg = _identity(x)
