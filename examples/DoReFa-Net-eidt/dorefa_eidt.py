@@ -3,7 +3,7 @@
 # Author: Yuxin Wu
 
 import tensorflow as tf
-
+import numpy as np 
 
 def get_dorefa(bitW, bitA, bitG):
     """
