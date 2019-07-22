@@ -9,6 +9,9 @@ def get_dorefa(bitW, bitA, bitG):
     """
     Return the three quantization functions fw, fa, fg, for weights, activations and gradients respectively
     """
+    def get_quan_point():
+        return np.array([(2**bit_activation-i+0.5)/(2**bit_activation-1) \
+            for i in range(2**bit_activation,1,-1)])
     def quantize(x, k):
         n = float(2 ** k - 1)
 
