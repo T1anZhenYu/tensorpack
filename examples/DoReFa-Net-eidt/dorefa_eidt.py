@@ -68,11 +68,12 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_mean = tf.expand_dims(batch_mean,axis=-1)
                 batch_variance = tf.identity(batch_variance,name='batch_mean')
                 batch_variance = tf.expand_dims(batch_variance,axis=-1)
-
-                moving_mean.assign(momentum*moving_mean+batch_mean)
-                moving_var.assign(momentum*moving_var+batch_variance)
                 print('batch_mean shape ',batch_mean.shape)
                 print('batch_variance ',batch_variance.shape)
+                print('moving_mean ',moving_mean.shape)
+                moving_mean.assign(momentum*moving_mean+batch_mean)
+                moving_var.assign(momentum*moving_var+batch_variance)
+
 
                 quan_points = batch_variance*quan_points + batch_mean
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_variance))
