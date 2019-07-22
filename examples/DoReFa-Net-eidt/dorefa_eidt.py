@@ -49,8 +49,8 @@ def get_dorefa(bitW, bitA, bitG):
         quan_points = get_quan_point()
 
         #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
-        quan_values = np.array([round((quan_points[i]-0.005)*(2**bit_activation-1))\
-        /(float(2**bit_activation-1)) for i in range(len(quan_points))])
+        quan_values = np.array([round((quan_points[i]-0.005)*(2**bitA-1))\
+        /(float(2**bitA-1)) for i in range(len(quan_points))])
         quan_values = np.append(quan_values,np.array([1.]),axis=-1)
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE):
             shape = x.get_shape().as_list()
