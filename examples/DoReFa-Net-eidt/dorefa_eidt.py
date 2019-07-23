@@ -103,7 +103,7 @@ def get_dorefa(bitW, bitA, bitG):
                 label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
                 xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
                 label4*quan_values[3]
-                output = tf.identity(tf.reshape(tf.transpose(xn),x.get_shape().as_list()),'output')
+                output = tf.identity(tf.reshape(tf.transpose(xn),x.shape),'output')
 
             def grad_fg(d):
                 rank = d.get_shape().ndims
