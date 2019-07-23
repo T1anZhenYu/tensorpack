@@ -114,7 +114,7 @@ class Model(ModelDesc):
         conv_out = tf.get_default_graph().get_tensor_by_name("conv1/output:0")
         fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")[0]
         if conv_out is not None and fg_out is not None and conv_in is not None:
-
+            print('fg_out ',fg_out)
             grad0 = tf.identity(tf.gradients(conv_out,conv_in),name = 'grad0')
             grad1 = tf.identity(tf.gradients(fg_out,conv_out),name = 'grad1')
        
