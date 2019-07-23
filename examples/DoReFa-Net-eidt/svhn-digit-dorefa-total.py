@@ -118,7 +118,7 @@ class Model(ModelDesc):
             print('fg_out ',type(fg_out))
             print('conv_out',type(conv_out))
             grad0 = tf.identity(tf.gradients(conv_out,conv_in),name = 'grad0')
-            #grad1 = tf.identity(tf.gradients(fg_out,conv_out),name = 'grad1')
+            grad1 = tf.identity(tf.gradients(fg_out,conv_out),name = 'grad1')
        
         # compute the number of failed samples
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
