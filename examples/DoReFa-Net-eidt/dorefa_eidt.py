@@ -45,7 +45,8 @@ def get_dorefa(bitW, bitA, bitG):
 
     def fg(x,name,training,momentum = 0.9):#bitG == 32
                     #quantize BN during inference
-
+        for t in tf.all_variables():
+            print(t.name)
         quan_points = get_quan_point().astype(np.float32)
 
         #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
@@ -74,6 +75,7 @@ def get_dorefa(bitW, bitA, bitG):
                                      ,collections=[tf.GraphKeys.LOCAL_VARIABLES])
                 if training:
                     print('in training')
+
                     bm, bv = tf.nn.moments(x, axes=[0,1,2])
 
                     batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
