@@ -116,6 +116,7 @@ class Model(ModelDesc):
         if conv_out is not None and fg_out is not None and conv_in is not None:
             print('fg_out ',fg_out)
             print('fg_out ',type(fg_out))
+            print('conv_out',type(conv_out))
             grad0 = tf.identity(tf.gradients(conv_out,conv_in),name = 'grad0')
             grad1 = tf.identity(tf.gradients(fg_out,conv_out),name = 'grad1')
        
