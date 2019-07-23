@@ -45,8 +45,9 @@ def get_dorefa(bitW, bitA, bitG):
 
     def fg(x,name,training,momentum = 0.9):#bitG == 32
                     #quantize BN during inference
-        print([n.name for n in tf.get_default_graph().as_graph_def().node])
         '''
+        print([n.name for n in tf.get_default_graph().as_graph_def().node])
+        
         for t in tf.all_variables():
             print(t.name)
         '''
