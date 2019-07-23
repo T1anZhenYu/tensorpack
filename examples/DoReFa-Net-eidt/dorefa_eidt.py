@@ -71,8 +71,8 @@ def get_dorefa(bitW, bitA, bitG):
                 print('in training')
                 bm, bv = tf.nn.moments(x, axes=[0,1,2])
 
-                batch_mean = batch_mean.assign(bm)
-                batch_var = batch_var.assign(tf.math.sqrt(bv))
+                batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
+                batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
 
                 moving_mean = moving_mean.assign(momentum*moving_mean+batch_mean)
                 moving_var = moving_var.assign(momentum*moving_var+batch_var)
