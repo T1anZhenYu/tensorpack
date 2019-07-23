@@ -110,7 +110,7 @@ class Model(ModelDesc):
 
         tf.nn.softmax(logits, name='output')
         
-        conv_in = tf.get_default_graph().get_tensor_by_name('pool0/output')
+        conv_in = tf.get_default_graph().get_tensor_by_name('pool0/output:0')
         conv_out = tf.get_default_graph().get_tensor_by_name("conv1/output:0")
         fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")
         if conv_out and fg_out and conv_in:
