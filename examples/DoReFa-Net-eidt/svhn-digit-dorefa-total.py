@@ -108,7 +108,9 @@ class Model(ModelDesc):
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
         tf.nn.softmax(logits, name='output')
-
+        conv_out = tf.get_default_graph().get_tensor_by_name("conv1/output:0")
+        fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")
+        grad = tf.identity(tf.gradients(fg_out,conv_out),name = 'grad')
         # compute the number of failed samples
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
@@ -162,7 +164,7 @@ def get_config():
             ModelSaver(),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
-            DumpTensors(['fg1/moving_mean:0','fg1/moving_var:0','fg1/batch_mean:0','fg1/batch_var:0','conv1/output:0','fg1/output:0'])
+            DumpTensors(['fg1/moving_mean:0','fg1/moving_var:0','fg1/batch_mean:0','fg1/batch_var:0','conv1/output:0','fg1/output:0','grad'])
         ],
         model=Model(),
         max_epoch=200,
