@@ -118,9 +118,9 @@ def get_dorefa(bitW, bitA, bitG):
                     bn_z = tf.identity(tf.expand_dims(tf.expand_dims(tf.transpose(bn_z),\
                                                            axis=0),axis = 0),name='bnz')
 
-                    return d * bn_z,tf.ones(quan_points0.shape,name='fake0'),tf.ones(quan_values.shape,name='fake1')
+                    return d * bn_z,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
                 else:
-                    return d,tf.ones(quan_points0.shape,name='fake0'),tf.ones(quan_values.shape,name='fake1')
+                    return d,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
 
             return output,grad_fg 
 
