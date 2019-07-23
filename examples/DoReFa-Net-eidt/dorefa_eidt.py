@@ -57,52 +57,56 @@ def get_dorefa(bitW, bitA, bitG):
         def my_grad(x,quan_points0,quan_values):
             with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
                 shape = x.get_shape().as_list()
-                print('shape is ',shape)              
+
                 num_chan = float(shape[-1])
                 batch_size = float(shape[0])
-                moving_mean = tf.get_variable('moving_mean',shape=[num_chan,1],\
-                    dtype=tf.float32, initializer=tf.zeros_initializer(),trainable=False)
-                moving_var = tf.get_variable('moving_var',shape=[num_chan,1],\
-                    dtype=tf.float32, initializer=tf.ones_initializer(),trainable=False)
-                batch_mean = tf.get_variable('batch_mean',shape=[num_chan,1],\
-                dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False\
-                                     ,collections=[tf.GraphKeys.LOCAL_VARIABLES])
 
-                batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
-                dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False\
-                                     ,collections=[tf.GraphKeys.LOCAL_VARIABLES])
-                if training:
-                    print('in training')
-                    bm, bv = tf.nn.moments(x, axes=[0,1,2])
+                if batch_size !=None:
+                    moving_mean = tf.get_variable('moving_mean',shape=[num_chan,1],\
+                        dtype=tf.float32, initializer=tf.zeros_initializer(),trainable=False)
+                    moving_var = tf.get_variable('moving_var',shape=[num_chan,1],\
+                        dtype=tf.float32, initializer=tf.ones_initializer(),trainable=False)
+                    batch_mean = tf.get_variable('batch_mean',shape=[num_chan,1],\
+                    dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False\
+                                         ,collections=[tf.GraphKeys.LOCAL_VARIABLES])
 
-                    batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
-                    batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
+                    batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
+                    dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False\
+                                         ,collections=[tf.GraphKeys.LOCAL_VARIABLES])
+                    if training:
+                        print('in training')
+                        bm, bv = tf.nn.moments(x, axes=[0,1,2])
 
-                    moving_mean = moving_mean.assign(momentum*moving_mean+batch_mean)
-                    moving_var = moving_var.assign(momentum*moving_var+batch_var)
+                        batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
+                        batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
 
-                    quan_points = batch_var*quan_points0 + batch_mean
-                    #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
+                        moving_mean = moving_mean.assign(momentum*moving_mean+batch_mean)
+                        moving_var = moving_var.assign(momentum*moving_var+batch_var)
+
+                        quan_points = batch_var*quan_points0 + batch_mean
+                        #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
+                    else:
+
+                        print('in inference')
+
+                        quan_points = moving_var *quan_points0 + moving_mean
+
+
+                    b,w,h,c = x.shape
+
+                    inputs = tf.transpose(tf.reshape(x,[-1,c]))
+
+                    label1 = tf.cast(tf.less_equal(inputs,tf.expand_dims(quan_points[:,0],axis=-1)),dtype=tf.float32)
+                    label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,1],axis=-1)),\
+                        tf.math.greater(inputs,tf.expand_dims(quan_points[:,0],axis=-1))),dtype=tf.float32)
+                    label3 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),\
+                        tf.math.greater(inputs,tf.expand_dims(quan_points[:,1],axis=-1))),dtype=tf.float32)
+                    label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
+                    xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
+                    label4*quan_values[3]
+                    output = tf.reshape(tf.transpose(xn),[-1,w,h,c])
                 else:
-
-                    print('in inference')
-
-                    quan_points = moving_var *quan_points0 + moving_mean
-
-
-                b,w,h,c = x.shape
-
-                inputs = tf.transpose(tf.reshape(x,[-1,c]))
-
-                label1 = tf.cast(tf.less_equal(inputs,tf.expand_dims(quan_points[:,0],axis=-1)),dtype=tf.float32)
-                label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,1],axis=-1)),\
-                    tf.math.greater(inputs,tf.expand_dims(quan_points[:,0],axis=-1))),dtype=tf.float32)
-                label3 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),\
-                    tf.math.greater(inputs,tf.expand_dims(quan_points[:,1],axis=-1))),dtype=tf.float32)
-                label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
-                xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
-                label4*quan_values[3]
-                output = tf.reshape(tf.transpose(xn),[-1,w,h,c])
+                    output = None
             def grad_fg(d):
                 rank = d.get_shape().ndims
                 assert rank is not None
