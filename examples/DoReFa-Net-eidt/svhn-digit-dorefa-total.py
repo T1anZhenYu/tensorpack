@@ -113,7 +113,7 @@ class Model(ModelDesc):
         conv_in = tf.get_default_graph().get_tensor_by_name('pool0/output:0')
         conv_out = tf.get_default_graph().get_tensor_by_name("conv1/output:0")
         fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")
-        if conv_out is not None and fg_out is not None and conv_in is not None:
+        if conv_out is not None and fg_out.get_shape().as_list()[0] is not None and conv_in is not None:
             print('fg_out ',fg_out)
             print('fg_out ',type(fg_out))
             print('conv_out',type(conv_out))
