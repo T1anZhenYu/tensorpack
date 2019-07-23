@@ -107,6 +107,7 @@ class Model(ModelDesc):
                       #.BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
+        print([n.name for n in tf.get_default_graph().as_graph_def().node])
         tf.nn.softmax(logits, name='output')
         conv_out = tf.get_default_graph().get_tensor_by_name("conv1/output:0")
         fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")
