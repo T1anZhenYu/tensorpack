@@ -57,6 +57,7 @@ def get_dorefa(bitW, bitA, bitG):
         def my_grad(x,quan_points0,quan_values):
             with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
                 shape = x.get_shape().as_list()
+                print('shape is ',shape)              
                 num_chan = float(shape[-1])
                 batch_size = float(shape[0])
                 moving_mean = tf.get_variable('moving_mean',shape=[num_chan,1],\
