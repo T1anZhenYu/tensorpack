@@ -65,7 +65,8 @@ def get_dorefa(bitW, bitA, bitG):
 
                 num_chan = shape[-1]
                 batch_size = shape[0]
-
+                w = shape[1]
+                h = shape[2]
                 moving_mean = tf.get_variable('moving_mean',shape=[num_chan,1],\
                     dtype=tf.float32, initializer=tf.zeros_initializer(),trainable=False)
                 moving_var = tf.get_variable('moving_var',shape=[num_chan,1],\
@@ -103,7 +104,7 @@ def get_dorefa(bitW, bitA, bitG):
                 label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
                 xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
                 label4*quan_values[3]
-                output = tf.identity(tf.reshape(tf.transpose(xn),x.shape),'output')
+                output = tf.identity(tf.reshape(tf.transpose(xn),[-1,w,h,num_chan]),'output')
 
             def grad_fg(d):
                 rank = d.get_shape().ndims
