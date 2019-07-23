@@ -93,9 +93,7 @@ def get_dorefa(bitW, bitA, bitG):
                     print('in inference')
                     quan_points = moving_var *quan_points0 + moving_mean
 
-                b,w,h,c = x.shape
-
-                inputs = tf.transpose(tf.reshape(x,[-1,c]))
+                inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
 
                 label1 = tf.cast(tf.less_equal(inputs,tf.expand_dims(quan_points[:,0],axis=-1)),dtype=tf.float32)
                 label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,1],axis=-1)),\
@@ -105,7 +103,7 @@ def get_dorefa(bitW, bitA, bitG):
                 label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
                 xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
                 label4*quan_values[3]
-                output = tf.identity(tf.reshape(tf.transpose(xn),[-1,w,h,c]),'output')
+                output = tf.identity(tf.reshape(tf.transpose(xn),shape),'output')
 
             def grad_fg(d):
                 rank = d.get_shape().ndims
