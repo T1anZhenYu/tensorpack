@@ -87,9 +87,7 @@ def get_dorefa(bitW, bitA, bitG):
                 else:
 
                     print('in inference')
-
                     quan_points = moving_var *quan_points0 + moving_mean
-
 
                 b,w,h,c = x.shape
 
@@ -104,8 +102,7 @@ def get_dorefa(bitW, bitA, bitG):
                 xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
                 label4*quan_values[3]
                 output = tf.reshape(tf.transpose(xn),[-1,w,h,c])
-                else:
-                    output = None
+
             def grad_fg(d):
                 rank = d.get_shape().ndims
                 assert rank is not None
