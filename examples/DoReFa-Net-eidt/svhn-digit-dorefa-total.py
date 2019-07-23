@@ -107,10 +107,10 @@ class Model(ModelDesc):
                       #.BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
-        print([n.name for n in tf.get_default_graph().as_graph_def().node])
+
         tf.nn.softmax(logits, name='output')
-        conv_out = tf.get_default_graph().get_tensor_by_name("conv1/output:0")
-        fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")
+        conv_out = tf.get_default_graph().get_tensor_by_name("conv1/output:0")[0]
+        fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")[0]
         grad = tf.identity(tf.gradients(fg_out,conv_out),name = 'grad')
         # compute the number of failed samples
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
