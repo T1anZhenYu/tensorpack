@@ -67,12 +67,10 @@ def get_dorefa(bitW, bitA, bitG):
                 moving_var = tf.get_variable('moving_var',shape=[num_chan,1],\
                     dtype=tf.float32, initializer=tf.ones_initializer(),trainable=False)
                 batch_mean = tf.get_variable('batch_mean',shape=[num_chan,1],\
-                dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False\
-                                     ,collections=[tf.GraphKeys.LOCAL_VARIABLES])
+                dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
                 batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
-                dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False\
-                                     ,collections=[tf.GraphKeys.LOCAL_VARIABLES])
+                dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
                 if training:
                     print('in training')
 
