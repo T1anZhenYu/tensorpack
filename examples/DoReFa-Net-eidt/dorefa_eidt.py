@@ -60,30 +60,30 @@ def get_dorefa(bitW, bitA, bitG):
                 dtype=tf.float32, initializer=tf.zeros_initializer(),trainable=False)
             moving_var = tf.get_variable('moving_var',shape=[num_chan,1],\
                 dtype=tf.float32, initializer=tf.ones_initializer(),trainable=False)
+            batch_mean = tf.get_variable('batch_mean',shape=[num_chan,1],\
+            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False\
+                                 ,collections=[tf.GraphKeys.LOCAL_VARIABLES])
 
+            batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
+            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False\
+                                 ,collections=[tf.GraphKeys.LOCAL_VARIABLES])
             if training:
                 print('in training')
-                batch_mean, batch_variance = tf.nn.moments(x, axes=[0,1,2])
-                batch_mean = tf.identity(batch_mean,name='batch_mean')
-                batch_mean = tf.expand_dims(batch_mean,axis=-1)
-                batch_variance = tf.identity(batch_variance,name='batch_mean')
-                batch_variance = tf.expand_dims(batch_variance,axis=-1)
+                bm, bv = tf.nn.moments(x, axes=[0,1,2])
 
-                moving_mean.assign(momentum*moving_mean+batch_mean)
-                moving_var.assign(momentum*moving_var+batch_variance)
+                batch_mean = batch_mean.assign(bm)
+                batch_var = batch_var.assign(tf.math.sqrt(bv))
 
+                moving_mean = moving_mean.assign(momentum*moving_mean+batch_mean)
+                moving_var = moving_var.assign(momentum*moving_var+batch_var)
 
-                quan_points = batch_variance*quan_points + batch_mean
-                #output = (x-batch_mean)/(tf.math.sqrt(batch_variance))
+                quan_points = batch_var*quan_points + batch_mean
+                #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
             else:
 
                 print('in inference')
-                moving_mean_ = tf.identity(moving_mean,name='moving_mean_')
 
-                moving_var_ = tf.identity(moving_var,name='moving_var')
-
-
-                quan_points = moving_var_*quan_points + moving_mean_
+                quan_points = moving_var *quan_points + moving_mean
             
             print('quan_points ',quan_points.shape)
             b,w,h,c = x.shape
@@ -104,8 +104,8 @@ def get_dorefa(bitW, bitA, bitG):
             def grad_fg(x):
                 rank = x.get_shape().ndims
                 assert rank is not None
-                bn_z = 1/(tf.math.sqrt(batch_variance))*(batch_size-1)/batch_size - \
-                tf.math.square((inputs-batch_mean)/(tf.math.sqrt(batch_variance)))*2/batch_size
+                bn_z = 1/(batch_var)*(batch_size-1)/batch_size - \
+                tf.math.square((inputs-batch_mean)/(batch_var))*2/batch_size
 
                 return x * bn_z
 
