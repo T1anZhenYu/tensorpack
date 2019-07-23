@@ -112,11 +112,11 @@ class Model(ModelDesc):
         
         conv_in = tf.get_default_graph().get_tensor_by_name('pool0/output:0')
         conv_out = tf.get_default_graph().get_tensor_by_name("conv1/output:0")
-        fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")
+        fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")[0]
         if conv_out is not None and fg_out is not None and conv_in is not None:
 
             grad0 = tf.identity(tf.gradients(conv_out,conv_in),name = 'grad0')
-            #grad1 = tf.identity(tf.gradients(fg_out,conv_out),name = 'grad1')
+            grad1 = tf.identity(tf.gradients(fg_out,conv_out),name = 'grad1')
        
         # compute the number of failed samples
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
