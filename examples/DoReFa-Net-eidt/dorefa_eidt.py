@@ -120,6 +120,7 @@ def get_dorefa(bitW, bitA, bitG):
 
 
             def grad_fg(d):
+                bm, bv = tf.nn.moments(x, axes=[0,1,2])
                 afbn = (x-bm)/(tf.math.sqrt(bv))
                 afquan = activate(afbn)
                 grad = tf.gradients(afquan,x)[0]
