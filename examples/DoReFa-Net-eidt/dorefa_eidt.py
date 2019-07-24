@@ -125,7 +125,7 @@ def get_dorefa(bitW, bitA, bitG):
 
 
             def grad_fg(d):
-                return grad
+                return d*grad
 
             return output,grad_fg 
 
