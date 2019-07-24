@@ -109,17 +109,6 @@ class Model(ModelDesc):
                       .FullyConnected('fc1', 10)())
 
         tf.nn.softmax(logits, name='output')
-        
-        conv_in = tf.get_default_graph().get_tensor_by_name('pool0/output:0')
-        conv_out = tf.get_default_graph().get_tensor_by_name("conv1/output:0")
-        fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")
-
-        #if conv_out is not None and fg_out.get_shape().as_list()[0] is not None and conv_in is not None:
-     
-        if conv_out is not None  and conv_in is not None and fg_out[0] is not None :
-
-            grad_conv = tf.identity(tf.gradients(conv_out,conv_in),name='grad_conv')
-            #grad_fg = tf.identity(tf.gradients(fg_out,conv_out),name = 'grad_fg')
     
         # compute the number of failed samples
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
@@ -174,7 +163,7 @@ def get_config():
             ModelSaver(),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
-            DumpTensors(['fg1/MoveMean:0','fg1/MoveVar','conv1/output:0','fg1/output:0','fg1/grad:0','grad_conv:0','grad_fg:0'])
+            DumpTensors(['fg1/MoveMean:0','fg1/MoveVar','conv1/output:0','fg1/output:0','fg1/grad:0'])
         ],
         model=Model(),
         max_epoch=200,
