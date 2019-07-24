@@ -106,7 +106,7 @@ def get_dorefa(bitW, bitA, bitG):
                 label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
                 xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
                 label4*quan_values[3]
-                output = tf.identity(tf.reshape(tf.transpose(xn),[batch_size0,w,h,num_chan]),'output')
+                output = tf.identity(tf.reshape(tf.transpose(xn),[-1,w,h,num_chan]),'output')
                 '''
                 bn_z = tf.identity(tf.ones_like(x),name ='bn_z')
                 if batch_size is not None:
