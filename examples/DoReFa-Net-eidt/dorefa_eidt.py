@@ -77,6 +77,7 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
                 dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
+
                 if training:
                     print('in training')
 
@@ -112,11 +113,8 @@ def get_dorefa(bitW, bitA, bitG):
                 assert rank is not None
                 if batch_size != None:
                     bn_z = 1/(batch_var)*(batch_size-1)/batch_size  \
-                    -tf.math.square((inputs-batch_mean)/(batch_var))*2/batch_size
+                    -tf.math.square((x-batch_mean)/(batch_var))*2/batch_size
                     
-                    
-                    bn_z = tf.identity(tf.expand_dims(tf.expand_dims(tf.transpose(bn_z),\
-                                                           axis=0),axis = 0),name='bnz')
 
                     return bn_z,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
                 else:
