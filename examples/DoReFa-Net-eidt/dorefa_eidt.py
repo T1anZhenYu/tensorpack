@@ -105,10 +105,7 @@ def get_dorefa(bitW, bitA, bitG):
 
                     print('in inference')
                     quan_points = moving_var *quan_points0 + moving_mean
-                    #below need to be delete
-                    afbn = x
-                    afquan = activate(afbn)
-                    grad = tf.identity(tf.gradients(afquan,x)[0],name='grad')
+
 
                 inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
 
@@ -130,7 +127,7 @@ def get_dorefa(bitW, bitA, bitG):
             def grad_fg(d):
                 return grad
 
-            return afquan,grad_fg 
+            return output,grad_fg 
 
         return my_grad(x)
 
