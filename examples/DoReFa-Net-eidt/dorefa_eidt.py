@@ -96,7 +96,7 @@ def get_dorefa(bitW, bitA, bitG):
 
                     mm = tf.identity(moving_mean,name='MoveMean')
                     mv = tf.identity(moving_var,name = 'MoveVar')
-                    
+
                     afbn = (x-bm)/(tf.math.sqrt(bv))
                     afquan = activate(afbn)
                     grad = tf.identity(tf.gradients(afquan,x)[0],name='grad')
@@ -126,7 +126,7 @@ def get_dorefa(bitW, bitA, bitG):
             def grad_fg(d):
                 return grad
 
-            return output,grad_fg 
+            return afquan,grad_fg 
 
         return my_grad(x)
 
