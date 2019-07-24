@@ -115,7 +115,8 @@ class Model(ModelDesc):
         fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")
         grad0 = tf.constant([[]],name='grad0')
         grad1 = tf.constant([[]],name='grad1')
-        if conv_out is not None and fg_out.get_shape().as_list()[0] is not None and conv_in is not None:
+        #if conv_out is not None and fg_out.get_shape().as_list()[0] is not None and conv_in is not None:
+        if conv_out is not None  and conv_in is not None:
             print('fg_out ',fg_out)
             print('fg_out ',type(fg_out))
             print('conv_out',type(conv_out))
