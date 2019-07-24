@@ -122,7 +122,7 @@ def get_dorefa(bitW, bitA, bitG):
                 label = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,batch_var+batch_mean),\
                 tf.math.greater(inputs,batch_mean)),dtype=tf.float32)
 
-                label = tf.reshape(tf.transpose(label),[-1,w,h,num_chan])
+                label = tf.reshape(tf.transpose(label),[batch_size0,w,h,num_chan])
 
                 bn_z = tf.identity(bn_z * label,name = 'bn_z')
 
