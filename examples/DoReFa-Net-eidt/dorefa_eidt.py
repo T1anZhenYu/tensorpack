@@ -77,7 +77,7 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
                 dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
-                origin_grad = tf.get_variable('batch_var',shape=x.get_shape().as_list(),\
+                origin_grad = tf.get_variable('origin_grad',shape=x.get_shape().as_list(),\
                 dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
                 if training:
                     print('in training')
