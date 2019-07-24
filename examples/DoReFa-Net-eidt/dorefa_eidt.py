@@ -112,7 +112,7 @@ def get_dorefa(bitW, bitA, bitG):
                 output = tf.identity(tf.reshape(tf.transpose(xn),[-1,w,h,num_chan]),'output')
 
                 bn_z = tf.identity(tf.ones_like(x),name ='bn_z')
-                if batch_size not None:
+                if batch_size is not None:
                     bn_z = 1/(batch_var)*(batch_size-1)/batch_size  \
                     -tf.math.square((x-batch_mean)/(batch_var))*2/batch_size
 
