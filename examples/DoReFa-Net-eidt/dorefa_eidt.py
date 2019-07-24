@@ -111,10 +111,8 @@ def get_dorefa(bitW, bitA, bitG):
                 label4*quan_values[3]
                 output = tf.identity(tf.reshape(tf.transpose(xn),[-1,w,h,num_chan]),'output')
 
-            def grad_fg(d):
-                rank = d.get_shape().ndims
-                assert rank is not None
-                if batch_size != None:
+                bn_z = tf.identity(tf.ones_like(x),name ='bn_z')
+                if batch_size not None:
                     bn_z = 1/(batch_var)*(batch_size-1)/batch_size  \
                     -tf.math.square((x-batch_mean)/(batch_var))*2/batch_size
 
@@ -123,12 +121,12 @@ def get_dorefa(bitW, bitA, bitG):
 
                     label = tf.reshape(tf.transpose(label),[-1,w,h,num_chan])
 
-                    bn_z = bn_z * label
+                    bn_z = tf.identity(bn_z * label,name = 'bn_z')
 
+            def grad_fg(d):
 
-                    return tf.identity(bn_z,name='bn_z'),tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
-                else:
-                    return tf.identity(tf.ones_like(d),name='bn_z'),tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
+                return bn_z,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
+
 
             return output,grad_fg 
 
