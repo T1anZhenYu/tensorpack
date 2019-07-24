@@ -78,9 +78,6 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
                 dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
-                origin_grad = tf.get_variable('origin_grad',shape=[1,w,h,num_chan],\
-                dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
-
                 if training:
                     print('in training')
 
@@ -93,6 +90,9 @@ def get_dorefa(bitW, bitA, bitG):
                     moving_var = moving_var.assign(momentum*moving_var+batch_var)
 
                     quan_points = batch_var*quan_points0 + batch_mean
+
+                    mm = tf.identity(moving_mean,name='MoveMean')
+                    mv = tf.identity(moving_var,name = 'MoveVar')
                     #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
                 else:
 
@@ -123,9 +123,9 @@ def get_dorefa(bitW, bitA, bitG):
 
                     label = tf.reshape(tf.transpose(label),[-1,w,h,num_chan])
 
-                    bn_z = bn_z * label
+                    bn_z = tf.identity(bn_z * label,name='bn_z')
 
-                    origin_grad = tf.assign(bn_z[0,:,:,:])
+
                     return bn_z,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
                 else:
                     return d,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
