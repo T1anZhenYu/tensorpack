@@ -65,7 +65,7 @@ def get_dorefa(bitW, bitA, bitG):
                 shape = x.get_shape().as_list()
 
                 num_chan = shape[-1]
-                batch_size0 = tf.shape(x)[0]
+                batchsize = tf.shape(x)[0]
                 w = shape[1]
                 h = shape[2]
                 moving_mean = tf.get_variable('moving_mean',shape=[num_chan,1],\
@@ -109,15 +109,15 @@ def get_dorefa(bitW, bitA, bitG):
                 label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
                 xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
                 label4*quan_values[3]
-                output = tf.identity(tf.reshape(tf.transpose(xn),[batch_size0,w,h,num_chan]),'output')
+                output = tf.identity(tf.reshape(tf.transpose(xn),[batchsize,w,h,num_chan]),'output')
                 '''
                 bn_z = tf.identity(tf.ones_like(x),name ='bn_z')
                 if batch_size is not None:
                 '''
-                batch_size = tf.cast(batch_size0,tf.float32)
-                bn_z = 1/(batch_var)*(batch_size-1)/batch_size  \
-                -tf.math.square((inputs-batch_mean)/(batch_var))*2/batch_size
-                bn_z = tf.reshape(tf.transpose(bn_z),[batch_size0,w,h,num_chan])
+           
+                bn_z = 1/(batch_var)*(tf.cast(batchsize,tf.float32)-1)/tf.cast(batchsize,tf.float32)  \
+                -tf.math.square((inputs-batch_mean)/(batch_var))*2/tf.cast(batchsize,tf.float32)
+                bn_z = tf.reshape(tf.transpose(bn_z),[batchsize,w,h,num_chan])
 
                 label = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,batch_var+batch_mean),\
                 tf.math.greater(inputs,batch_mean)),dtype=tf.float32)
