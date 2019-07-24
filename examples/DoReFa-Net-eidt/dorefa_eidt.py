@@ -76,6 +76,9 @@ def get_dorefa(bitW, bitA, bitG):
 
                 batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
                 dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
+
+                origin_grad = tf.get_variable('batch_var',shape=x.get_shape().as_list(),\
+                dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
                 if training:
                     print('in training')
 
@@ -108,7 +111,7 @@ def get_dorefa(bitW, bitA, bitG):
 
             def grad_fg(d):
                 rank = d.get_shape().ndims
-                print('d rank ',d.get_shape)
+                origin_grad = tf.assign(d)
                 assert rank is not None
                 if batch_size != None:
                     bn_z = 1/(batch_var)*(batch_size-1)/batch_size  \
