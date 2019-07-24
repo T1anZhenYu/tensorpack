@@ -65,7 +65,7 @@ def get_dorefa(bitW, bitA, bitG):
                 shape = x.get_shape().as_list()
 
                 num_chan = shape[-1]
-                batch_size = tf.shape(x)[0]-0.000000001
+                batch_size = tf.cast(tf.shape(x)[0],dtype = tf.float32)
                 w = shape[1]
                 h = shape[2]
                 moving_mean = tf.get_variable('moving_mean',shape=[num_chan,1],\
