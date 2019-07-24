@@ -111,6 +111,9 @@ def get_dorefa(bitW, bitA, bitG):
                 bn_z = tf.identity(tf.ones_like(x),name ='bn_z')
                 if batch_size is not None:
                 '''
+
+
+            def grad_fg(d):
                 batch_size = tf.cast(batch_size0,tf.float32)
                 bn_z = 1/(batch_var)*(batch_size-1)/batch_size  \
                 -tf.math.square((inputs-batch_mean)/(batch_var))*2/batch_size
@@ -122,9 +125,6 @@ def get_dorefa(bitW, bitA, bitG):
                 label = tf.reshape(tf.transpose(label),[batch_size0,w,h,num_chan])
 
                 bn_z = tf.identity(bn_z * label,name = 'bn_z')
-
-            def grad_fg(d):
-
                 return bn_z
 
             return output,grad_fg 
