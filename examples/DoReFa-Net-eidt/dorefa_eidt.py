@@ -58,6 +58,7 @@ def get_dorefa(bitW, bitA, bitG):
         /(float(2**bitA-1)) for i in range(len(quan_points))])
         quan_values = np.append(quan_values,np.array([1.]),axis=-1).astype(np.float32)
 
+
         @tf.custom_gradient
         def my_grad(x,quan_points0,quan_values):
             with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
@@ -77,6 +78,8 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
                 dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
+                origin_grad = tf.get_variable('origin_grad',shape=[1,w,h,num_chan],\
+                dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
                 if training:
                     print('in training')
@@ -122,6 +125,7 @@ def get_dorefa(bitW, bitA, bitG):
 
                     bn_z = bn_z * label
 
+                    origin_grad = tf.assign(bn_z[0,:,:,:])
                     return bn_z,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
                 else:
                     return d,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
