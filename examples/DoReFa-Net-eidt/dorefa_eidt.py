@@ -117,13 +117,11 @@ def get_dorefa(bitW, bitA, bitG):
                 bn_z = tf.identity(tf.ones_like(x),name ='bn_z')
                 if batch_size is not None:
                 '''
-
-
-            def grad_fg(d):
-
                 afbn = (x-bm)/(tf.math.sqrt(bv))
                 afquan = activate(afbn)
                 grad = tf.identity(tf.gradients(afquan,x)[0],name='grad')
+
+            def grad_fg(d):
                 return grad
 
             return output,grad_fg 
