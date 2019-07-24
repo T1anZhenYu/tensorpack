@@ -115,7 +115,8 @@ class Model(ModelDesc):
         fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")
         grad0 = tf.get_variable(name='grad0',shape = conv_out.get_shape().as_list(),dtype = tf.float32,\
           initializer=tf.zeros_initializer(),trainable=False)
-        grad1 = tf.get_variable(name='grad1')
+        grad1 = tf.get_variable(name='grad1',shape = conv_out.get_shape().as_list(),dtype = tf.float32,\
+          initializer=tf.zeros_initializer(),trainable=False)
         #if conv_out is not None and fg_out.get_shape().as_list()[0] is not None and conv_in is not None:
         if conv_out is not None  and conv_in is not None:
             print('fg_out ',fg_out)
