@@ -113,18 +113,16 @@ class Model(ModelDesc):
         conv_in = tf.get_default_graph().get_tensor_by_name('pool0/output:0')
         conv_out = tf.get_default_graph().get_tensor_by_name("conv1/output:0")
         fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")
-        grad0 = tf.get_variable(name='grad0',shape = conv_out.get_shape().as_list(),dtype = tf.float32,\
-          initializer=tf.zeros_initializer(),trainable=False)
-        grad1 = tf.get_variable(name='grad1',shape = conv_out.get_shape().as_list(),dtype = tf.float32,\
-          initializer=tf.zeros_initializer(),trainable=False)
+
         #if conv_out is not None and fg_out.get_shape().as_list()[0] is not None and conv_in is not None:
+        '''
         if conv_out is not None  and conv_in is not None:
             print('fg_out ',fg_out)
             print('fg_out ',type(fg_out))
             print('conv_out',type(conv_out))
             grad0 = tf.assign(grad0,tf.gradients(conv_out,conv_in))
             grad1 = tf.assign(grad1,tf.gradients(fg_out,conv_out))
-       
+        '''
         # compute the number of failed samples
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
@@ -178,7 +176,7 @@ def get_config():
             ModelSaver(),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
-            DumpTensors(['fg1/moving_mean:0','fg1/moving_var:0','fg1/batch_mean:0','fg1/batch_var:0','conv1/output:0','fg1/output:0','grad1:0','grad0:0'])
+            DumpTensors(['fg1/moving_mean:0','fg1/moving_var:0','fg1/batch_mean:0','fg1/batch_var:0','conv1/output:0','fg1/output:0'])
         ],
         model=Model(),
         max_epoch=200,
