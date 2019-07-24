@@ -106,7 +106,7 @@ def get_dorefa(bitW, bitA, bitG):
                     print('in inference')
                     quan_points = moving_var *quan_points0 + moving_mean
                     #below need to be delete
-                    afbn = (x-moving_mean)/(tf.math.sqrt(moving_var))
+                    afbn = x
                     afquan = activate(afbn)
                     grad = tf.identity(tf.gradients(afquan,x)[0],name='grad')
 
