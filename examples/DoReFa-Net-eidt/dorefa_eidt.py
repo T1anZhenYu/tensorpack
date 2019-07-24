@@ -108,6 +108,7 @@ def get_dorefa(bitW, bitA, bitG):
 
             def grad_fg(d):
                 rank = d.get_shape().ndims
+                print('d rank ',d.get_shape)
                 assert rank is not None
                 if batch_size != None:
                     bn_z = 1/(batch_var)*(batch_size-1)/batch_size  \

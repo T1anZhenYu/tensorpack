@@ -113,7 +113,8 @@ class Model(ModelDesc):
         conv_in = tf.get_default_graph().get_tensor_by_name('pool0/output:0')
         conv_out = tf.get_default_graph().get_tensor_by_name("conv1/output:0")
         fg_out = tf.get_default_graph().get_tensor_by_name("fg1/output:0")
-        grad0 = tf.get_variable(name='grad0')
+        grad0 = tf.get_variable(name='grad0',shape = conv_out.get_shape().as_list(),dtype = tf.float32,\
+          initializer=tf.zeros_initializer(),trainable=False)
         grad1 = tf.get_variable(name='grad1')
         #if conv_out is not None and fg_out.get_shape().as_list()[0] is not None and conv_in is not None:
         if conv_out is not None  and conv_in is not None:
