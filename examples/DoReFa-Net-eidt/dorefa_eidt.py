@@ -42,7 +42,13 @@ def get_dorefa(bitW, bitA, bitG):
         if bitA == 32:
             return x
         return quantize(x, bitA)
+    def nonlin(x):
+        if bitA == 32:
+            return tf.nn.relu(x)
+        return tf.clip_by_value(x, 0.0, 1.0)
 
+    def activate(x):
+        return fa(nonlin(x))
     def fg(x,name,training,momentum = 0.9):#bitG == 32
                     #quantize BN during inference
      
@@ -114,18 +120,10 @@ def get_dorefa(bitW, bitA, bitG):
 
 
             def grad_fg(d):
-                batch_size = tf.cast(batch_size0,tf.float32)
-                bn_z = 1/(batch_var)*(batch_size-1)/batch_size  \
-                -tf.math.square((inputs-batch_mean)/(batch_var))*2/batch_size
-                bn_z = tf.reshape(tf.transpose(bn_z),[batch_size0,w,h,num_chan])
-
-                label = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,batch_var+batch_mean),\
-                tf.math.greater(inputs,batch_mean)),dtype=tf.float32)
-
-                label = tf.reshape(tf.transpose(label),[batch_size0,w,h,num_chan])
-
-                bn_z = tf.identity(bn_z * label,name = 'bn_z')
-                return bn_z
+                afbn = (x-bm)/(tf.math.sqrt(bv))
+                afquan = activate(afbn)
+                grad = tf.gradients(afquan,x)[0]
+                return grad
 
             return output,grad_fg 
 
