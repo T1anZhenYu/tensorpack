@@ -99,7 +99,7 @@ def get_dorefa(bitW, bitA, bitG):
                     print('in inference')
                     quan_points = moving_var *quan_points0 + moving_mean
 
-                inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
+                inputs = tf.transpose(tf.reshape(x,[batchsize,num_chan]))
 
                 label1 = tf.cast(tf.less_equal(inputs,tf.expand_dims(quan_points[:,0],axis=-1)),dtype=tf.float32)
                 label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,1],axis=-1)),\
