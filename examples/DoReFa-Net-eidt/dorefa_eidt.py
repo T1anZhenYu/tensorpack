@@ -79,6 +79,7 @@ def get_dorefa(bitW, bitA, bitG):
 
                 origin_grad = tf.get_variable('origin_grad',shape=x.get_shape().as_list(),\
                 dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
+
                 if training:
                     print('in training')
 
@@ -121,7 +122,7 @@ def get_dorefa(bitW, bitA, bitG):
                     bn_z = tf.identity(tf.expand_dims(tf.expand_dims(tf.transpose(bn_z),\
                                                            axis=0),axis = 0),name='bnz')
 
-                    return d * bn_z,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
+                    return bn_z,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
                 else:
                     return d,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
 
