@@ -51,19 +51,16 @@ def get_dorefa(bitW, bitA, bitG):
         for t in tf.all_variables():
             print(t.name)
         '''
-        quan_points = get_quan_point().astype(np.float32)
-
-        #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
-        quan_values = np.array([round((quan_points[i]-0.005)*(2**bitA-1))\
-        /(float(2**bitA-1)) for i in range(len(quan_points))])
-        quan_values = np.append(quan_values,np.array([1.]),axis=-1).astype(np.float32)
-
-
         @tf.custom_gradient
-        def my_grad(x,quan_points0,quan_values):
+        def my_grad(x):
             with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
                 shape = x.get_shape().as_list()
+                quan_points0 = get_quan_point().astype(np.float32)
 
+                #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
+                quan_values = np.array([round((quan_points0[i]-0.005)*(2**bitA-1))\
+                /(float(2**bitA-1)) for i in range(len(quan_points0))])
+                quan_values = np.append(quan_values,np.array([1.]),axis=-1).astype(np.float32)
                 num_chan = shape[-1]
                 batch_size0 = tf.shape(x)[0]
                 w = shape[1]
@@ -128,12 +125,11 @@ def get_dorefa(bitW, bitA, bitG):
 
             def grad_fg(d):
 
-                return bn_z,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
-
+                return bn_z
 
             return output,grad_fg 
 
-        return my_grad(x,quan_points,quan_values)
+        return my_grad(x)
 
     return fw, fa, fg
 
