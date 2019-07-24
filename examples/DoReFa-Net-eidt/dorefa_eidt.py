@@ -123,10 +123,10 @@ def get_dorefa(bitW, bitA, bitG):
 
                     label = tf.reshape(tf.transpose(label),[-1,w,h,num_chan])
 
-                    bn_z = tf.identity(bn_z * label,name='bn_z')
+                    bn_z = bn_z * label
 
 
-                    return bn_z,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
+                    return tf.identity(bn_z,name='bn_z'),tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
                 else:
                     return d,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
 
