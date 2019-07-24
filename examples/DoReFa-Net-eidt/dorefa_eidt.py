@@ -96,6 +96,10 @@ def get_dorefa(bitW, bitA, bitG):
 
                     mm = tf.identity(moving_mean,name='MoveMean')
                     mv = tf.identity(moving_var,name = 'MoveVar')
+                    
+                    afbn = (x-bm)/(tf.math.sqrt(bv))
+                    afquan = activate(afbn)
+                    grad = tf.identity(tf.gradients(afquan,x)[0],name='grad')
                     #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
                 else:
 
@@ -117,9 +121,7 @@ def get_dorefa(bitW, bitA, bitG):
                 bn_z = tf.identity(tf.ones_like(x),name ='bn_z')
                 if batch_size is not None:
                 '''
-                afbn = (x-bm)/(tf.math.sqrt(bv))
-                afquan = activate(afbn)
-                grad = tf.identity(tf.gradients(afquan,x)[0],name='grad')
+
 
             def grad_fg(d):
                 return grad
