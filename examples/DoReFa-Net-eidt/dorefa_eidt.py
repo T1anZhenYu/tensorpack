@@ -110,18 +110,19 @@ def get_dorefa(bitW, bitA, bitG):
                 xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
                 label4*quan_values[3]
                 output = tf.identity(tf.reshape(tf.transpose(xn),[-1,w,h,num_chan]),'output')
-
+                '''
                 bn_z = tf.identity(tf.ones_like(x),name ='bn_z')
                 if batch_size is not None:
-                    bn_z = 1/(batch_var)*(batch_size-1)/batch_size  \
-                    -tf.math.square((x-batch_mean)/(batch_var))*2/batch_size
+                '''
+                bn_z = 1/(batch_var)*(batch_size-1)/batch_size  \
+                -tf.math.square((x-batch_mean)/(batch_var))*2/batch_size
 
-                    label = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(batch_var+batch_mean,axis=-1)),\
-                    tf.math.greater(inputs,tf.expand_dims(batch_mean,axis=-1))),dtype=tf.float32)
+                label = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(batch_var+batch_mean,axis=-1)),\
+                tf.math.greater(inputs,tf.expand_dims(batch_mean,axis=-1))),dtype=tf.float32)
 
-                    label = tf.reshape(tf.transpose(label),[-1,w,h,num_chan])
+                label = tf.reshape(tf.transpose(label),[-1,w,h,num_chan])
 
-                    bn_z = tf.identity(bn_z * label,name = 'bn_z')
+                bn_z = tf.identity(bn_z * label,name = 'bn_z')
 
             def grad_fg(d):
 
