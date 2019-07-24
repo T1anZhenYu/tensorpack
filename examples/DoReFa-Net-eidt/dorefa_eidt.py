@@ -123,7 +123,7 @@ def get_dorefa(bitW, bitA, bitG):
 
                 afbn = (x-bm)/(tf.math.sqrt(bv))
                 afquan = activate(afbn)
-                grad = tf.gradients(afquan,x)[0]
+                grad = tf.identity(tf.gradients(afquan,x)[0],name='grad')
                 return grad
 
             return output,grad_fg 
