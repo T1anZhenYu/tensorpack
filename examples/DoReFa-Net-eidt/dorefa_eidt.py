@@ -114,7 +114,13 @@ def get_dorefa(bitW, bitA, bitG):
                 if batch_size != None:
                     bn_z = 1/(batch_var)*(batch_size-1)/batch_size  \
                     -tf.math.square((x-batch_mean)/(batch_var))*2/batch_size
-                    
+
+                    label = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(batch_var+batch_mean,axis=-1)),\
+                    tf.math.greater(inputs,tf.expand_dims(batch_mean,axis=-1))),dtype=tf.float32)
+
+                    label = tf.reshape(tf.transpose(label),[-1,w,h,num_chan])
+
+                    bn_z = bn_z * label
 
                     return bn_z,tf.zeros(quan_points0.shape,name='fake0'),tf.zeros(quan_values.shape,name='fake1')
                 else:
