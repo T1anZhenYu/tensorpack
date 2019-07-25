@@ -163,7 +163,7 @@ def get_config():
             ModelSaver(),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
-            #DumpTensors(['fg5/MoveMean:0','fg5/MoveVar','conv5/output:0','fg5/output:0','fg5/grad:0'])
+            DumpTensors(['conv5/output:0','fg5/output:0','fg5/grad:0'])
         ],
         model=Model(),
         max_epoch=200,
