@@ -131,7 +131,7 @@ def get_dorefa(bitW, bitA, bitG):
                 for i in range(num_chan):
                     grad.append(tf.gradients(afquan[:,:,:,i],x))
                 
-                grad = tf.convert_to_tensor(grad)
+                grad = tf.squeeze(tf.convert_to_tensor(grad),axis = 1)
                 grad = tf.transpose(grad,[1,2,3,4,0])
                 print('grad   ',grad)
                 d = tf.expand_dims(d,axis = -1)
