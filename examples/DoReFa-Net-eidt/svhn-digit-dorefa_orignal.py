@@ -161,7 +161,7 @@ def get_config():
         callbacks=[
             ModelSaver(),
             InferenceRunner(data_test,
-                            [ScalarStats('cost'), ClassificationError('wrong-top1')])
+                            [ScalarStats('cost'), ClassificationError('wrong-top1')]),
             DumpTensors(['conv1/output:0','ac1:0','grad:0'])
         ],
         model=Model(),
