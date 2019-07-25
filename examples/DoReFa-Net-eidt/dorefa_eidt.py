@@ -81,7 +81,7 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
                 dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
-                grad = []
+                
 
                 if training:
                     print('in training')
@@ -99,12 +99,7 @@ def get_dorefa(bitW, bitA, bitG):
                     mm = tf.identity(moving_mean,name='MoveMean')
                     mv = tf.identity(moving_var,name = 'MoveVar')
 
-                    afbn = (x-bm)/(tf.math.sqrt(bv))
-                    afquan = activate(afbn)
-                    for i in range(num_chan):
-                        grad.append(tf.gradients(afquan[:,:,:,i],x))
 
-                    grad = tf.convert_to_tensor(grad)
                     #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
                 else:
 
@@ -130,6 +125,13 @@ def get_dorefa(bitW, bitA, bitG):
 
 
             def grad_fg(d):
+                grad = []
+                afbn = (x-bm)/(tf.math.sqrt(bv))
+                afquan = activate(afbn)
+                for i in range(num_chan):
+                    grad.append(tf.gradients(afquan[:,:,:,i],x))
+
+                grad = tf.convert_to_tensor(grad)
                 grad = tf.reshape(grad,[1,2,3,4,0])
                 d = tf.expand_dims(d,axis = -1)
 
