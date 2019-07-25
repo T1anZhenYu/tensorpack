@@ -135,7 +135,8 @@ def get_dorefa(bitW, bitA, bitG):
                 grad = tf.transpose(grad,[1,2,3,4,0])
                 print('grad   ',grad)
                 d = tf.expand_dims(d,axis = -1)
-
+                print('d ',d)
+                
                 return tf.matmul(grad,d)
 
             return output,grad_fg 
