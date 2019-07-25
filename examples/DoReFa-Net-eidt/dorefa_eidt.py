@@ -102,7 +102,7 @@ def get_dorefa(bitW, bitA, bitG):
                         grad.append(tf.gradients(afquan[:,:,:,i],x))
                     
                     grad = tf.squeeze(tf.convert_to_tensor(grad),axis = 1)
-                    grad = tf.identity(tf.transpose(grad,[1,2,3,4,0]),name='grad')
+                    grad = tf.identity(tf.transpose(grad,[1,2,3,0,4]),name='grad')
                     #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
                 else:
 
