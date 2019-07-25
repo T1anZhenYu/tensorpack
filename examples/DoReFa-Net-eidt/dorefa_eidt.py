@@ -133,9 +133,9 @@ def get_dorefa(bitW, bitA, bitG):
                 
                 grad = tf.squeeze(tf.convert_to_tensor(grad),axis = 1)
                 grad = tf.transpose(grad,[1,2,3,4,0])
-                print('grad   ',grad)
+
                 d = tf.expand_dims(d,axis = -1)
-                print('d ',d)
+
 
                 return tf.squeeze(tf.matmul(grad,d),axis=-1)
 
