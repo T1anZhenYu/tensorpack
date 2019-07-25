@@ -102,7 +102,7 @@ def get_dorefa(bitW, bitA, bitG):
                     afbn = (x-bm)/(tf.math.sqrt(bv))
                     afquan = activate(afbn)
                     for i in range(num_chan):
-                        grad.append(tf.gradients(afquan[:,:,;,i],x))
+                        grad.append(tf.gradients(afquan[:,:,:,i],x))
 
                     grad = tf.convert_to_tensor(grad)
                     #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
