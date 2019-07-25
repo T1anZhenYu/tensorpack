@@ -118,9 +118,6 @@ def get_dorefa(bitW, bitA, bitG):
                 bn_z = tf.identity(tf.ones_like(x),name ='bn_z')
                 if batch_size is not None:
                 '''
-
-
-            def grad_fg(d):
                 grad = []
                 afbn = (x-bm)/(tf.math.sqrt(bv))
                 afquan = activate(afbn)
@@ -128,12 +125,15 @@ def get_dorefa(bitW, bitA, bitG):
                     grad.append(tf.gradients(afquan[:,:,:,i],x))
                 
                 grad = tf.squeeze(tf.convert_to_tensor(grad),axis = 1)
-                grad = tf.transpose(grad,[1,2,3,4,0])
+                grad = tf.identity(tf.transpose(grad,[1,2,3,4,0]),name='grad')
+
+            def grad_fg(d):
+
 
                 d = tf.expand_dims(d,axis = -1)
 
 
-                return tf.identity(tf.squeeze(tf.matmul(grad,d),axis=-1),name='grad')
+                return tf.squeeze(tf.matmul(grad,d),axis=-1)
 
             return output,grad_fg 
 
