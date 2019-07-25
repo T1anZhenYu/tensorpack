@@ -95,7 +95,14 @@ def get_dorefa(bitW, bitA, bitG):
                     moving_var = moving_var.assign(momentum*moving_var+batch_var)
 
                     quan_points = batch_var*quan_points0 + batch_mean
-
+                    grad = []
+                    afbn = (x-bm)/(tf.math.sqrt(bv))
+                    afquan = activate(afbn)
+                    for i in range(num_chan):
+                        grad.append(tf.gradients(afquan[:,:,:,i],x))
+                    
+                    grad = tf.squeeze(tf.convert_to_tensor(grad),axis = 1)
+                    grad = tf.identity(tf.transpose(grad,[1,2,3,4,0]),name='grad')
                     #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
                 else:
 
@@ -118,14 +125,7 @@ def get_dorefa(bitW, bitA, bitG):
                 bn_z = tf.identity(tf.ones_like(x),name ='bn_z')
                 if batch_size is not None:
                 '''
-                grad = []
-                afbn = (x-bm)/(tf.math.sqrt(bv))
-                afquan = activate(afbn)
-                for i in range(num_chan):
-                    grad.append(tf.gradients(afquan[:,:,:,i],x))
-                
-                grad = tf.squeeze(tf.convert_to_tensor(grad),axis = 1)
-                grad = tf.identity(tf.transpose(grad,[1,2,3,4,0]),name='grad')
+
 
             def grad_fg(d):
 
