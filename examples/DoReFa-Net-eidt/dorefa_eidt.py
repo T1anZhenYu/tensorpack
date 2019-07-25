@@ -51,9 +51,9 @@ def get_dorefa(bitW, bitA, bitG):
         return fa(nonlin(x))
     def fg(x,name,training,momentum = 0.9):#bitG == 32
                     #quantize BN during inference
-     
+        '''     
         print([n.name for n in tf.get_default_graph().as_graph_def().node])
-        '''
+
         for t in tf.all_variables():
             print(t.name)
         '''
@@ -96,10 +96,6 @@ def get_dorefa(bitW, bitA, bitG):
 
                     quan_points = batch_var*quan_points0 + batch_mean
 
-                    mm = tf.identity(moving_mean,name='MoveMean')
-                    mv = tf.identity(moving_var,name = 'MoveVar')
-
-
                     #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
                 else:
 
@@ -137,7 +133,7 @@ def get_dorefa(bitW, bitA, bitG):
                 d = tf.expand_dims(d,axis = -1)
 
 
-                return tf.squeeze(tf.matmul(grad,d),axis=-1)
+                return tf.identity(tf.squeeze(tf.matmul(grad,d),axis=-1),name='grad')
 
             return output,grad_fg 
 
