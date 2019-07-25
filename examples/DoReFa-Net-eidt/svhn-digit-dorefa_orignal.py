@@ -104,7 +104,12 @@ class Model(ModelDesc):
                       .FullyConnected('fc1', 10)())
         tf.nn.softmax(logits, name='output')
 
-        # compute the number of failed samples
+        conv1_out = tf.get_default_graph().get_tensor_by_name('conv1/output:0')
+        ac1_out = tf.get_default_graph().get_tensor_by_name('ac1:0')
+        grad = tf.identity(tf.gradients(ac1_out,conv1_out),'grad')
+
+
+                # compute the number of failed samples
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
@@ -157,7 +162,7 @@ def get_config():
             ModelSaver(),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')])
-            DumpTensors(['conv1/output:0','ac1:0'])
+            DumpTensors(['conv1/output:0','ac1:0','grad:0'])
         ],
         model=Model(),
         max_epoch=200,
