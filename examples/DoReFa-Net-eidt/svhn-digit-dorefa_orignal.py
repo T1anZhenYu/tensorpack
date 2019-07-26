@@ -140,7 +140,8 @@ def get_config():
     # prepare dataset
     d1 = dataset.SVHNDigit('train')
     d2 = dataset.SVHNDigit('extra')
-    data_train = RandomMixData([d1, d2])
+    #data_train = RandomMixData([d1, d2])
+    data_train = d1
     data_test = dataset.SVHNDigit('test')
 
     augmentors = [
