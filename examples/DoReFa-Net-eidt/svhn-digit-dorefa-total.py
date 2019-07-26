@@ -73,7 +73,7 @@ class Model(ModelDesc):
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
                       .MaxPooling('pool0', 2, padding='SAME')
-                      #.apply(activate)
+                      .apply(activate)
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
                       .apply(fg,'fg1',is_training)
@@ -163,7 +163,7 @@ def get_config():
             ModelSaver(),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
-            DumpTensors(['conv5/output:0','fg5/output:0','fg5/grad:0'])
+            DumpTensors(['conv1/output:0','fg1/output:0','fg1/grad:0'])
         ],
         model=Model(),
         max_epoch=200,
