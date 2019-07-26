@@ -74,26 +74,26 @@ class Model(ModelDesc):
                       #.MaxPooling('pool0', 2, padding='SAME')
                       #.apply(activate)
                       # 18
-                      .Conv2D('conv1', 64, 3, padding='SAME',kernel_initializer=tf.ones_initializer())
+                      .Conv2D('conv1', 32, 3, padding='SAME',kernel_initializer=tf.ones_initializer())
                       .apply(fg)
                       .BatchNorm('bn1').apply(activate,name='ac1')
 
-                      .Conv2D('conv2', 64, 3, padding='SAME')
+                      .Conv2D('conv2', 32, 3, padding='SAME')
                       .apply(fg)
                       .BatchNorm('bn2')
                       .MaxPooling('pool1', 2, padding='SAME')
                       .apply(activate)
                       # 9
-                      .Conv2D('conv3', 128, 3, padding='VALID')
+                      .Conv2D('conv3', 64, 3, padding='VALID')
                       .apply(fg)
                       .BatchNorm('bn3').apply(activate)
                       # 7
 
-                      .Conv2D('conv4', 128, 3, padding='SAME')
+                      .Conv2D('conv4', 64, 3, padding='SAME')
                       .apply(fg)
                       .BatchNorm('bn4').apply(activate)
 
-                      .Conv2D('conv5', 128, 3, padding='VALID')
+                      .Conv2D('conv5', 64, 3, padding='VALID')
                       .apply(fg)
                       .BatchNorm('bn5').apply(activate)
                       # 5
