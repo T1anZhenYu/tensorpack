@@ -71,9 +71,9 @@ class Model(ModelDesc):
                 argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
-                      .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
-                      .MaxPooling('pool0', 2, padding='SAME')
-                      .apply(activate)
+                      #.Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
+                      #.MaxPooling('pool0', 2, padding='SAME')
+                      #.apply(activate)
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
                       .apply(fg,'fg1',is_training)
