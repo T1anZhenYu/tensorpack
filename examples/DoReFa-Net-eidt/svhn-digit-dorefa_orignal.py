@@ -34,7 +34,7 @@ To Run:
 BITW = 1
 BITA = 2
 BITG = 4
-
+tf.set_random_seed(1234)
 
 class Model(ModelDesc):
     def inputs(self):
@@ -61,8 +61,8 @@ class Model(ModelDesc):
                 return tf.nn.relu(x)
             return tf.clip_by_value(x, 0.0, 1.0)
 
-        def activate(x):
-            return fa(nonlin(x))
+        def activate(x,name = 'name'):
+            return tf.identity(fa(nonlin(x)),name=name)
 
         image = image / 256.0
 
@@ -70,30 +70,30 @@ class Model(ModelDesc):
                 argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
-                      .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
-                      .MaxPooling('pool0', 2, padding='SAME')
-                      .apply(activate)
+                      #.Conv2D('conv0', 48, 5, padding='VALID', use_bias=True,kernel_initializer=tf.ones_initializer())
+                      #.MaxPooling('pool0', 2, padding='SAME')
+                      #.apply(activate)
                       # 18
-                      .Conv2D('conv1', 64, 3, padding='SAME')
+                      .Conv2D('conv1', 32, 3, padding='SAME',kernel_initializer=tf.ones_initializer())
                       .apply(fg)
-                      .BatchNorm('bn1').apply(activate)
+                      .BatchNorm('bn1').apply(activate,name='ac1')
 
-                      .Conv2D('conv2', 64, 3, padding='SAME')
+                      .Conv2D('conv2', 32, 3, padding='SAME')
                       .apply(fg)
                       .BatchNorm('bn2')
                       .MaxPooling('pool1', 2, padding='SAME')
                       .apply(activate)
                       # 9
-                      .Conv2D('conv3', 128, 3, padding='VALID')
+                      .Conv2D('conv3', 64, 3, padding='VALID')
                       .apply(fg)
                       .BatchNorm('bn3').apply(activate)
                       # 7
 
-                      .Conv2D('conv4', 128, 3, padding='SAME')
+                      .Conv2D('conv4', 64, 3, padding='SAME')
                       .apply(fg)
                       .BatchNorm('bn4').apply(activate)
 
-                      .Conv2D('conv5', 128, 3, padding='VALID')
+                      .Conv2D('conv5', 64, 3, padding='VALID')
                       .apply(fg)
                       .BatchNorm('bn5').apply(activate)
                       # 5
@@ -104,7 +104,12 @@ class Model(ModelDesc):
                       .FullyConnected('fc1', 10)())
         tf.nn.softmax(logits, name='output')
 
-        # compute the number of failed samples
+        conv1_out = tf.get_default_graph().get_tensor_by_name('conv1/output:0')
+        ac1_out = tf.get_default_graph().get_tensor_by_name('ac1:0')
+        grad = tf.identity(tf.gradients(ac1_out,conv1_out),'grad')
+
+
+                # compute the number of failed samples
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
@@ -135,7 +140,8 @@ def get_config():
     # prepare dataset
     d1 = dataset.SVHNDigit('train')
     d2 = dataset.SVHNDigit('extra')
-    data_train = RandomMixData([d1, d2])
+    #data_train = RandomMixData([d1, d2])
+    data_train = d1
     data_test = dataset.SVHNDigit('test')
 
     augmentors = [
@@ -156,7 +162,8 @@ def get_config():
         callbacks=[
             ModelSaver(),
             InferenceRunner(data_test,
-                            [ScalarStats('cost'), ClassificationError('wrong-top1')])
+                            [ScalarStats('cost'), ClassificationError('wrong-top1')]),
+            DumpTensors(['conv1/output:0','ac1:0','grad:0'])
         ],
         model=Model(),
         max_epoch=200,

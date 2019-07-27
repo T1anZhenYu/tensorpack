@@ -41,7 +41,6 @@ class Model(ModelDesc):
         return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
                 tf.TensorSpec([None], tf.int32, 'label')]
 
-
     def build_graph(self, image, label):
         is_training = get_current_tower_context().is_training
 
@@ -62,8 +61,8 @@ class Model(ModelDesc):
                 return tf.nn.relu(x)
             return tf.clip_by_value(x, 0.0, 1.0)
 
-        def activate(x):
-            return fa(nonlin(x))
+        def activate(x,name = 'name'):
+            return tf.identity(fa(nonlin(x)),name=name)
 
         image = image / 256.0
 
@@ -77,8 +76,7 @@ class Model(ModelDesc):
                       # 18
                       .Conv2D('conv1', 32, 3, padding='SAME',kernel_initializer=tf.ones_initializer())
                       .apply(fg,'fg1',is_training)
-                      #.BatchNorm('bn1')
-                      #.apply(activate)
+                      #.BatchNorm('bn1').apply(activate,name='ac1')
 
                       .Conv2D('conv2', 32, 3, padding='SAME')
                       .apply(fg,'fg2',is_training)
@@ -88,14 +86,12 @@ class Model(ModelDesc):
                       # 9
                       .Conv2D('conv3', 64, 3, padding='VALID')
                       .apply(fg,'fg3',is_training)
-                      #.BatchNorm('bn3')
-                      #.apply(activate)
+                      #.BatchNorm('bn3').apply(activate)
                       # 7
 
                       .Conv2D('conv4', 64, 3, padding='SAME')
                       .apply(fg,'fg4',is_training)
-                      #.BatchNorm('bn4')
-                      #.apply(activate)
+                      #.BatchNorm('bn4').apply(activate)
 
                       .Conv2D('conv5', 64, 3, padding='VALID')
                       .apply(fg,'fg5',is_training)
@@ -103,14 +99,12 @@ class Model(ModelDesc):
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
-                      #.apply(fg,'fg6',is_training)
-                      .BatchNorm('bn6')
+                      .apply(fg,'fg6',is_training).BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
-
         tf.nn.softmax(logits, name='output')
-    
-        # compute the number of failed samples
+
+                # compute the number of failed samples
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
@@ -198,5 +192,3 @@ if __name__ == '__main__':
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
     launch_train_with_config(config, SimpleTrainer())
-
-
