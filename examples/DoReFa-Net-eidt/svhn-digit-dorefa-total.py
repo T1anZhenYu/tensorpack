@@ -162,7 +162,8 @@ def get_config():
         callbacks=[
             ModelSaver(),
             InferenceRunner(data_test,
-                            [ScalarStats('cost'), ClassificationError('wrong-top1')])
+                            [ScalarStats('cost'), ClassificationError('wrong-top1')]),
+            DumpTensors(['fg1/moving_mean','fg1/moving_var','fg1/batch_mean','fg1/batch_var'])
         ],
         model=Model(),
         max_epoch=200,
