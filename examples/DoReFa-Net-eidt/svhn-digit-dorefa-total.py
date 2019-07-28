@@ -114,7 +114,7 @@ class Model(ModelDesc):
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
-        add_param_summary(tf.get_default_graph().get_tensor_by_name("fg1/batch_var:0"),['histogram', 'rms'])
+        add_param_summary("fg1/batch_var:0",['histogram', 'rms'])
 
         cost = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=label)
         cost = tf.reduce_mean(cost, name='cross_entropy_loss')
