@@ -60,7 +60,7 @@ def get_dorefa(bitW, bitA, bitG):
     def fg(x,name,training,momentum = 0.9):#bitG == 32
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
             shape = x.get_shape().as_list()#x is input, get input shape[batchsize,width,height,channel]
-
+            print('shape ',shape)
             num_chan = shape[-1]#channel number
             batch_size0 = tf.shape(x)[0]#because placehoder,batch size is always None,needs this operation to use it as a real number
             w = shape[1]
