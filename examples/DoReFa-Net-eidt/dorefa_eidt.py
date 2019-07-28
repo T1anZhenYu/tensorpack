@@ -58,107 +58,70 @@ def get_dorefa(bitW, bitA, bitG):
     def activate(x):
         return fa(nonlin(x))
     def fg(x,name,training,momentum = 0.9):#bitG == 32
+        with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
+            shape = x.get_shape().as_list()#x is input, get input shape[batchsize,width,height,channel]
 
-        @tf.custom_gradient
-        def my_grad(x):
-            with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
-                shape = x.get_shape().as_list()#x is input, get input shape[batchsize,width,height,channel]
+            num_chan = shape[-1]#channel number
+            batch_size0 = tf.shape(x)[0]#because placehoder,batch size is always None,needs this operation to use it as a real number
+            w = shape[1]
+            h = shape[2]
+            moving_mean = tf.get_variable('moving_mean',shape=[num_chan,1],\
+                dtype=tf.float32, initializer=tf.zeros_initializer(),trainable=False)
+            moving_var = tf.get_variable('moving_var',shape=[num_chan,1],\
+                dtype=tf.float32, initializer=tf.ones_initializer(),trainable=False)
+            batch_mean = tf.get_variable('batch_mean',shape=[num_chan,1],\
+            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
-                num_chan = shape[-1]#channel number
-                batch_size0 = tf.shape(x)[0]#because placehoder,batch size is always None,needs this operation to use it as a real number
-                w = shape[1]
-                h = shape[2]
-                moving_mean = tf.get_variable('moving_mean',shape=[num_chan,1],\
-                    dtype=tf.float32, initializer=tf.zeros_initializer(),trainable=False)
-                moving_var = tf.get_variable('moving_var',shape=[num_chan,1],\
-                    dtype=tf.float32, initializer=tf.ones_initializer(),trainable=False)
-                batch_mean = tf.get_variable('batch_mean',shape=[num_chan,1],\
-                dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
+            batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
+            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
-                batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
-                dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
+            
 
-                
+            if training:
+                print('in training')
 
-                if training:
-                    print('in training')
+                bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
 
-                    bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
+                batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
+                batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
 
-                    batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
-                    batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
+                moving_mean = moving_mean.assign(momentum*moving_mean+batch_mean)
+                moving_var = moving_var.assign(momentum*moving_var+batch_var)
 
-                    moving_mean = moving_mean.assign(momentum*moving_mean+batch_mean)
-                    moving_var = moving_var.assign(momentum*moving_var+batch_var)
+                quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
 
-                    quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
+                grad = []
+                afbn = (x-bm)/(tf.math.sqrt(bv))
+                afquan = activate(afbn)
+                #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
+            else:
 
-                    '''
-                    Suppose y = W1*x, z = W2*y. dim(z)=k, dim(y)=m, dim(x)=n. 
-                    In order to get dz/dx = [dz/dx1,dz/dx2...dz/dxn-1],**notice:dz/dx1 = sum([dz1/dx1,dz2/dx1,....dzk-1/dx1])**
-                    we have to know 
-                    dy/dx = 
-                    [[dy0/dx0,dy1/dx0,dy2/dx0....dym-1/dx0],
-                     [dy0/dx1,dy1/dx1,dy2/dx1....dym-1/dx1],
-                    ....
-                     [dy0/dxn-1,dy1/dxn-1,dy2/dxn-1....dym-1/dxn-1]]
+                print('in inference')
+                quan_points = moving_var *quan_points0 + moving_mean
 
-                    and dz/dy = [dz/dy0,dz/dy1,dz/dy2...dz/dym-1].
+            '''
+            the following part is to use quan_points to quantizate inputs.
+            '''
+            inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
 
-                    Then dz/dx = tf.matmul(dy/dx,dz/dy). dz/dy is known. So we need to calculate 
-                    dy/dx  
-                    '''
+            label1 = tf.cast(tf.less_equal(inputs,tf.expand_dims(quan_points[:,0],axis=-1)),dtype=tf.float32)
 
-                    '''
-                    the following part is to get dy/dx. Because the lack of tf.gradients, we can only get the result by looping.
-                    this operation slow down the whole process speed a lot.
-                    '''
-                    grad = []
-                    afbn = (x-bm)/(tf.math.sqrt(bv))
-                    afquan = activate(afbn)
-                    for i in range(num_chan):
-                        grad.append(tf.gradients(afquan[:,:,:,i],x))
-                    
-                    grad = tf.squeeze(tf.convert_to_tensor(grad),axis = 1)
-                    grad = tf.identity(tf.transpose(grad,[1,2,3,0,4]),name='grad')
-                    #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
-                else:
+            label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,1],axis=-1)),\
+                tf.math.greater(inputs,tf.expand_dims(quan_points[:,0],axis=-1))),dtype=tf.float32)
 
-                    print('in inference')
-                    quan_points = moving_var *quan_points0 + moving_mean
+            label3 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),\
+                tf.math.greater(inputs,tf.expand_dims(quan_points[:,1],axis=-1))),dtype=tf.float32)
 
-                '''
-                the following part is to use quan_points to quantizate inputs.
-                '''
-                inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
+            label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
 
-                label1 = tf.cast(tf.less_equal(inputs,tf.expand_dims(quan_points[:,0],axis=-1)),dtype=tf.float32)
+            xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
+            label4*quan_values[3]
 
-                label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,1],axis=-1)),\
-                    tf.math.greater(inputs,tf.expand_dims(quan_points[:,0],axis=-1))),dtype=tf.float32)
-
-                label3 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),\
-                    tf.math.greater(inputs,tf.expand_dims(quan_points[:,1],axis=-1))),dtype=tf.float32)
-
-                label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
-
-                xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
-                label4*quan_values[3]
-
-                output = tf.identity(tf.reshape(tf.transpose(xn),[-1,w,h,num_chan]),'output')
-
-
-            def grad_fg(d):
-
-                '''
-                d is dz/dy = [dz/dy1,dz/dy2....dz/dym-1]
-                '''
-                d = tf.expand_dims(d,axis = -1)
-                return tf.squeeze(tf.matmul(grad,d),axis=-1)
-
-            return output,grad_fg 
-
-        return my_grad(x)
+            quan_output = tf.reshape(tf.transpose(xn),[-1,w,h,num_chan])
+            if training:
+                return stop_gradient(quan_output - afquan) + afquan
+            else:
+                return quan_output
 
     return fw, fa, fg
 
