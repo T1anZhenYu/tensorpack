@@ -85,8 +85,8 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
 
-                moving_mean = moving_mean.assign(momentum*moving_mean+batch_mean)
-                moving_var = moving_var.assign(momentum*moving_var+batch_var)
+                moving_mean = moving_mean.assign(momentum*moving_mean+(1-momentum)* batch_mean)
+                moving_var = moving_var.assign(momentum*moving_var+(1-momentum)*batch_var)
 
                 quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
 
@@ -120,7 +120,7 @@ def get_dorefa(bitW, bitA, bitG):
             quan_output = tf.reshape(tf.transpose(xn),[-1,w,h,num_chan])
             if training:
                 return tf.stop_gradient(quan_output - afquan) + afquan
-                
+
             else:
                 return quan_output
 
