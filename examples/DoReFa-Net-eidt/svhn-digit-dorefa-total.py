@@ -92,7 +92,7 @@ class Model(ModelDesc):
                       #.apply(activate)
                       # 7
 
-                      .Conv2D('conv4', 127, 3, padding='SAME')
+                      .Conv2D('conv4', 128, 3, padding='SAME')
                       .apply(fg,'fg4',is_training)
                       #.BatchNorm('bn4')
                       #.apply(activate)
