@@ -66,14 +66,14 @@ def get_dorefa(bitW, bitA, bitG):
             w = shape[1]
             h = shape[2]
             moving_mean = tf.get_variable('moving_mean',shape=[num_chan,1],\
-                dtype=tf.float32, initializer=tf.zeros_initializer())
+                dtype=tf.float32, initializer=tf.zeros_initializer(),trainable=False)
             moving_var = tf.get_variable('moving_var',shape=[num_chan,1],\
-                dtype=tf.float32, initializer=tf.ones_initializer())
+                dtype=tf.float32, initializer=tf.ones_initializer(),trainable=False)
             batch_mean = tf.get_variable('batch_mean',shape=[num_chan,1],\
-            dtype = tf.float32,initializer=tf.zeros_initializer())
+            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
             batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
-            dtype = tf.float32,initializer=tf.zeros_initializer())
+            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
             
 
@@ -122,7 +122,7 @@ def get_dorefa(bitW, bitA, bitG):
                 return tf.stop_gradient(quan_output - afquan) + afquan
 
             else:
-                return quan_output,moving_mean,moving_var,batch_mean,batch_var
+                return quan_output
 
     return fw, fa, fg
 
