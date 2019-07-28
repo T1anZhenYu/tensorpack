@@ -74,14 +74,14 @@ def get_dorefa(bitW, bitA, bitG):
 
             batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
-
+            inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
             
 
             if training:
                 print('in training')
 
                 #bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
-                mid = tf.nn.top_k (x,int(num_chan/2)+1)[0][:,-1]
+                mid = tf.nn.top_k (inputs,int(num_chan/2)+1)[0][:,-1]
                 batch_mean = batch_mean.assign(tf.expand_dims(mid,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
 
@@ -102,7 +102,7 @@ def get_dorefa(bitW, bitA, bitG):
             '''
             the following part is to use quan_points to quantizate inputs.
             '''
-            inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
+            
 
             label1 = tf.cast(tf.less_equal(inputs,tf.expand_dims(quan_points[:,0],axis=-1)),dtype=tf.float32)
 
