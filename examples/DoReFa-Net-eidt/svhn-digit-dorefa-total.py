@@ -141,8 +141,7 @@ def get_config():
     # prepare dataset
     d1 = dataset.SVHNDigit('train')
     d2 = dataset.SVHNDigit('extra')
-    #data_train = RandomMixData([d1, d2])
-    data_train = d1
+    data_train = RandomMixData([d1, d2])
     data_test = dataset.SVHNDigit('test')
 
     augmentors = [
@@ -163,8 +162,7 @@ def get_config():
         callbacks=[
             ModelSaver(),
             InferenceRunner(data_test,
-                            [ScalarStats('cost'), ClassificationError('wrong-top1')]),
-            #DumpTensors(['conv1/output:0','fg1/output:0','fg1/grad:0'])
+                            [ScalarStats('cost'), ClassificationError('wrong_tensor')])
         ],
         model=Model(),
         max_epoch=200,
