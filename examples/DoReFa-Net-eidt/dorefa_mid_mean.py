@@ -80,7 +80,7 @@ def get_dorefa(bitW, bitA, bitG):
             if training:
                 print('in training')
 
-                bm, bv_ = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
+                bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
                 mid = tf.nn.top_k (inputs,tf.cast(batch_size0*w*h/2,dtype=tf.int32)+1)[0][:,-1]
                 print('mid ',mid)
 
