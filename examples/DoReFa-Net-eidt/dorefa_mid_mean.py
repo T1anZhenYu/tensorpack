@@ -80,7 +80,7 @@ def get_dorefa(bitW, bitA, bitG):
             if training:
                 print('in training')
 
-                #bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
+                #bm, bv_ = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
                 mid = tf.nn.top_k (inputs,tf.cast(batch_size0*w*h/2,dtype=tf.int32)+1)[0][:,-1]
                 print('mid ',mid)
 
@@ -91,7 +91,7 @@ def get_dorefa(bitW, bitA, bitG):
                 quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
 
                 grad = []
-                afbn = (x-bm)/(tf.math.sqrt(bv))
+                afbn = (x-mid)/(tf.math.sqrt(bv))
                 afquan = activate(afbn)
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
                 fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
