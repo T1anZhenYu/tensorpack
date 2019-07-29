@@ -221,7 +221,7 @@ def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
             tf_args = dict(
                 axis=axis,
                 momentum=momentum, epsilon=epsilon,
-                center=center, scale=scale,
+                center=False, scale=False,
                 beta_initializer=beta_initializer,
                 gamma_initializer=gamma_initializer,
                 # https://github.com/tensorflow/tensorflow/issues/10857#issuecomment-410185429
