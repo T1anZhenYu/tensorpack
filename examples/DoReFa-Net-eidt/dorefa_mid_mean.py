@@ -77,7 +77,7 @@ def get_dorefa(bitW, bitA, bitG):
             inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
 
             tf_args = dict(
-                momentum=momentum,training=False)   
+                momentum=momentum)   
             layer = tf.layers.BatchNormalization(**tf_args)             
 
             if training:
