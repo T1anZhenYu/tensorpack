@@ -65,16 +65,15 @@ def get_dorefa(bitW, bitA, bitG):
             batch_size0 = tf.shape(x)[0]#because placehoder,batch size is always None,needs this operation to use it as a real number
             w = shape[1]
             h = shape[2]
-            moving_mean = tf.get_variable('moving_mean',shape=[num_chan,1],\
-                dtype=tf.float32, initializer=tf.zeros_initializer(),trainable=False)
-            moving_var = tf.get_variable('moving_var',shape=[num_chan,1],\
-                dtype=tf.float32, initializer=tf.ones_initializer(),trainable=False)
+
             batch_mean = tf.get_variable('batch_mean',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
             batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
-
+            tf_args = dict(
+                momentum=momentum)   
+            layer = tf.layers.BatchNormalization(**tf_args)  
             
 
             if training:
@@ -85,19 +84,39 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
 
-                moving_mean = moving_mean.assign(momentum*moving_mean+(1-momentum)* batch_mean)
-                moving_var = moving_var.assign(momentum*moving_var+(1-momentum)*batch_var)
-
                 quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
 
-                grad = []
                 afbn = (x-bm)/(tf.math.sqrt(bv))
                 afquan = activate(afbn)
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
+                fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
+                print('layer moving_mean',layer.moving_mean.shape)
+                print('batch_mean',mid.shape)
+                layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*mid)
+                layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*bv)
+ 
             else:
 
                 print('in inference')
-                quan_points = moving_var *quan_points0 + moving_mean
+                xnn = layer.apply(x, training=training, scope=tf.get_variable_scope())
+
+                i1 = x[0,0,0,:]
+                i2 = x[1,1,1,:]
+                x1 = xnn[0,0,0,:]
+                x2 = xnn[1,1,1,:]
+
+                mean0 = i1-x1*(i1-i2)/(x1-x2)
+                var0 = (i1-i2)/(x1-x2)
+                #quantize BN during inference
+
+                #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
+
+                moving_mean_ = tf.identity(mean0,name='moving_mean_')
+                moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
+                moving_var_ = tf.identity(var0,name='moving_var')
+                moving_var_ = tf.expand_dims(moving_var_,axis = -1)
+
+                quan_points = moving_var_ *quan_points0 + moving_mean_
 
             '''
             the following part is to use quan_points to quantizate inputs.
