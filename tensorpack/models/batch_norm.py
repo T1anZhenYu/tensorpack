@@ -81,7 +81,7 @@ except ImportError:
     })
 @disable_autograph()
 def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
-              center=False, scale=False,
+              center=True, scale=True,
               beta_initializer=tf.zeros_initializer(),
               gamma_initializer=tf.ones_initializer(),
               virtual_batch_size=None,
