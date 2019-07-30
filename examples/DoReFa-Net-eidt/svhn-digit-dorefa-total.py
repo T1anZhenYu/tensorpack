@@ -68,7 +68,6 @@ class Model(ModelDesc):
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
-                argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
@@ -81,9 +80,10 @@ class Model(ModelDesc):
                       #.apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
-                      .apply(fg,'fg2',is_training)
-                      #.BatchNorm('bn2')
                       .MaxPooling('pool1', 2, padding='SAME')
+                      .apply(fg,'fg2',training=is_training)
+                      #.BatchNorm('bn2')
+                      #.MaxPooling('pool1', 2, padding='SAME')
                       #.apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')

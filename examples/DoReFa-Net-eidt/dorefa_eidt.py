@@ -59,6 +59,7 @@ def get_dorefa(bitW, bitA, bitG):
         return fa(nonlin(x))
     def fg(x,name,training,momentum = 0.99):#bitG == 32
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
+
             shape = x.get_shape().as_list()#x is input, get input shape[batchsize,width,height,channel]
 
             num_chan = shape[-1]#channel number
@@ -74,7 +75,7 @@ def get_dorefa(bitW, bitA, bitG):
             tf_args = dict(
                 momentum=momentum,center=False, scale=False)   
             layer = tf.layers.BatchNormalization(**tf_args)  
-            
+
 
             if training:
                 print('in training')
@@ -91,8 +92,8 @@ def get_dorefa(bitW, bitA, bitG):
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
                 fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
 
-                layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*bm)
-                layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*bv)
+                #layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*bm)
+                #layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*bv)
  
             else:
 
