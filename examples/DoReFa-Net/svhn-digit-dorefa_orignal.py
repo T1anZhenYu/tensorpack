@@ -18,18 +18,14 @@ from dorefa import get_dorefa
 This is a tensorpack script for the SVHN results in paper:
 DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients
 http://arxiv.org/abs/1606.06160
-
 The original experiements are performed on a proprietary framework.
 This is our attempt to reproduce it on tensorpack.
-
 Accuracy:
     With (W,A,G)=(1,1,4), can reach 3.1~3.2% error after 150 epochs.
     With (W,A,G)=(1,2,4), error is 3.0~3.1%.
     With (W,A,G)=(32,32,32), error is about 2.3%.
-
 Speed:
     With quantization, 60 batch/s on 1 1080Ti. (4721 batch / epoch)
-
 To Run:
     ./svhn-digit-dorefa.py --dorefa 1,2,4
 """
