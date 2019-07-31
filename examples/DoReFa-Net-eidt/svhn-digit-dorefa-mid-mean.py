@@ -13,7 +13,7 @@ from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 
-from dorefa_mid_mean import get_dorefa
+from dorefa_eidt import get_dorefa
 
 """
 This is a tensorpack script for the SVHN results in paper:
@@ -34,7 +34,6 @@ To Run:
 BITW = 1
 BITA = 2
 BITG = 4
-tf.set_random_seed(1234)
 
 class Model(ModelDesc):
     def inputs(self):
@@ -68,7 +67,7 @@ class Model(ModelDesc):
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
-                argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
+        argscope(BatchNorm, momentum=0.9, epsilon=1e-4),\
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
@@ -81,9 +80,10 @@ class Model(ModelDesc):
                       #.apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
-                      .apply(fg,'fg2',is_training)
-                      #.BatchNorm('bn2')
                       .MaxPooling('pool1', 2, padding='SAME')
+                      .apply(fg,'fg2',training=is_training)
+                      #.BatchNorm('bn2')
+                      #.MaxPooling('pool1', 2, padding='SAME')
                       #.apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')
