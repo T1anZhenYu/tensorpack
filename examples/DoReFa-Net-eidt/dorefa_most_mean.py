@@ -65,10 +65,7 @@ def get_dorefa(bitW, bitA, bitG):
             batch_size0 = tf.shape(x)[0]#because placehoder,batch size is always None,needs this operation to use it as a real number
             w = shape[1]
             h = shape[2]
-            moving_mean = tf.get_variable('moving_mean',shape=[num_chan,1],\
-                dtype=tf.float32, initializer=tf.zeros_initializer(),trainable=False)
-            moving_var = tf.get_variable('moving_var',shape=[num_chan,1],\
-                dtype=tf.float32, initializer=tf.ones_initializer(),trainable=False)
+
             batch_mean = tf.get_variable('batch_mean',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
@@ -98,9 +95,6 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_mean = batch_mean.assign(tf.expand_dims(mean,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
 
-                moving_mean = moving_mean.assign(momentum*moving_mean+(1-momentum)* batch_mean)
-                moving_var = moving_var.assign(momentum*moving_var+(1-momentum)*batch_var)
-
                 quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
 
                 grad = []
@@ -108,6 +102,8 @@ def get_dorefa(bitW, bitA, bitG):
                 afquan = activate(afbn)
 
                 fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
+                layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*mid)
+                layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*bv)
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
             else:
 
