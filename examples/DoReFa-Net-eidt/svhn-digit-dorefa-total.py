@@ -34,7 +34,6 @@ To Run:
 BITW = 1
 BITA = 2
 BITG = 4
-tf.set_random_seed(1234)
 
 class Model(ModelDesc):
     def inputs(self):
