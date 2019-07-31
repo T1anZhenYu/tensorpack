@@ -72,9 +72,8 @@ def get_dorefa(bitW, bitA, bitG):
             batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
             inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
-
             tf_args = dict(
-                momentum=momentum)   
+                momentum=momentum,center=False, scale=False)  
             layer = tf.layers.BatchNormalization(**tf_args)             
 
             if training:
