@@ -68,7 +68,7 @@ class Model(ModelDesc):
         image = image / 256.0
 
         with remap_variables(binarize_weight), \
-        argscope(BatchNormEidt, momentum=0.9, epsilon=1e-4),\
+        argscope(BatchNorm, momentum=0.9, epsilon=1e-4),\
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
