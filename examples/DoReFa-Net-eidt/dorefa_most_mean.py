@@ -81,6 +81,8 @@ def get_dorefa(bitW, bitA, bitG):
 
                 bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
                 mid = tf.nn.top_k (inputs,tf.cast(batch_size0*w*h/2+3,dtype = tf.int32))[0][:,-6:]
+                print('x ',x)
+                print('mid ',mid)
                 num = []
                 for i in range(6):
                   label = tf.equal(inputs,tf.expand_dims(mid[:,i],axis=-1))
@@ -102,7 +104,7 @@ def get_dorefa(bitW, bitA, bitG):
                 afquan = activate(afbn)
 
                 fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
-                layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*mid)
+                layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*mean)
                 layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*bv)
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
             else:
