@@ -49,9 +49,7 @@ def get_dorefa(bitW, bitA, bitG):
         @tf.custom_gradient
         def _identity(input):
             def grad_fg(x):
-                for ele2 in tf.all_variables():
-                    print('in dorefa')
-                    print(ele2.name)
+
                 rank = x.get_shape().ndims
                 assert rank is not None
                 maxx = tf.reduce_max(tf.abs(x), list(range(1, rank)), keep_dims=True)

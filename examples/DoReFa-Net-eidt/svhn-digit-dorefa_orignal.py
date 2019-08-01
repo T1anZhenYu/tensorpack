@@ -155,7 +155,9 @@ def get_config():
         callbacks=[
             ModelSaver(),
             InferenceRunner(data_test,
-                            [ScalarStats('cost'), ClassificationError('wrong_tensor')])
+                            [ScalarStats('cost'), ClassificationError('wrong_tensor')]),
+            DumpTensors(['bn1/mean/EMA:0','conv1/output:0'])
+
         ],
         model=Model(),
         max_epoch=200,
