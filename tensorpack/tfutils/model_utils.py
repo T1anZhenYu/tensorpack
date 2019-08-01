@@ -17,6 +17,9 @@ def describe_trainable_vars():
     Print a description of the current model parameters.
     Skip variables starting with "tower", as they are just duplicates built by data-parallel logic.
     """
+    for ele2 in tf.all_variables():
+        print('in dorefa')
+        print(ele2.name)
     train_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
     if len(train_vars) == 0:
         logger.warn("No trainable variables in the graph!")
