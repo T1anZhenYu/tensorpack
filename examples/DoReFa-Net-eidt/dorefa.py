@@ -5,6 +5,10 @@
 import tensorflow as tf
 
 
+for ele2 in tf.all_variables():
+    print('in dorefa')
+    print(ele2.name)
+
 def get_dorefa(bitW, bitA, bitG):
     """
     Return the three quantization functions fw, fa, fg, for weights, activations and gradients respectively

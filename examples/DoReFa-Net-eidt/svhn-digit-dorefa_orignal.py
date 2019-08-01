@@ -168,7 +168,6 @@ if __name__ == '__main__':
                         help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
                         default='1,2,4')
     args = parser.parse_args()
-
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
     launch_train_with_config(config, SimpleTrainer())
