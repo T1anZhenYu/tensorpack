@@ -15,7 +15,7 @@ def conv_sample_dignoal(kernel_size,x,b,w,h,c):
           for j in range(kernel_size-1,h,kernel_size):
             for m in range(kernel_size):
 
-              total_ch += np.sum(x[:,i-m,j-m,ch])
+              total_ch += tf.reduce_sum(x[:,i-m,j-m,ch])
               print('total_ch',total_ch)
         total[ch]+= total_ch
         num = b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size
