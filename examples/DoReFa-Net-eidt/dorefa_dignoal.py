@@ -7,21 +7,24 @@ import numpy as np
 def get_std(x,ave):
   return np.sqrt(np.mean(np.square((x-ave)),axis=(0,1,2)))
 def conv_sample_dignoal(kernel_size,x,b,w,h,c):
-  print('b',b)
-  total = np.zeros(b)
-  for ch in range(c):
-    total_ch = 0
-    for i in range(kernel_size-1,w,kernel_size):
-      for j in range(kernel_size-1,h,kernel_size):
-        for m in range(kernel_size):
+    print('b',b)
+    if b:
+        total = np.zeros(b)
+        for ch in range(c):
+        total_ch = 0
+        for i in range(kernel_size-1,w,kernel_size):
+          for j in range(kernel_size-1,h,kernel_size):
+            for m in range(kernel_size):
 
-          total_ch += np.sum(x[:,i-m,j-m,ch])
-    total[ch]+= total_ch
-    num = b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size
-  ave = total/num
-  
-  std = get_std(x,ave)
-  return ave,std
+              total_ch += np.sum(x[:,i-m,j-m,ch])
+        total[ch]+= total_ch
+        num = b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size
+        ave = total/num
+
+        std = get_std(x,ave)
+        return ave,std
+    else:
+        return np.zeros(128),np.ones(128)
 def get_dorefa(bitW, bitA, bitG):
     """
     Return the three quantization functions fw, fa, fg, for weights, activations and gradients respectively
