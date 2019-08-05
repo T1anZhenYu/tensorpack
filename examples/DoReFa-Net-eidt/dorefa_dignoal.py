@@ -26,7 +26,7 @@ def conv_sample_dignoal(kernel_size,x,b,w,h,c):
         return ave,std
     else:
         return tf.cast(tf.convert_to_tensor(np.zeros(128)),dtype=tf.float32),\
-        tf.cast(tf.convert_to_tensor(np.ones(128),dtype=tf.float32))
+        tf.cast(tf.convert_to_tensor(np.ones(128)),dtype=tf.float32)
 def get_dorefa(bitW, bitA, bitG):
     """
     Return the three quantization functions fw, fa, fg, for weights, activations and gradients respectively
