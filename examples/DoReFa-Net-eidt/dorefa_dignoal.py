@@ -80,7 +80,7 @@ def get_dorefa(bitW, bitA, bitG):
 
     def activate(x):
         return fa(nonlin(x))
-    def fg(x,name,training,momentum = 0.9,kernel_size=8):#bitG == 32
+    def fg(x,name,training,momentum = 0.9,kernel_size=1):#bitG == 32
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
             shape = x.get_shape().as_list()#x is input, get input shape[batchsize,width,height,channel]
             print('shape ',shape)
