@@ -111,7 +111,7 @@ def get_dorefa(bitW, bitA, bitG):
                 quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
 
 
-                afbn = (x-bm)/(tf.math.sqrt(bv))
+                afbn = (x-bm)/(tf.math.sqrt(bv+0.000001))
                 afquan = activate(afbn)
 
                 fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
