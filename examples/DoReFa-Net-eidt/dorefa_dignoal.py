@@ -106,11 +106,26 @@ def get_dorefa(bitW, bitA, bitG):
 
             if training:
                 print('in training')
+                total = []
+                for ch in range(num_chan):
+                    total_ch = 0
+                    for i in range(kernel_size-1,w,kernel_size):
+                      for j in range(kernel_size-1,h,kernel_size):
+                        for m in range(kernel_size):
 
+                          total_ch += tf.reduce_sum(x[:,i-m,j-m,ch])
+                          
+                    total.append(total_ch)
+                total = tf.cast(tf.convert_to_tensor(total),dtype=tf.float32)
+                num = tf.cast(b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size,dtype=tf.float32)
+                mean_ = tf.cast(tf.convert_to_tensor(total/num),dtype=tf.float32)
+
+                std_ = tf.cast(tf.convert_to_tensor(get_std(tf.reshape(x,(-1,c)),ave)),dtype=tf.float32)
                 bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
 
-                mean_,std_ = conv_sample_dignoal(kernel_size,x,batch_size0,w,h,num_chan)
-
+                realbatch_mean = realbatch_mean.assign(tf.expand_dims(bm),axis=-1)
+                realbatch_var = realbatch_var.assign(tf.expand_dims(bv),axis=-1)
+                
                 batch_mean = batch_mean.assign(tf.expand_dims(mean_,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(std_,axis=-1))
                 quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
