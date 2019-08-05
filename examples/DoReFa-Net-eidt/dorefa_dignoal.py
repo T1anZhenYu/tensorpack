@@ -23,7 +23,7 @@ def conv_sample_dignoal(kernel_size,x,b,w,h,c):
     total = tf.cast(tf.convert_to_tensor(total),dtype=tf.float32)
     num = tf.cast(b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size,dtype=tf.float32)
     ave = tf.cast(tf.convert_to_tensor(total/num),dtype=tf.float32)
-    print('ave',ave)
+
     std = tf.cast(tf.convert_to_tensor(get_std(tf.reshape(x,(-1,c)),ave)),dtype=tf.float32)
 
     return ave,std
@@ -105,14 +105,12 @@ def get_dorefa(bitW, bitA, bitG):
                 bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
 
                 mean,std = conv_sample_dignoal(kernel_size,x,batch_size0,w,h,num_chan)
-                print('mean',mean)
-                print('std',std)
+
                 batch_mean = batch_mean.assign(tf.expand_dims(mean,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(std,axis=-1))
-                print('batch_var',batch_var)
                 quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
 
-                grad = []
+
                 afbn = (x-bm)/(tf.math.sqrt(bv))
                 afquan = activate(afbn)
 
