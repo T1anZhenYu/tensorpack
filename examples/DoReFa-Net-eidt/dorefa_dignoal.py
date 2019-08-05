@@ -22,8 +22,8 @@ def conv_sample_dignoal(kernel_size,x,b,w,h,c):
     total = tf.cast(tf.convert_to_tensor(total),dtype=tf.float32)
     num = tf.cast(b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size,dtype=tf.float32)
     ave = tf.cast(tf.convert_to_tensor(total/num),dtype=tf.float32)
-
-    std = tf.cast(tf.convert_to_tensor(get_std(x,ave)),dtype=tf.float32)
+    print('ave',ave)
+    std = tf.cast(tf.convert_to_tensor(get_std(tf.reshape(x,(-1,c)),ave)),dtype=tf.float32)
 
     return ave,std
 
