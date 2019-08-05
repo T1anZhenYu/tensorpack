@@ -7,6 +7,7 @@ import numpy as np
 import math
 def get_std(x,ave):
     return tf.sqrt(tf.reduce_mean(tf.square(x-ave),axis=-1))
+
 def conv_sample_dignoal(kernel_size,x,b,w,h,c):
 
     total = []
@@ -108,7 +109,7 @@ def get_dorefa(bitW, bitA, bitG):
                 print('std',std)
                 batch_mean = batch_mean.assign(tf.expand_dims(mean,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(std,axis=-1))
-  
+                print('batch_var',batch_var)
                 quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
 
                 grad = []
