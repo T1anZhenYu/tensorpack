@@ -103,7 +103,7 @@ def get_dorefa(bitW, bitA, bitG):
                 bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
 
                 mean,std = conv_sample_dignoal(kernel_size,x,batch_size0,w,h,num_chan)
-
+                print('mean',mean)
                 batch_mean = batch_mean.assign(tf.expand_dims(mean,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(std,axis=-1))
 
