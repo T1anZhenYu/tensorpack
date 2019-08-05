@@ -140,7 +140,39 @@ def run_image(model, sess_init, inputs):
         print(f + ":")
         print(list(zip(names, prob[ret])))
 
+def get_config():
+    logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
 
+    # prepare dataset
+    d1 = dataset.SVHNDigit('train')
+    d2 = dataset.SVHNDigit('extra')
+    data_train = RandomMixData([d1, d2])
+    data_test = dataset.SVHNDigit('test')
+
+    augmentors = [
+        imgaug.Resize((40, 40)),
+        imgaug.Brightness(30),
+        imgaug.Contrast((0.5, 1.5)),
+    ]
+    data_train = AugmentImageComponent(data_train, augmentors)
+    data_train = BatchData(data_train, 128)
+    data_train = MultiProcessRunnerZMQ(data_train, 5)
+
+    augmentors = [imgaug.Resize((40, 40))]
+    data_test = AugmentImageComponent(data_test, augmentors)
+    data_test = BatchData(data_test, 128, remainder=True)
+
+    return TrainConfig(
+        data=QueueInput(data_train),
+        callbacks=[
+            ModelSaver(),
+            InferenceRunner(data_test,
+                            [ScalarStats('cost'), ClassificationError('wrong-top1')]),
+            #DumpTensors(['fg1/moving_mean','fg1/moving_var','fg1/batch_mean','fg1/batch_var'])
+        ],
+        model=Model(),
+        max_epoch=200,
+    )
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', help='the physical ids of GPUs to use')

@@ -7,6 +7,7 @@ import numpy as np
 def get_std(x,ave):
   return np.sqrt(np.mean(np.square((x-ave)),axis=(0,1,2)))
 def conv_sample_dignoal(kernel_size,x,b,w,h,c):
+  print('b',b)
   total = np.zeros(b)
   for ch in range(c):
     total_ch = 0
