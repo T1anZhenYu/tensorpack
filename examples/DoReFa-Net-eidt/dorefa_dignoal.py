@@ -106,6 +106,11 @@ def get_dorefa(bitW, bitA, bitG):
 
                 mean,std = conv_sample_dignoal(kernel_size,x,batch_size0,w,h,num_chan)
 
+                bm = tf.identity(bm,name='bm')
+                mean = tf.identity(mean,name='mean')
+                bv = tf.identity(bv,name='bv')
+                std = tf.identity(std,name='std')
+
                 batch_mean = batch_mean.assign(tf.expand_dims(mean,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(std,axis=-1))
                 quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
