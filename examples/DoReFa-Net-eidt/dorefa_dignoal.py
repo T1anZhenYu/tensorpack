@@ -8,7 +8,7 @@ def get_std(x,ave):
   return np.sqrt(np.mean(np.square((x-ave)),axis=(0,1,2)))
 def conv_sample_dignoal(kernel_size,x,b,w,h,c):
 
-    total = np.zeros(c)
+    total = []
     for ch in range(c):
         total_ch = 0
         for i in range(kernel_size-1,w,kernel_size):
@@ -17,11 +17,12 @@ def conv_sample_dignoal(kernel_size,x,b,w,h,c):
 
               total_ch += tf.reduce_sum(x[:,i-m,j-m,ch])
               print('total_ch',total_ch)
-        total[ch]+= total_ch
-        num = b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size
-        ave = tf.cast(tf.convert_to_tensor(total/num),dtype=tf.float32)
+        total.append(total_ch)
+    total = tf.convert_to_tensor(total)
+    num = b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size
+    ave = tf.cast(tf.convert_to_tensor(total/num),dtype=tf.float32)
 
-        std = tf.cast(tf.convert_to_tensor(get_std(x,ave)),dtype=tf.float32)
+    std = tf.cast(tf.convert_to_tensor(get_std(x,ave)),dtype=tf.float32)
 
     return ave,std
 
