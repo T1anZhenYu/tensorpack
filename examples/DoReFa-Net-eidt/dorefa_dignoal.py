@@ -4,6 +4,7 @@
 
 import tensorflow as tf
 import numpy as np 
+import math
 def get_std(x,ave):
   return np.sqrt(np.mean(np.square((x-ave)),axis=(0,1,2)))
 def conv_sample_dignoal(kernel_size,x,b,w,h,c):
@@ -16,7 +17,7 @@ def conv_sample_dignoal(kernel_size,x,b,w,h,c):
             for m in range(kernel_size):
 
               total_ch += tf.reduce_sum(x[:,i-m,j-m,ch])
-              print('total_ch',total_ch)
+              
         total.append(total_ch)
     total = tf.convert_to_tensor(total)
     num = b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size
