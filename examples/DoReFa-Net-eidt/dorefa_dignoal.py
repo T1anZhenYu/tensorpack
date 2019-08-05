@@ -120,7 +120,7 @@ def get_dorefa(bitW, bitA, bitG):
                 num = tf.cast(batch_size0*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size,dtype=tf.float32)
                 mean_ = tf.cast(tf.convert_to_tensor(total/num),dtype=tf.float32)
 
-                std_ = tf.cast(tf.convert_to_tensor(get_std(tf.reshape(x,(-1,c)),ave)),dtype=tf.float32)
+                std_ = tf.cast(tf.convert_to_tensor(get_std(tf.reshape(x,(-1,num_chan)),ave)),dtype=tf.float32)
                 bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
 
                 realbatch_mean = realbatch_mean.assign(tf.expand_dims(bm),axis=-1)
