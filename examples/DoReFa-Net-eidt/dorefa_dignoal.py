@@ -117,7 +117,7 @@ def get_dorefa(bitW, bitA, bitG):
                           
                     total.append(total_ch)
                 total = tf.cast(tf.convert_to_tensor(total),dtype=tf.float32)
-                num = tf.cast(b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size,dtype=tf.float32)
+                num = tf.cast(batch_size0*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size,dtype=tf.float32)
                 mean_ = tf.cast(tf.convert_to_tensor(total/num),dtype=tf.float32)
 
                 std_ = tf.cast(tf.convert_to_tensor(get_std(tf.reshape(x,(-1,c)),ave)),dtype=tf.float32)
