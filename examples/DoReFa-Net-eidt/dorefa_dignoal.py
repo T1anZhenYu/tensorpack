@@ -19,14 +19,14 @@ def conv_sample_dignoal(kernel_size,x,b,w,h,c):
                   total_ch += np.sum(x[:,i-m,j-m,ch])
             total[ch]+= total_ch
             num = b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size
-            ave = tf.cast(tf.convert_to_tensor(total/num),tf.float32)
+            ave = tf.cast(tf.convert_to_tensor(total/num),dtype=tf.float32)
 
-            std = tf.cast(tf.convert_to_tensor(get_std(x,ave)),tf.float32)
+            std = tf.cast(tf.convert_to_tensor(get_std(x,ave)),dtype=tf.float32)
 
         return ave,std
     else:
-        return tf.cast(tf.convert_to_tensor(np.zeros(128)),tf.float32),\
-        tf.cast(tf.convert_to_tensor(np.ones(128),tf.float32))
+        return tf.cast(tf.convert_to_tensor(np.zeros(128)),dtype=tf.float32),\
+        tf.cast(tf.convert_to_tensor(np.ones(128),dtype=tf.float32))
 def get_dorefa(bitW, bitA, bitG):
     """
     Return the three quantization functions fw, fa, fg, for weights, activations and gradients respectively
