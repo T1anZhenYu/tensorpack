@@ -94,11 +94,7 @@ def get_dorefa(bitW, bitA, bitG):
 
             batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
-            realbatch_mean = tf.get_variable('realbatch_mean',shape=[num_chan,1],\
-            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
-            realbatch_var = tf.get_variable('realbatch_var',shape=[num_chan,1],\
-            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
             inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
             tf_args = dict(
                 momentum=momentum,center=False, scale=False)   
@@ -122,9 +118,6 @@ def get_dorefa(bitW, bitA, bitG):
 
                 std_ = tf.cast(tf.convert_to_tensor(get_std(tf.reshape(x,(-1,num_chan)),mean_)),dtype=tf.float32)
                 bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
-
-                realbatch_mean = realbatch_mean.assign(tf.expand_dims(bm,axis=-1))
-                realbatch_var = realbatch_var.assign(tf.expand_dims(bv,axis=-1))
                 
                 batch_mean = batch_mean.assign(tf.expand_dims(mean_,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(std_,axis=-1))
@@ -135,8 +128,8 @@ def get_dorefa(bitW, bitA, bitG):
                 afquan = activate(afbn)
 
                 fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
-                layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*bm)
-                layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*tf.math.sqrt(bv+0.000001))
+                layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*mean_)
+                layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*std_)
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
             else:
 
