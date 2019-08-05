@@ -19,9 +19,9 @@ def conv_sample_dignoal(kernel_size,x,b,w,h,c):
                   total_ch += np.sum(x[:,i-m,j-m,ch])
             total[ch]+= total_ch
             num = b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size
-            ave = total/num
+            ave = total/num.astype(np.float32)
 
-            std = get_std(x,ave)
+            std = get_std(x,ave).astype(np.float32)
         return ave,std
     else:
         return np.zeros(128),np.ones(128)
