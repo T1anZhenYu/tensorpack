@@ -13,7 +13,7 @@ from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 
-from dorefa_total import get_dorefa
+from dorefa_total_with_lambda import get_dorefa
 
 """
 This is a tensorpack script for the SVHN results in paper:

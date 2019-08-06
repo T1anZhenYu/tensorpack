@@ -97,9 +97,9 @@ def get_dorefa(bitW, bitA, bitG):
 
             inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
             tf_args = dict(
-                momentum=momentum,center=False, scale=False)   
+                momentum=momentum,center=True, scale=True)   
             layer = tf.layers.BatchNormalization(**tf_args)         
-
+            fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
             if training:
                 print('in training')
                 total = []
@@ -123,11 +123,7 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_var = batch_var.assign(tf.expand_dims(std_,axis=-1))
                 quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
 
-
-                afbn = (x-bm)/(tf.math.sqrt(bv+0.000001))
-                afquan = activate(afbn)
-
-                fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
+                
                 layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*mean_)
                 layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*tf.square(std_))
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
@@ -174,7 +170,7 @@ def get_dorefa(bitW, bitA, bitG):
 
             quan_output = tf.reshape(tf.transpose(xn),[-1,w,h,num_chan])
             if training:
-                return tf.stop_gradient(quan_output - afquan) + afquan
+                return tf.stop_gradient(quan_output - fake_output) + fake_output
 
             else:
                 return quan_output
