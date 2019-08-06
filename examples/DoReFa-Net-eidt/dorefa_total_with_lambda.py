@@ -91,10 +91,27 @@ def get_dorefa(bitW, bitA, bitG):
 
             else:
 
-                print('in inference')
 
-                quan_points = tf.expand_dims(layer.moving_variance,axis=-1)*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
-                tf.expand_dims(layer.moving_mean,axis=-1) - tf.expand_dims(layer.moving_variance*layer.beta/layer.gamma,axis=-1)
+                print('in inference')
+                xnn = layer.apply(x, training=training, scope=tf.get_variable_scope())
+
+                i1 = x[0,0,0,:]
+                i2 = x[1,1,1,:]
+                x1 = xnn[0,0,0,:]
+                x2 = xnn[1,1,1,:]
+
+                mean0 = i1-x1*(i1-i2)/(x1-x2)
+                var0 = (i1-i2)/(x1-x2)
+                #quantize BN during inference
+
+                #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
+
+                moving_mean_ = tf.identity(mean0,name='moving_mean_')
+                moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
+                moving_var_ = tf.identity(var0,name='moving_var')
+                moving_var_ = tf.expand_dims(moving_var_,axis = -1)
+
+                quan_points = moving_var_ *quan_points0 + moving_mean_
 
             '''
             the following part is to use quan_points to quantizate inputs.
