@@ -94,7 +94,7 @@ def get_dorefa(bitW, bitA, bitG):
                 print('in inference')
 
                 quan_points = tf.expand_dims(layer.moving_variance,axis=-1)*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
-                tf.expand_dims(layer.moving_mean) - tf.expand_dims(layer.moving_variance*layer.beta/layer.gamma)
+                tf.expand_dims(layer.moving_mean,axis=-1) - tf.expand_dims(layer.moving_variance*layer.beta/layer.gamma,axis=-1)
 
             '''
             the following part is to use quan_points to quantizate inputs.
