@@ -83,37 +83,15 @@ def get_dorefa(bitW, bitA, bitG):
                 bm, bv = tf.nn.moments(x, axes=[0,1,2])
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
-                
+
                 quan_points = batch_var*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
-                batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma)
+                batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma,axis=-1)
                 # adjust quan_points
 
-                #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
-                fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
 
-                #layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*bm)
-                #layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*bv)
- 
             else:
 
                 print('in inference')
-                xnn = layer.apply(x, training=training, scope=tf.get_variable_scope())
-
-                i1 = x[0,0,0,:]
-                i2 = x[1,1,1,:]
-                x1 = xnn[0,0,0,:]
-                x2 = xnn[1,1,1,:]
-
-                mean0 = i1-x1*(i1-i2)/(x1-x2)
-                var0 = (i1-i2)/(x1-x2)
-                #quantize BN during inference
-
-                #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
-
-                moving_mean_ = tf.identity(mean0,name='moving_mean_')
-                moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
-                moving_var_ = tf.identity(var0,name='moving_var')
-                moving_var_ = tf.expand_dims(moving_var_,axis = -1)
 
                 quan_points = layer.moving_variance*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
                 layer.moving_mean - layer.moving_variance*tf.expand_dims(layer.beta/layer.gamma)
