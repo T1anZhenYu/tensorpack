@@ -75,14 +75,15 @@ def get_dorefa(bitW, bitA, bitG):
             tf_args = dict(
                 momentum=momentum,center=True, scale=True,name = name+'/bn')   
             layer = tf.layers.BatchNormalization(**tf_args)  
-            print([n.name for n in tf.trainable_variables()])
 
+            fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
+            print([n.name for n in tf.trainable_variables()])
             if training:
                 print('in training')
                 bm, bv = tf.nn.moments(x, axes=[0,1,2])
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
-
+                
                 quan_points = batch_var*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
                 batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma)
                 # adjust quan_points
