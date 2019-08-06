@@ -104,7 +104,7 @@ def get_dorefa(bitW, bitA, bitG):
 
                 fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
                 layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*mean)
-                layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*tf.math.sqrt(bv))
+                layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*bv)
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
             else:
 

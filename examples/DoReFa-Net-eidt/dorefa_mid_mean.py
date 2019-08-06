@@ -97,7 +97,7 @@ def get_dorefa(bitW, bitA, bitG):
                 print('layer moving_mean',layer.moving_mean.shape)
                 print('batch_mean',mid.shape)
                 layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*mid)
-                layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*tf.math.sqrt(bv))
+                layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*bv)
                 
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
             else:
