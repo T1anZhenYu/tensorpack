@@ -101,20 +101,24 @@ def get_dorefa(bitW, bitA, bitG):
             layer = tf.layers.BatchNormalization(**tf_args)         
             fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
             if training:
-                print('in training')
-                total = []
-                for ch in range(num_chan):
-                    total_ch = 0
-                    for i in range(kernel_size-1,w,kernel_size):
-                      for j in range(kernel_size-1,h,kernel_size):
-                        for m in range(kernel_size):
+                def dignoal(x,kerner_size):
+                    b = tf.shape(x)[0]
+                    w = tf.shape(x)[1]
+                    h = tf.shape(x)[2]
+                    dig = tf.matrix_diag([1]*kerner_size)
 
-                          total_ch += tf.reduce_sum(x[:,i-m,j-m,ch])
-                          
-                    total.append(total_ch)
-                total = tf.cast(tf.convert_to_tensor(total),dtype=tf.float32)
-                num = tf.cast(batch_size0*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size,dtype=tf.float32)
-                mean_ = tf.cast(tf.convert_to_tensor(total/num),dtype=tf.float32)
+                    dig = tf.tile(dig,[tf.cast(w/kerner_size,dtype=tf.int32),tf.cast(w/kerner_size,dtype=tf.int32)])
+                    dig = tf.tile(tf.expand_dims(tf.expand_dims(dig,axis=0),axis=-1),[b,1,1,tf.shape(x)[-1]])
+
+                    x_ = x*tf.cast(dig,dtype=tf.float32)
+                    num =tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kerner_size)*tf.math.floor(h/kerner_size)*tf.cast(kerner_size,dtype=tf.float64)
+                    ave = tf.reduce_sum(x_,axis=[0,1,2])/tf.expand_dims(tf.cast(num,dtype=tf.float32),axis=-1)
+
+                    return ave
+
+
+                print('in training')
+                mean_=dignoal(x,kernel_size)
 
                 std_ = tf.cast(tf.convert_to_tensor(get_std(tf.reshape(x,(-1,num_chan)),mean_)),dtype=tf.float32)
             
