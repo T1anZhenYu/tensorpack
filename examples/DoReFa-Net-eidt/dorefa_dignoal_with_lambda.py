@@ -57,29 +57,29 @@ def get_dorefa(bitW, bitA, bitG):
 
     def activate(x):
         return fa(nonlin(x))
-    def fg(x,name,training,momentum = 0.9,kerner_size=4):#bitG == 32
+    def fg(x,name,training,momentum = 0.9,kernel_size=4):#bitG == 32
         def get_std(x,ave):
             inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
             return tf.sqrt(tf.reduce_mean(tf.square(inputs-tf.expand_dims(ave,axis=0)),axis=0))
-        def dignoal(x,kerner_size):
+        def dignoal(x,kernel_size):
             b = tf.shape(x)[0]
             w = tf.shape(x)[1]
             h = tf.shape(x)[2]
 
-            dig = tf.matrix_diag([1]*kerner_size)
+            dig = tf.matrix_diag([1]*kernel_size)
 
-            dig = tf.tile(dig,[tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32),tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32)])[:w,:h]
+            dig = tf.tile(dig,[tf.cast(tf.math.ceil(w/kernel_size),dtype=tf.int32),tf.cast(tf.math.ceil(w/kernel_size),dtype=tf.int32)])[:w,:h]
             dig = tf.tile(tf.expand_dims(tf.expand_dims(dig,axis=0),axis=-1),[b,1,1,tf.shape(x)[-1]])
 
             x_ = x*tf.cast(dig,dtype=tf.float32)
-            a = tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kerner_size)*tf.math.floor(h/kerner_size)*tf.cast(kerner_size,dtype=tf.float64)
-            b_ =tf.cast(b*tf.floormod(w,kerner_size),dtype=tf.float64)*tf.math.floor(h/kerner_size)
-            c =  tf.cast(b*tf.floormod(h,kerner_size),dtype=tf.float64)*tf.math.floor(w/kerner_size)
-            d = tf.reduce_min([tf.floormod(w,kerner_size),tf.floormod(h,kerner_size)])
-            num =tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kerner_size)*tf.math.floor(h/kerner_size)*tf.cast(kerner_size,dtype=tf.float64)+\
-            tf.cast(b*tf.floormod(w,kerner_size),dtype=tf.float64)*tf.math.floor(h/kerner_size)+\
-            tf.cast(b*tf.floormod(h,kerner_size),dtype=tf.float64)*tf.math.floor(w/kerner_size)+\
-            tf.cast(b*tf.reduce_min([tf.floormod(w,kerner_size),tf.floormod(h,kerner_size)]),dtype=tf.float64)
+            a = tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kernel_size)*tf.math.floor(h/kernel_size)*tf.cast(kernel_size,dtype=tf.float64)
+            b_ =tf.cast(b*tf.floormod(w,kernel_size),dtype=tf.float64)*tf.math.floor(h/kernel_size)
+            c =  tf.cast(b*tf.floormod(h,kernel_size),dtype=tf.float64)*tf.math.floor(w/kernel_size)
+            d = tf.reduce_min([tf.floormod(w,kernel_size),tf.floormod(h,kernel_size)])
+            num =tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kernel_size)*tf.math.floor(h/kernel_size)*tf.cast(kernel_size,dtype=tf.float64)+\
+            tf.cast(b*tf.floormod(w,kernel_size),dtype=tf.float64)*tf.math.floor(h/kernel_size)+\
+            tf.cast(b*tf.floormod(h,kernel_size),dtype=tf.float64)*tf.math.floor(w/kernel_size)+\
+            tf.cast(b*tf.reduce_min([tf.floormod(w,kernel_size),tf.floormod(h,kernel_size)]),dtype=tf.float64)
 
 
 
@@ -110,7 +110,7 @@ def get_dorefa(bitW, bitA, bitG):
             if training:
                 print('in training')
                 #bm, bv = tf.nn.moments(x, axes=[0,1,2])
-                bm = dignoal(x,kerner_size)
+                bm = dignoal(x,kernel_size)
                 bv = get_std(x,bm)
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
