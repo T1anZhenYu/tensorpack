@@ -97,7 +97,7 @@ def get_dorefa(bitW, bitA, bitG):
 
             inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
             tf_args = dict(
-                momentum=momentum,center=True, scale=True)   
+                momentum=momentum,center=True, scale=,name = name+'/bn')   
             layer = tf.layers.BatchNormalization(**tf_args)         
             fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
             if training:
@@ -117,15 +117,14 @@ def get_dorefa(bitW, bitA, bitG):
                 mean_ = tf.cast(tf.convert_to_tensor(total/num),dtype=tf.float32)
 
                 std_ = tf.cast(tf.convert_to_tensor(get_std(tf.reshape(x,(-1,num_chan)),mean_)),dtype=tf.float32)
-                bm, bv = tf.nn.moments(x, axes=[0,1,2])#calculate batch_mean and batch_var
-                
+            
                 batch_mean = batch_mean.assign(tf.expand_dims(mean_,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(std_,axis=-1))
                 quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
 
                 
-                layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*mean_)
-                layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*tf.square(std_))
+                #layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*mean_)
+                #layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*tf.square(std_))
                 #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
             else:
 

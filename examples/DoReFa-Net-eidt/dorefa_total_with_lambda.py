@@ -87,11 +87,7 @@ def get_dorefa(bitW, bitA, bitG):
                 quan_points = batch_var*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
                 batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma,axis=-1)
                 # adjust quan_points
-
-
             else:
-
-
                 print('in inference')
                 xnn = layer.apply(x, training=training, scope=tf.get_variable_scope())
 
