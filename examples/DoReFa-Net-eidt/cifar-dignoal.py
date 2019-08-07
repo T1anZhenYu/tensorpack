@@ -75,13 +75,13 @@ class Model(ModelDesc):
                       .apply(activate)
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
-                      .apply(fg,'fg1',is_training,kernel_size=8)
+                      .apply(fg,'fg1',is_training,kernel_size=18)
                       #.BatchNorm('bn1')
                       #.apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .MaxPooling('pool1', 2, padding='SAME')
-                      .apply(fg,'fg2',training=is_training,kernel_size=8)
+                      .apply(fg,'fg2',training=is_training,kernel_size=9)
                       #.BatchNorm('bn2')
                       #.MaxPooling('pool1', 2, padding='SAME')
                       #.apply(activate)
