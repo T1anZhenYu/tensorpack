@@ -6,7 +6,8 @@ import tensorflow as tf
 import numpy as np 
 import math
 def get_std(x,ave):
-    return tf.sqrt(tf.reduce_mean(tf.square(x-ave),axis=0))
+    inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
+    return tf.sqrt(tf.reduce_mean(tf.square(inputs-tf.expand_dims(ave,axis=0)),axis=0))
 
 def conv_sample_dignoal(kernel_size,x,b,w,h,c):
 
