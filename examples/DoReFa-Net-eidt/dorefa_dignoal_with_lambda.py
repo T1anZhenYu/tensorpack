@@ -118,8 +118,8 @@ def get_dorefa(bitW, bitA, bitG):
                 quan_points = batch_var*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
                 batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma,axis=-1)
 
-                layer.moving_mean = layer.moving_mean.assign(tf.expand_dims(bm,axis=-1))
-                layer.moving_variance = layer.moving_variance.assign(tf.expand_dims(tf.square(bv)))
+                layer.moving_mean = layer.moving_mean.assign(bm,axis=-1)
+                layer.moving_variance = layer.moving_variance.assign(tf.square(batch_var))
 
                 # adjust quan_points
             else:
