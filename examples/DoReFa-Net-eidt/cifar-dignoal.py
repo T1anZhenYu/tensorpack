@@ -75,30 +75,30 @@ class Model(ModelDesc):
                       .apply(activate)
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
-                      .apply(fg,'fg1',is_training,kernel_size=4)
+                      .apply(fg,'fg1',is_training,kernel_size=6)
                       #.BatchNorm('bn1')
                       #.apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .MaxPooling('pool1', 2, padding='SAME')
-                      .apply(fg,'fg2',training=is_training,kernel_size=4)
+                      .apply(fg,'fg2',training=is_training,kernel_size=6)
                       #.BatchNorm('bn2')
                       #.MaxPooling('pool1', 2, padding='SAME')
                       #.apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')
-                      .apply(fg,'fg3',is_training,kernel_size=4)
+                      .apply(fg,'fg3',is_training,kernel_size=6)
                       #.BatchNorm('bn3')
                       #.apply(activate)
                       # 7
 
                       .Conv2D('conv4', 128, 3, padding='SAME')
-                      .apply(fg,'fg4',is_training,kernel_size=4)
+                      .apply(fg,'fg4',is_training,kernel_size=6)
                       #.BatchNorm('bn4')
                       #.apply(activate)
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
-                      .apply(fg,'fg5',is_training,kernel_size=4)
+                      .apply(fg,'fg5',is_training,kernel_size=5)
                       #.BatchNorm('bn5').apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
