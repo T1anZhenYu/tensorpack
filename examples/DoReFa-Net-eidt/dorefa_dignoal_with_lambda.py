@@ -107,7 +107,7 @@ def get_dorefa(bitW, bitA, bitG):
                     h = tf.shape(x)[2]
                     dig = tf.matrix_diag([1]*kerner_size)
 
-                    dig = tf.tile(dig,[tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32),tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32)])[:w][:h]
+                    dig = tf.tile(dig,[tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32),tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32)])[:w,:h]
                     dig = tf.tile(tf.expand_dims(tf.expand_dims(dig,axis=0),axis=-1),[b,1,1,tf.shape(x)[-1]])
 
                     x_ = x*tf.cast(dig,dtype=tf.float32)
