@@ -4,30 +4,6 @@
 
 import tensorflow as tf
 import numpy as np 
-import math
-def get_std(x,ave):
-    inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
-    return tf.sqrt(tf.reduce_mean(tf.square(inputs-tf.expand_dims(ave,axis=0)),axis=0))
-
-def conv_sample_dignoal(kernel_size,x,b,w,h,c):
-
-    total = []
-    for ch in range(c):
-        total_ch = 0
-        for i in range(kernel_size-1,w,kernel_size):
-          for j in range(kernel_size-1,h,kernel_size):
-            for m in range(kernel_size):
-
-              total_ch += tf.reduce_sum(x[:,i-m,j-m,ch])
-              
-        total.append(total_ch)
-    total = tf.cast(tf.convert_to_tensor(total),dtype=tf.float32)
-    num = tf.cast(b*math.floor(w/kernel_size)*math.floor(h/kernel_size)*kernel_size,dtype=tf.float32)
-    ave = tf.cast(tf.convert_to_tensor(total/num),dtype=tf.float32)
-
-    std = tf.cast(tf.convert_to_tensor(get_std(tf.reshape(x,(-1,c)),ave)),dtype=tf.float32)
-
-    return ave,std
 
 def get_dorefa(bitW, bitA, bitG):
     """
@@ -81,10 +57,40 @@ def get_dorefa(bitW, bitA, bitG):
 
     def activate(x):
         return fa(nonlin(x))
-    def fg(x,name,training,momentum = 0.9,kernel_size=4):#bitG == 32
+    def fg(x,name,training,momentum = 0.9,kerner_size=4):#bitG == 32
+        def get_std(x,ave):
+            inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
+            return tf.sqrt(tf.reduce_mean(tf.square(inputs-tf.expand_dims(ave,axis=0)),axis=0))
+        def dignoal(x,kerner_size):
+            b = tf.shape(x)[0]
+            w = tf.shape(x)[1]
+            h = tf.shape(x)[2]
+
+            dig = tf.matrix_diag([1]*kerner_size)
+
+            dig = tf.tile(dig,[tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32),tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32)])[:w,:h]
+            dig = tf.tile(tf.expand_dims(tf.expand_dims(dig,axis=0),axis=-1),[b,1,1,tf.shape(x)[-1]])
+
+            x_ = x*tf.cast(dig,dtype=tf.float32)
+            a = tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kerner_size)*tf.math.floor(h/kerner_size)*tf.cast(kerner_size,dtype=tf.float64)
+            b_ =tf.cast(b*tf.floormod(w,kerner_size),dtype=tf.float64)*tf.math.floor(h/kerner_size)
+            c =  tf.cast(b*tf.floormod(h,kerner_size),dtype=tf.float64)*tf.math.floor(w/kerner_size)
+            d = tf.reduce_min([tf.floormod(w,kerner_size),tf.floormod(h,kerner_size)])
+            num =tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kerner_size)*tf.math.floor(h/kerner_size)*tf.cast(kerner_size,dtype=tf.float64)+\
+            tf.cast(b*tf.floormod(w,kerner_size),dtype=tf.float64)*tf.math.floor(h/kerner_size)+\
+            tf.cast(b*tf.floormod(h,kerner_size),dtype=tf.float64)*tf.math.floor(w/kerner_size)+\
+            tf.cast(b*tf.reduce_min([tf.floormod(w,kerner_size),tf.floormod(h,kerner_size)]),dtype=tf.float64)
+
+
+
+            ave = tf.reduce_sum(x_,axis=[0,1,2])/tf.expand_dims(tf.cast(num,dtype=tf.float32),axis=-1)
+
+
+            return ave
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
+
             shape = x.get_shape().as_list()#x is input, get input shape[batchsize,width,height,channel]
-            print('shape ',shape)
+
             num_chan = shape[-1]#channel number
             batch_size0 = tf.shape(x)[0]#because placehoder,batch size is always None,needs this operation to use it as a real number
             w = shape[1]
@@ -95,55 +101,26 @@ def get_dorefa(bitW, bitA, bitG):
 
             batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
-
-            inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
             tf_args = dict(
                 momentum=momentum,center=True, scale=True,name = name+'/bn')   
-            layer = tf.layers.BatchNormalization(**tf_args)         
+            layer = tf.layers.BatchNormalization(**tf_args)  
+
             fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
+            print([n.name for n in tf.trainable_variables()])
             if training:
-                def dignoal(x,kerner_size):
-                    b = tf.shape(x)[0]
-                    w = tf.shape(x)[1]
-                    h = tf.shape(x)[2]
-
-                    dig = tf.matrix_diag([1]*kerner_size)
-
-                    dig = tf.tile(dig,[tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32),tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32)])[:w,:h]
-                    dig = tf.tile(tf.expand_dims(tf.expand_dims(dig,axis=0),axis=-1),[b,1,1,tf.shape(x)[-1]])
-
-                    x_ = x*tf.cast(dig,dtype=tf.float32)
-                    a = tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kerner_size)*tf.math.floor(h/kerner_size)*tf.cast(kerner_size,dtype=tf.float64)
-                    b_ =tf.cast(b*tf.floormod(w,kerner_size),dtype=tf.float64)*tf.math.floor(h/kerner_size)
-                    c =  tf.cast(b*tf.floormod(h,kerner_size),dtype=tf.float64)*tf.math.floor(w/kerner_size)
-                    d = tf.reduce_min([tf.floormod(w,kerner_size),tf.floormod(h,kerner_size)])
-                    num =tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kerner_size)*tf.math.floor(h/kerner_size)*tf.cast(kerner_size,dtype=tf.float64)+\
-                    tf.cast(b*tf.floormod(w,kerner_size),dtype=tf.float64)*tf.math.floor(h/kerner_size)+\
-                    tf.cast(b*tf.floormod(h,kerner_size),dtype=tf.float64)*tf.math.floor(w/kerner_size)+\
-                    tf.cast(b*tf.reduce_min([tf.floormod(w,kerner_size),tf.floormod(h,kerner_size)]),dtype=tf.float64)
-
-
-
-                    ave = tf.reduce_sum(x_,axis=[0,1,2])/tf.expand_dims(tf.cast(num,dtype=tf.float32),axis=-1)
-
-                    return ave
-
-
                 print('in training')
-                mean_=dignoal(x,kernel_size)
+                #bm, bv = tf.nn.moments(x, axes=[0,1,2])
+                bm = dignoal(x,kerner_size)
+                bv = get_std(x,bm)
+                batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
+                batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
 
-                std_ = tf.cast(tf.convert_to_tensor(get_std(tf.reshape(x,(-1,num_chan)),mean_)),dtype=tf.float32)
-            
-                batch_mean = batch_mean.assign(tf.expand_dims(mean_,axis=-1))
-                batch_var = batch_var.assign(tf.expand_dims(std_,axis=-1))
-                quan_points = batch_var*quan_points0 + batch_mean# adjust quan_points
+                quan_points = batch_var*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
+                batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma,axis=-1)
 
                 
-                layer.moving_mean = layer.moving_mean.assign(momentum*layer.moving_mean+(1-momentum)*mean_)
-                layer.moving_variance = layer.moving_variance.assign(momentum*layer.moving_variance+(1-momentum)*tf.square(std_))
-                #output = (x-batch_mean)/(tf.math.sqrt(batch_var))
+                # adjust quan_points
             else:
-
                 print('in inference')
                 xnn = layer.apply(x, training=training, scope=tf.get_variable_scope())
 
@@ -168,7 +145,7 @@ def get_dorefa(bitW, bitA, bitG):
             '''
             the following part is to use quan_points to quantizate inputs.
             '''
-            
+            inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
 
             label1 = tf.cast(tf.less_equal(inputs,tf.expand_dims(quan_points[:,0],axis=-1)),dtype=tf.float32)
 
