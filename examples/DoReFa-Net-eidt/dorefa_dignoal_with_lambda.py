@@ -105,13 +105,24 @@ def get_dorefa(bitW, bitA, bitG):
                     b = tf.shape(x)[0]
                     w = tf.shape(x)[1]
                     h = tf.shape(x)[2]
+
                     dig = tf.matrix_diag([1]*kerner_size)
 
                     dig = tf.tile(dig,[tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32),tf.cast(tf.math.ceil(w/kerner_size),dtype=tf.int32)])[:w,:h]
                     dig = tf.tile(tf.expand_dims(tf.expand_dims(dig,axis=0),axis=-1),[b,1,1,tf.shape(x)[-1]])
 
                     x_ = x*tf.cast(dig,dtype=tf.float32)
-                    num =tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kerner_size)*tf.math.floor(h/kerner_size)*tf.cast(kerner_size,dtype=tf.float64)
+                    a = tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kerner_size)*tf.math.floor(h/kerner_size)*tf.cast(kerner_size,dtype=tf.float64)
+                    b_ =tf.cast(b*tf.floormod(w,kerner_size),dtype=tf.float64)*tf.math.floor(h/kerner_size)
+                    c =  tf.cast(b*tf.floormod(h,kerner_size),dtype=tf.float64)*tf.math.floor(w/kerner_size)
+                    d = tf.reduce_min([tf.floormod(w,kerner_size),tf.floormod(h,kerner_size)])
+                    num =tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kerner_size)*tf.math.floor(h/kerner_size)*tf.cast(kerner_size,dtype=tf.float64)+\
+                    tf.cast(b*tf.floormod(w,kerner_size),dtype=tf.float64)*tf.math.floor(h/kerner_size)+\
+                    tf.cast(b*tf.floormod(h,kerner_size),dtype=tf.float64)*tf.math.floor(w/kerner_size)+\
+                    tf.cast(b*tf.reduce_min([tf.floormod(w,kerner_size),tf.floormod(h,kerner_size)]),dtype=tf.float64)
+
+
+
                     ave = tf.reduce_sum(x_,axis=[0,1,2])/tf.expand_dims(tf.cast(num,dtype=tf.float32),axis=-1)
 
                     return ave
