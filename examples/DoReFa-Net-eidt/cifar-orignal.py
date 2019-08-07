@@ -144,7 +144,7 @@ def get_config():
             ModelSaver(),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong_tensor')]),
-            #DumpTensors(['bn1/mean/EMA:0','conv1/output:0','bn6/mean/EMA:0','conv6/output:0'])
+            DumpTensors(['bn1/mean/EMA:0','conv1/output:0','bn6/mean/EMA:0','conv6/output:0'])
 
         ],
         model=Model(),
