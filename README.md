@@ -1,4 +1,5 @@
 ![Tensorpack](.github/tensorpack.png)
+量化BN代码在./examples/DoReFa-Net-eidt 文件夹内
 
 Tensorpack is a neural network training interface based on TensorFlow.
 
