@@ -61,6 +61,9 @@ def get_dorefa(bitW, bitA, bitG):
         def get_std(x,ave):#根据采样后的均值计算方差
             inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
             return tf.sqrt(tf.reduce_mean(tf.square(inputs-tf.expand_dims(ave,axis=0)),axis=0))
+        def get_l1norm(x,ave):
+            inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
+            return tf.reduce_mean(tf.abs(inputs-tf.expand_dims(ave,axis=0)),axis=0)
         def dignoal(x,kernel_size,scatter_rate):#利用对角采样计算均值，
             b = tf.shape(x)[0]
             w = tf.shape(x)[1]
