@@ -65,13 +65,13 @@ class Model(ModelDesc):
                       .apply(activate)
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
-                      .apply(fg,'fg1',is_training,kernel_size=18)#模型的核心变动，用fg代替bn和activate
+                      .apply(fg,'fg1',is_training,kernel_size=8)#模型的核心变动，用fg代替bn和activate
                       #.BatchNorm('bn1')
                       #.apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .MaxPooling('pool1', 2, padding='SAME')
-                      .apply(fg,'fg2',training=is_training,kernel_size=9)#注意，这里要先maxpooling再做量化。
+                      .apply(fg,'fg2',training=is_training,kernel_size=8)#注意，这里要先maxpooling再做量化。
                       #因为原来的模型maxpooling是在bn之后的
                       #.BatchNorm('bn2')
                       #.MaxPooling('pool1', 2, padding='SAME')
