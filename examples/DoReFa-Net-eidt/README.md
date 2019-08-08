@@ -22,7 +22,7 @@ python ./tensorpack/examples/DoReFa-Net-eidt/cifar-original.py --dorefa 1,2,32
 
 
 
-Official code and model for the paper:
+## Official code and model for the paper:
 + [DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients](http://arxiv.org/abs/1606.06160).
 
 It also contains an implementation of the following papers:
