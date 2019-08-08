@@ -77,7 +77,7 @@ def get_dorefa(bitW, bitA, bitG):
             tf.cast(b,dtype=tf.float64)*tf.math.floor(tf.floormod(h,kernel_size)/(scatter_rate+1))*tf.math.floor(w/kernel_size)+\
             tf.cast(b,dtype=tf.float64)*tf.math.floor(tf.reduce_min([tf.floormod(w,kernel_size),tf.floormod(h,kernel_size)])/(scatter_rate+1))
             ave = tf.reduce_sum(x_,axis=[0,1,2])/tf.expand_dims(tf.cast(num,dtype=tf.float32),axis=-1)
-            return ave,dig,num,a,b_,c,d
+            return ave
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
 
             shape = x.get_shape().as_list()#x is input, get input shape[batchsize,width,height,channel]
