@@ -114,7 +114,7 @@ def get_dorefa(bitW, bitA, bitG):
                 print('in training')
                 #bm, bv = tf.nn.moments(x, axes=[0,1,2])
                 bm = dignoal(x,kernel_size)
-                bv = get_l1norm(x,bm)
+                bv = get_std(x,bm)
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(bv,axis=-1))
 
@@ -122,7 +122,7 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma,axis=-1)
 
                 layer.moving_mean = layer.moving_mean.assign(layer.moving_mean*momentum+(1-momentum)*bm)
-                #layer.moving_variance = layer.moving_variance.assign(layer.moving_variance*momentum+(1-momentum)*tf.square(bv))
+                layer.moving_variance = layer.moving_variance.assign(layer.moving_variance*momentum+(1-momentum)*tf.square(bv))
 
                 # adjust quan_points
             else:
