@@ -9,11 +9,17 @@
 'cifar-dignoal.py'与'dorefa_dignoal.py'是对采样计算均值的实现。这部分是基于'cifar-total.py'和'dorefa_total.py'的，只是增加了采样计算均值的部分。均值计算在'dorefa_dignoal.py'里面
 
 代码使用时，要先安装tensorpack。
+
 pip install --upgrade git+https://github.com/T1anZhenYu/tensorpack.git 
+
 随后下载
+
 git clone https://github.com/T1anZhenYu/tensorpack.git
+
 运行-以运行cifar-original.py为例子
+
 python ./tensorpack/examples/DoReFa-Net-eidt/cifar-original.py --dorefa 1,2,32
+
 
 
 Official code and model for the paper:
