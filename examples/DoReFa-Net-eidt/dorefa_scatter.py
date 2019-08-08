@@ -101,7 +101,7 @@ def get_dorefa(bitW, bitA, bitG):
             if training:
                 print('in training')
                 #bm, bv = tf.nn.moments(x, axes=[0,1,2])
-                bm = dignoal(x,kernel_size)
+                bm = dignoal(x,kernel_size,scatter_rate)
                 bv = get_std(x,bm)
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(bv,axis=-1))
