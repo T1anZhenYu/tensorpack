@@ -13,12 +13,12 @@ from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 
-from dorefa-total import get_dorefa
+from dorefa_dignoal import get_dorefa
 
 """
-这个代码实现了量化bn的全部功能，但是在计算均值的时候，采用的是全精度计算，没有任何采样方法。
+这个代码是用对角采样计算均值和方差。模型的变动就是用fg代替BN和Activation
 To Run:
-    python ./cifar-total.py --dorefa 1,2,32
+    ./svhn-digit-dorefa.py --dorefa 1,2,4
 """
 
 BITW = 1
@@ -65,35 +65,36 @@ class Model(ModelDesc):
                       .apply(activate)
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
-                      .apply(fg,'fg1',is_training)
+                      .apply(fg,'fg1',is_training,kernel_size=18)#模型的核心变动，用fg代替bn和activate
                       #.BatchNorm('bn1')
                       #.apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .MaxPooling('pool1', 2, padding='SAME')
-                      .apply(fg,'fg2',training=is_training)
+                      .apply(fg,'fg2',training=is_training,kernel_size=9)#注意，这里要先maxpooling再做量化。
+                      #因为原来的模型maxpooling是在bn之后的
                       #.BatchNorm('bn2')
                       #.MaxPooling('pool1', 2, padding='SAME')
                       #.apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')
-                      .apply(fg,'fg3',is_training)
+                      .apply(fg,'fg3',is_training,kernel_size=7)
                       #.BatchNorm('bn3')
                       #.apply(activate)
                       # 7
 
                       .Conv2D('conv4', 128, 3, padding='SAME')
-                      .apply(fg,'fg4',is_training)
+                      .apply(fg,'fg4',is_training,kernel_size=7)
                       #.BatchNorm('bn4')
                       #.apply(activate)
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
-                      .apply(fg,'fg5',is_training)
+                      .apply(fg,'fg5',is_training,kernel_size=5)
                       #.BatchNorm('bn5').apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
-                      #.apply(fg,'fg6',is_training)
+                      #最后一层不做量化
                       .BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())
@@ -130,6 +131,7 @@ def get_config():
 
     # prepare dataset
     d1 = dataset.CifarBase('train')
+    #d2 = dataset.SVHNDigit('extra')
     data_train = RandomMixData([d1])
     data_test = dataset.CifarBase('test')
 
@@ -152,7 +154,7 @@ def get_config():
             ModelSaver(),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
-            #DumpTensors(['fg1/moving_mean','fg1/moving_var','fg1/batch_mean','fg1/batch_var'])
+            #DumpTensors(['fg1/batch_mean:0','fg1/batch_var:0','fg1/realbatch_mean:0','fg1/realbatch_var:0'])
         ],
         model=Model(),
         max_epoch=200,
