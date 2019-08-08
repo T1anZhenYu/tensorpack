@@ -13,7 +13,7 @@ from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 
-from dorefa-scatter import get_dorefa
+from dorefa_scatter import get_dorefa
 
 """
 这个代码是用对角采样计算均值和方差。模型的变动就是用fg代替BN和Activation

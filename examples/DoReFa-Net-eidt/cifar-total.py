@@ -13,7 +13,7 @@ from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 
-from dorefa-total import get_dorefa
+from dorefa_total import get_dorefa
 
 """
 这个代码实现了量化bn的全部功能，但是在计算均值的时候，采用的是全精度计算，没有任何采样方法。
