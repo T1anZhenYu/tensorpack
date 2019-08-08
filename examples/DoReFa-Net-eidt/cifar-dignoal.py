@@ -13,20 +13,10 @@ from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 
-from dorefa_dignoal_with_lambda import get_dorefa
+from dorefa_dignoal import get_dorefa
 
 """
-This is a tensorpack script for the SVHN results in paper:
-DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients
-http://arxiv.org/abs/1606.06160
-The original experiements are performed on a proprietary framework.
-This is our attempt to reproduce it on tensorpack.
-Accuracy:
-    With (W,A,G)=(1,1,4), can reach 3.1~3.2% error after 150 epochs.
-    With (W,A,G)=(1,2,4), error is 3.0~3.1%.
-    With (W,A,G)=(32,32,32), error is about 2.3%.
-Speed:
-    With quantization, 60 batch/s on 1 1080Ti. (4721 batch / epoch)
+这个代码是用对角采样计算均值和方差。模型的变动就是用fg代替BN和Activation
 To Run:
     ./svhn-digit-dorefa.py --dorefa 1,2,4
 """
@@ -75,13 +65,14 @@ class Model(ModelDesc):
                       .apply(activate)
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
-                      .apply(fg,'fg1',is_training,kernel_size=18)
+                      .apply(fg,'fg1',is_training,kernel_size=18)#模型的核心变动，用fg代替bn和activate
                       #.BatchNorm('bn1')
                       #.apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .MaxPooling('pool1', 2, padding='SAME')
-                      .apply(fg,'fg2',training=is_training,kernel_size=9)
+                      .apply(fg,'fg2',training=is_training,kernel_size=9)#注意，这里要先maxpooling再做量化。
+                      #因为原来的模型maxpooling是在bn之后的
                       #.BatchNorm('bn2')
                       #.MaxPooling('pool1', 2, padding='SAME')
                       #.apply(activate)
@@ -103,7 +94,7 @@ class Model(ModelDesc):
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')
-                      #.apply(fg,'fg6',is_training)
+                      #最后一层不做量化
                       .BatchNorm('bn6')
                       .apply(nonlin)
                       .FullyConnected('fc1', 10)())

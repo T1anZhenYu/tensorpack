@@ -1,5 +1,22 @@
-Official code and model for the paper:
 
+## 代码使用说明
+代码主要分为两部分，一部分是模型实现，分别是'cifar-original.py','cifar-total.py','cifar-dignoal.py'。另一部分是量化bn的实现，分别是'dorefa.py','dorefa_total.py','dorefa_dignoal.py'。
+
+'cifar-original.py'与'dorefa.py'是原来作者的实现，没有做任何变动。'dorefa.py'并没有对bn做量化。这两者的关系是'cifar-original.py'引用了'dorefa.py'的功能。
+
+'cifar-total.py'与'dorefa_total.py'是对量化bn的实现。'cifar-total.py'中对原模型做了变动，取消了原来的BN和对activation的量化，替换成我们的实现。'dorefa_total.py'则主要实现了我们对BN的量化。两者仍然是相互引用关系。
+
+'cifar-dignoal.py'与'dorefa_dignoal.py'是对采样计算均值的实现。这部分是基于'cifar-total.py'和'dorefa_total.py'的，只是增加了采样计算均值的部分。均值计算在'dorefa_dignoal.py'里面
+
+代码使用时，要先安装tensorpack。
+pip install --upgrade git+https://github.com/T1anZhenYu/tensorpack.git 
+随后下载
+git clone https://github.com/T1anZhenYu/tensorpack.git
+运行-以运行cifar-original.py为例子
+python ./tensorpack/examples/DoReFa-Net-eidt/cifar-original.py --dorefa 1,2,32
+
+
+Official code and model for the paper:
 + [DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients](http://arxiv.org/abs/1606.06160).
 
 It also contains an implementation of the following papers:

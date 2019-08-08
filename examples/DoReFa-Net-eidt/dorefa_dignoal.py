@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # File: dorefa.py
 # Author: Yuxin Wu
-
+#这个代码是利用对角采样计算均值，是基于dorefa_total的
 import tensorflow as tf
 import numpy as np 
 
@@ -57,7 +57,36 @@ def get_dorefa(bitW, bitA, bitG):
 
     def activate(x):
         return fa(nonlin(x))
-    def fg(x,name,training,momentum = 0.9):#bitG == 32
+    def fg(x,name,training,momentum = 0.9,kernel_size=4):#bitG == 32
+        def get_std(x,ave):#根据采样后的均值计算方差
+            inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
+            return tf.sqrt(tf.reduce_mean(tf.square(inputs-tf.expand_dims(ave,axis=0)),axis=0))
+        def dignoal(x,kernel_size):#利用对角采样计算均值，
+            b = tf.shape(x)[0]
+            w = tf.shape(x)[1]
+            h = tf.shape(x)[2]
+
+            dig = tf.matrix_diag([1]*kernel_size)
+
+            dig = tf.tile(dig,[tf.cast(tf.math.ceil(w/kernel_size),dtype=tf.int32),tf.cast(tf.math.ceil(w/kernel_size),dtype=tf.int32)])[:w,:h]
+            dig = tf.tile(tf.expand_dims(tf.expand_dims(dig,axis=0),axis=-1),[b,1,1,tf.shape(x)[-1]])
+
+            x_ = x*tf.cast(dig,dtype=tf.float32)
+            a = tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kernel_size)*tf.math.floor(h/kernel_size)*tf.cast(kernel_size,dtype=tf.float64)
+            b_ =tf.cast(b*tf.floormod(w,kernel_size),dtype=tf.float64)*tf.math.floor(h/kernel_size)
+            c =  tf.cast(b*tf.floormod(h,kernel_size),dtype=tf.float64)*tf.math.floor(w/kernel_size)
+            d = tf.reduce_min([tf.floormod(w,kernel_size),tf.floormod(h,kernel_size)])
+            num =tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kernel_size)*tf.math.floor(h/kernel_size)*tf.cast(kernel_size,dtype=tf.float64)+\
+            tf.cast(b*tf.floormod(w,kernel_size),dtype=tf.float64)*tf.math.floor(h/kernel_size)+\
+            tf.cast(b*tf.floormod(h,kernel_size),dtype=tf.float64)*tf.math.floor(w/kernel_size)+\
+            tf.cast(b*tf.reduce_min([tf.floormod(w,kernel_size),tf.floormod(h,kernel_size)]),dtype=tf.float64)
+
+
+
+            ave = tf.reduce_sum(x_,axis=[0,1,2])/tf.expand_dims(tf.cast(num,dtype=tf.float32),axis=-1)
+
+
+            return ave
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
 
             shape = x.get_shape().as_list()#x is input, get input shape[batchsize,width,height,channel]
@@ -80,12 +109,18 @@ def get_dorefa(bitW, bitA, bitG):
             print([n.name for n in tf.trainable_variables()])
             if training:
                 print('in training')
-                bm, bv = tf.nn.moments(x, axes=[0,1,2])
+                #bm, bv = tf.nn.moments(x, axes=[0,1,2])
+                bm = dignoal(x,kernel_size)
+                bv = get_std(x,bm)
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
-                batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
+                batch_var = batch_var.assign(tf.expand_dims(bv,axis=-1))
 
                 quan_points = batch_var*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
                 batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma,axis=-1)
+
+                layer.moving_mean = layer.moving_mean.assign(bm)
+                layer.moving_variance = layer.moving_variance.assign(tf.square(bv))
+
                 # adjust quan_points
             else:
                 print('in inference')

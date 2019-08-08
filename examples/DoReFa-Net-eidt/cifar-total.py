@@ -13,22 +13,12 @@ from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 
-from dorefa_total_with_lambda import get_dorefa
+from dorefa_total import get_dorefa
 
 """
-This is a tensorpack script for the SVHN results in paper:
-DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients
-http://arxiv.org/abs/1606.06160
-The original experiements are performed on a proprietary framework.
-This is our attempt to reproduce it on tensorpack.
-Accuracy:
-    With (W,A,G)=(1,1,4), can reach 3.1~3.2% error after 150 epochs.
-    With (W,A,G)=(1,2,4), error is 3.0~3.1%.
-    With (W,A,G)=(32,32,32), error is about 2.3%.
-Speed:
-    With quantization, 60 batch/s on 1 1080Ti. (4721 batch / epoch)
+这个代码实现了量化bn的全部功能，但是在计算均值的时候，采用的是全精度计算，没有任何采样方法。
 To Run:
-    ./svhn-digit-dorefa.py --dorefa 1,2,4
+    python ./cifar-total.py --dorefa 1,2,32
 """
 
 BITW = 1

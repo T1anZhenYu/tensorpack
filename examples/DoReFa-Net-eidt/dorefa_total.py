@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # File: dorefa.py
 # Author: Yuxin Wu
-
+#这个代码实现了量化bn的核心功能，主要是fg函数。
 import tensorflow as tf
 import numpy as np 
 
@@ -57,36 +57,7 @@ def get_dorefa(bitW, bitA, bitG):
 
     def activate(x):
         return fa(nonlin(x))
-    def fg(x,name,training,momentum = 0.9,kernel_size=4):#bitG == 32
-        def get_std(x,ave):
-            inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
-            return tf.sqrt(tf.reduce_mean(tf.square(inputs-tf.expand_dims(ave,axis=0)),axis=0))
-        def dignoal(x,kernel_size):
-            b = tf.shape(x)[0]
-            w = tf.shape(x)[1]
-            h = tf.shape(x)[2]
-
-            dig = tf.matrix_diag([1]*kernel_size)
-
-            dig = tf.tile(dig,[tf.cast(tf.math.ceil(w/kernel_size),dtype=tf.int32),tf.cast(tf.math.ceil(w/kernel_size),dtype=tf.int32)])[:w,:h]
-            dig = tf.tile(tf.expand_dims(tf.expand_dims(dig,axis=0),axis=-1),[b,1,1,tf.shape(x)[-1]])
-
-            x_ = x*tf.cast(dig,dtype=tf.float32)
-            a = tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kernel_size)*tf.math.floor(h/kernel_size)*tf.cast(kernel_size,dtype=tf.float64)
-            b_ =tf.cast(b*tf.floormod(w,kernel_size),dtype=tf.float64)*tf.math.floor(h/kernel_size)
-            c =  tf.cast(b*tf.floormod(h,kernel_size),dtype=tf.float64)*tf.math.floor(w/kernel_size)
-            d = tf.reduce_min([tf.floormod(w,kernel_size),tf.floormod(h,kernel_size)])
-            num =tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kernel_size)*tf.math.floor(h/kernel_size)*tf.cast(kernel_size,dtype=tf.float64)+\
-            tf.cast(b*tf.floormod(w,kernel_size),dtype=tf.float64)*tf.math.floor(h/kernel_size)+\
-            tf.cast(b*tf.floormod(h,kernel_size),dtype=tf.float64)*tf.math.floor(w/kernel_size)+\
-            tf.cast(b*tf.reduce_min([tf.floormod(w,kernel_size),tf.floormod(h,kernel_size)]),dtype=tf.float64)
-
-
-
-            ave = tf.reduce_sum(x_,axis=[0,1,2])/tf.expand_dims(tf.cast(num,dtype=tf.float32),axis=-1)
-
-
-            return ave
+    def fg(x,name,training,momentum = 0.9):#bitG == 32
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
 
             shape = x.get_shape().as_list()#x is input, get input shape[batchsize,width,height,channel]
@@ -95,35 +66,34 @@ def get_dorefa(bitW, bitA, bitG):
             batch_size0 = tf.shape(x)[0]#because placehoder,batch size is always None,needs this operation to use it as a real number
             w = shape[1]
             h = shape[2]
-
+            #batch_mean 用来存储当前batch的均值
             batch_mean = tf.get_variable('batch_mean',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
-
+            #batch_var 用来存储当前batch的标准差
             batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
+
+            #为了方便计算导数，这里引入了bn。momentum是用来计算movingmean和movingvar的。center表示
+            #是否使用beta，scale表示是否使用gamma
             tf_args = dict(
                 momentum=momentum,center=True, scale=True,name = name+'/bn')   
             layer = tf.layers.BatchNormalization(**tf_args)  
-
+            #fake_output代表这不是真实的输出
             fake_output =  layer.apply(x, training=training, scope=tf.get_variable_scope())
-            print([n.name for n in tf.trainable_variables()])
-            if training:
-                print('in training')
-                #bm, bv = tf.nn.moments(x, axes=[0,1,2])
-                bm = dignoal(x,kernel_size)
-                bv = get_std(x,bm)
-                batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
-                batch_var = batch_var.assign(tf.expand_dims(bv,axis=-1))
 
+            if training:#在train的时候
+                print('in training')
+                bm, bv = tf.nn.moments(x, axes=[0,1,2])#计算当前batch的均值方差
+                batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
+                batch_var = batch_var.assign(tf.expand_dims(tf.math.sqrt(bv),axis=-1))
+                #计算量化区间的起止点。
                 quan_points = batch_var*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
                 batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma,axis=-1)
-
-                layer.moving_mean = layer.moving_mean.assign(bm)
-                layer.moving_variance = layer.moving_variance.assign(tf.square(bv))
-
                 # adjust quan_points
             else:
                 print('in inference')
+                #不知道为什么，直接调用layer.moving_mean和layer.moving_var得不到正确的值，
+                #只能采用下面的方法计算出来
                 xnn = layer.apply(x, training=training, scope=tf.get_variable_scope())
 
                 i1 = x[0,0,0,:]
@@ -134,8 +104,6 @@ def get_dorefa(bitW, bitA, bitG):
                 mean0 = i1-x1*(i1-i2)/(x1-x2)
                 var0 = (i1-i2)/(x1-x2)
                 #quantize BN during inference
-
-                #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
 
                 moving_mean_ = tf.identity(mean0,name='moving_mean_')
                 moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
