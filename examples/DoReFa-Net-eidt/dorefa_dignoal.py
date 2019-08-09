@@ -60,7 +60,7 @@ def get_dorefa(bitW, bitA, bitG):
     def fg(x,name,training,momentum = 0.9,kernel_size=4):#bitG == 32
         def get_l1norm(x,ave):
             inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
-            return tf.reduce_mean(tf.abs(inputs-tf.expand_dims(ave,axis=0)),axis=0)
+            return 4/5*tf.reduce_mean(tf.abs(inputs-tf.expand_dims(ave,axis=0)),axis=0)
         def get_std(x,ave):#根据采样后的均值计算方差
             inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
             return tf.sqrt(tf.reduce_mean(tf.square(inputs-tf.expand_dims(ave,axis=0)),axis=0))
