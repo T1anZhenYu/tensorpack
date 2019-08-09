@@ -75,10 +75,6 @@ def get_dorefa(bitW, bitA, bitG):
             dig = tf.tile(tf.expand_dims(tf.expand_dims(dig,axis=0),axis=-1),[b,1,1,tf.shape(x)[-1]])
 
             x_ = x*tf.cast(dig,dtype=tf.float32)
-            a = tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kernel_size)*tf.math.floor(h/kernel_size)*tf.cast(kernel_size,dtype=tf.float64)
-            b_ =tf.cast(b*tf.floormod(w,kernel_size),dtype=tf.float64)*tf.math.floor(h/kernel_size)
-            c =  tf.cast(b*tf.floormod(h,kernel_size),dtype=tf.float64)*tf.math.floor(w/kernel_size)
-            d = tf.reduce_min([tf.floormod(w,kernel_size),tf.floormod(h,kernel_size)])
             num =tf.cast(b,dtype=tf.float64)*tf.math.floor(w/kernel_size)*tf.math.floor(h/kernel_size)*tf.cast(kernel_size,dtype=tf.float64)+\
             tf.cast(b*tf.floormod(w,kernel_size),dtype=tf.float64)*tf.math.floor(h/kernel_size)+\
             tf.cast(b*tf.floormod(h,kernel_size),dtype=tf.float64)*tf.math.floor(w/kernel_size)+\
