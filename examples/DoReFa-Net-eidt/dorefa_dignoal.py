@@ -110,10 +110,11 @@ def get_dorefa(bitW, bitA, bitG):
                 print('in training')
                 #bm, bv = tf.nn.moments(x, axes=[0,1,2])
                 bm = dignoal(x,kernel_size)
+                l1 = get_l1norm(x,bm)
                 bv = get_std(x,bm)
                 print('bv',bv)
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
-                batch_var = batch_var.assign(tf.expand_dims(bv,axis=-1))
+                batch_var = batch_var.assign(tf.expand_dims(l1,axis=-1))
 
                 quan_points = batch_var*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
                 batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma,axis=-1)
