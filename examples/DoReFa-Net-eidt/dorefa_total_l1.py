@@ -5,7 +5,7 @@
 import tensorflow as tf
 import numpy as np 
 from tensorpack import *
-
+from tensorflow.python.training.moving_averages import assign_moving_average
 def get_dorefa(bitW, bitA, bitG):
     """
     Return the three quantization functions fw, fa, fg, for weights, activations and gradients respectively
