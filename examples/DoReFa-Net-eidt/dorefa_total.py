@@ -87,9 +87,9 @@ def get_dorefa(bitW, bitA, bitG):
             if training:#在train的时候
                 print('in training')
                 bm, bv = tf.nn.moments(x, axes=[0,1,2])#计算当前batch的均值方差
-                l1 = get_l1norm(x,bm)
+                
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
-                batch_var = batch_var.assign(tf.expand_dims(l1,axis=-1))
+                batch_var = batch_var.assign(tf.expand_dims(tf.sqrt(bv),axis=-1))
                 #计算量化区间的起止点。
                 quan_points = batch_var*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
                 batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma,axis=-1)
