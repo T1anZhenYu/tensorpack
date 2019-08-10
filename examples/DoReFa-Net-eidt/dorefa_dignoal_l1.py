@@ -59,8 +59,7 @@ def get_dorefa(bitW, bitA, bitG):
         return fa(nonlin(x))
     def fg(x,name,training,momentum = 0.9,kernel_size=4):#bitG == 32
         def get_l1norm(x,ave):
-            inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
-            return 4/5*tf.reduce_mean(tf.abs(inputs-tf.expand_dims(ave,axis=0)),axis=0)
+            return 4/5*tf.reduce_mean(tf.abs(x-ave),axis=[0,1,2])
         def get_std(x,ave):#根据采样后的均值计算方差
             inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
             return tf.sqrt(tf.reduce_mean(tf.square(inputs-tf.expand_dims(ave,axis=0)),axis=0))
@@ -102,30 +101,29 @@ def get_dorefa(bitW, bitA, bitG):
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
             tf_args = dict(
                 momentum=momentum,center=True, scale=True,name = name+'/bn')   
-            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms = L1norm(name+'L2norm',x, train=training)
+            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms = L1norm(name+'L1norm',x, train=training)
 
             if training:
                 print('in training')
                 #bm, bv = tf.nn.moments(x, axes=[0,1,2])
                 bm = dignoal(x,kernel_size)
                 l1 = get_l1norm(x,bm)
-                bv = get_std(x,bm)
-                print('bv',bv)
+
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(l1,axis=-1))
 
-                quan_points = batch_var*quan_points0/tf.expand_dims(layer.gamma,axis=-1)+\
-                batch_mean - batch_var*tf.expand_dims(layer.beta/layer.gamma,axis=-1)
+                quan_points = batch_var*quan_points0/tf.expand_dims(layer_gamma,axis=-1)+\
+                batch_mean - batch_var*tf.expand_dims(layer_beta/layer_gamma,axis=-1)
 
                 # adjust quan_points
             else:
                 print('in inference')
-                xnn = layer.apply(x, training=training, scope=tf.get_variable_scope())
+
 
                 i1 = x[0,0,0,:]
                 i2 = x[1,1,1,:]
-                x1 = xnn[0,0,0,:]
-                x2 = xnn[1,1,1,:]
+                x1 = fake_output[0,0,0,:]
+                x2 = fake_output[1,1,1,:]
 
                 mean0 = i1-x1*(i1-i2)/(x1-x2)
                 var0 = (i1-i2)/(x1-x2)
