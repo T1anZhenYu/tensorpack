@@ -4,7 +4,7 @@
 #这个代码是利用对角采样计算均值，是基于dorefa_total的
 import tensorflow as tf
 import numpy as np 
-
+from tensorpack import *
 def get_dorefa(bitW, bitA, bitG):
     """
     Return the three quantization functions fw, fa, fg, for weights, activations and gradients respectively
