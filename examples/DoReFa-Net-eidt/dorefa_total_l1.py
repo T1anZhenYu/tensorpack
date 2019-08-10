@@ -59,9 +59,6 @@ def get_dorefa(bitW, bitA, bitG):
     def activate(x):
         return fa(nonlin(x))
     def fg(x,name,training,momentum = 0.9):#bitG == 32
-        def get_l1norm(x,ave):
-            inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
-            return 4/5*tf.reduce_mean(tf.abs(inputs-tf.expand_dims(ave,axis=0)),axis=0)
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
 
             shape = x.get_shape().as_list()#x is input, get input shape[batchsize,width,height,channel]
@@ -91,8 +88,8 @@ def get_dorefa(bitW, bitA, bitG):
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(tf.sqrt(bv),axis=-1))
                 #计算量化区间的起止点。
-                quan_points = batch_var*quan_points0/layer_gamma+\
-                batch_mean - batch_var*layer_beta/layer_gamma
+                quan_points = batch_var*quan_points0/tf.expand_dims(layer_gamma,axis=-1)+\
+                batch_mean - batch_var*tf.expand_dims(layer_beta/layer_gamma,axis=-1)
                 # adjust quan_points
             else:
                 print('in inference')

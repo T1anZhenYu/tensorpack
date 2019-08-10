@@ -43,34 +43,37 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
     if training is None:
         training = ctx.is_training
 
+
     training = bool(training)
 
     shape = inputs.get_shape().as_list()
     with tf.variable_scope('L2norm',reuse=tf.AUTO_REUSE):
-        gamma =  tf.get_variable('gamma',shape=[shape[-1],1],\
+        gamma =  tf.get_variable('gamma',shape=shape[-1],\
             dtype = tf.float32,initializer=tf.ones_initializer())
 
-        beta = tf.get_variable('beta',shape=[shape[-1],1],\
+        beta = tf.get_variable('beta',shape=shape[-1],\
             dtype = tf.float32,initializer=tf.zeros_initializer())
 
-        batch_mean = tf.get_variable('batch_mean',shape=[shape[-1],1],\
+        batch_mean = tf.get_variable('batch_mean',shape=shape[-1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
 
-        batch_std = tf.get_variable('batch_std',shape=[shape[-1],1],\
+        batch_std = tf.get_variable('batch_std',shape=shape[-1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
 
-        moving_mean = tf.get_variable('moving_mean',shape=[shape[-1],1],\
+        moving_mean = tf.get_variable('moving_mean',shape=shape[-1],\
             dtype = tf.float32,initializer=tf.zeros_initializer())
 
-        moving_std = tf.get_variable('moving_std',shape=[shape[-1],1],\
+        moving_std = tf.get_variable('moving_std',shape=shape[-1],\
             dtype = tf.float32,initializer=tf.zeros_initializer())
         if training:
             bm, bv = tf.nn.moments(inputs, axes=[0,1,2])
-            batch_mean = tf.assign(batch_mean,tf.expand_dims(bm,axis=-1))
-            batch_std = tf.assign(batch_std,tf.expand_dims(tf.sqrt(bv),axis=-1))
-            moving_mean = tf.assign(moving_mean,momentum*moving_mean+(1-momentum)*tf.expand_dims(bm,axis=-1))
-            moving_std = tf.assign(moving_std,momentum*moving_std+(1-momentum)*tf.expand_dims(tf.sqrt(bv),axis=-1))  
-
+            batch_mean = tf.assign(batch_mean,bm)
+            batch_std = tf.assign(batch_std,tf.sqrt(bv))
+            moving_mean = tf.assign(moving_mean,momentum*moving_mean+(1-momentum)*bm)
+            moving_std = tf.assign(moving_std,momentum*moving_std+(1-momentum)*tf.sqrt(bv))  
+            a_ = (inputs-batch_mean)
+            b_ = (inputs-batch_mean)/batch_std
+            
             x_ = (inputs-batch_mean)/batch_std +moving_mean -moving_mean +moving_std-moving_std
 
             output = gamma * x_ + beta 
@@ -80,4 +83,3 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
             x_ = (inputs-moving_mean)/moving_std
             output = gamma * x_ + beta
         return output,gamma,beta,moving_mean,moving_std
-
