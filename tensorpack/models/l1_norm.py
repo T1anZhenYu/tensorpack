@@ -83,7 +83,8 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
             moving_std_op = tf.assign(moving_std, momentum*before_std_op + (1-momentum)*tf.sqrt(bm))
 
 
-            x_ = (inputs-batch_mean)/batch_std +moving_mean_op -moving_mean_op +moving_std_op-moving_std_op
+            x_ = (inputs-batch_mean)/batch_std +\
+                    tf.stop_gradient(moving_mean_op -moving_mean_op +moving_std_op-moving_std_op)
 
             output = gamma * x_ + beta 
             
