@@ -81,7 +81,7 @@ def get_dorefa(bitW, bitA, bitG):
             #是否使用beta，scale表示是否使用gamma
             tf_args = dict(
                 momentum=momentum)   
-            layer = L1norm(**tf_args)  
+            layer = L2norm(**tf_args)  
             #fake_output代表这不是真实的输出
             fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  layer.apply(x, training=training)
 
