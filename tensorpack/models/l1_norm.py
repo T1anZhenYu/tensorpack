@@ -57,7 +57,7 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
 
         batch_std = tf.get_variable('batch_std',shape=shape[-1],\
-            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
+            dtype = tf.float32,initializer=tf.ones_initializer(),trainable = False)
 
         moving_mean = tf.get_variable('moving_mean',shape=shape[-1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
@@ -67,14 +67,14 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
         before_mean = tf.get_variable('before_mean',shape=shape[-1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
         before_std = tf.get_variable('before_std',shape=shape[-1],\
-            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
+            dtype = tf.float32,initializer=tf.ones_initializer(),trainable = False)
         if training:
             bm, bv = tf.nn.moments(inputs, axes=[0,1,2])
 
             temp_mean = moving_mean+bm
 
             batch_mean = tf.assign(batch_mean,bm)
-            batch_std = tf.assign(batch_std,tf.sqrt(bv))
+            batch_std = tf.assign(batch_std,tf.sqrt(bv)+0.000001)
 
             before_mean_op = tf.assign(before_mean,moving_mean)
             moving_mean_op = tf.assign(moving_mean,momentum*before_mean_op + (1-momentum)*bm ) 
