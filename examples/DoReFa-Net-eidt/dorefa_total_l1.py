@@ -79,7 +79,7 @@ def get_dorefa(bitW, bitA, bitG):
   
 
             #fake_output代表这不是真实的输出
-            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  L2norm(name+'L2norm',x, training=training)
+            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  L2norm(name+'L2norm',x, train=training)
 
             if training:#在train的时候
                 print('in training')
@@ -96,7 +96,7 @@ def get_dorefa(bitW, bitA, bitG):
                 #不知道为什么，直接调用layer.moving_mean和layer.moving_var得不到正确的值，
                 #只能采用下面的方法计算出来
                 #xnn,layer_gamma,layer_beta,layer_mm,layer_ms = L2norm(x, training=training)
-                
+
                 i1 = x[0,0,0,:]
                 i2 = x[1,1,1,:]
                 x1 = fake_output[0,0,0,:]
