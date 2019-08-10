@@ -38,7 +38,6 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
               beta_initializer=tf.zeros_initializer(),
               gamma_initializer=tf.ones_initializer(),
               bit_activation=2):
-
     ctx = get_current_tower_context()
     if training is None:
         training = ctx.is_training
@@ -65,14 +64,26 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
 
         moving_std = tf.get_variable('moving_std',shape=shape[-1],\
             dtype = tf.float32,initializer=tf.ones_initializer(),trainable = False)
+        before_mean = tf.get_variable('before_mean',shape=shape[-1],\
+            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
+        before_std = tf.get_variable('before_std',shape=shape[-1],\
+            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
         if training:
             bm, bv = tf.nn.moments(inputs, axes=[0,1,2])
+
+            temp_mean = moving_mean+bm
+
             batch_mean = tf.assign(batch_mean,bm)
             batch_std = tf.assign(batch_std,tf.sqrt(bv))
-            moving_mean = tf.assign(moving_mean,momentum*moving_mean+(1-momentum)*bm)
-            moving_std = tf.assign(moving_std,momentum*moving_std+(1-momentum)*tf.sqrt(bv))  
-            
-            x_ = (inputs-batch_mean)/batch_std +moving_mean -moving_mean +moving_std-moving_std
+
+            before_mean_op = tf.assign(before_mean,moving_mean)
+            moving_mean_op = tf.assign(moving_mean,momentum*before_mean_op + (1-momentum)*bm ) 
+
+            before_std_op= tf.assign(before_std,moving_std)
+            moving_std_op = tf.assign(moving_std, momentum*before_std_op + (1-momentum)*tf.sqrt(bm))
+
+
+            x_ = (inputs-batch_mean)/batch_std +moving_mean_op -moving_mean_op +moving_std_op-moving_std_op
 
             output = gamma * x_ + beta 
             
@@ -80,4 +91,4 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
         else:
             x_ = (inputs-moving_mean)/moving_std
             output = gamma * x_ + beta
-        return output,gamma,beta,moving_mean,moving_std
+        return output,gamma,beta,moving_mean,moving_std,bm,bv,before_mean
