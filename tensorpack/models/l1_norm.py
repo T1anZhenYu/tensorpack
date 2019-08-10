@@ -92,4 +92,4 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
         else:
             x_ = (inputs-moving_mean)/moving_std
             output = gamma * x_ + beta
-        return output,gamma,beta,moving_mean,moving_std,bm,bv,before_mean
+        return output,gamma,beta,moving_mean,moving_std
