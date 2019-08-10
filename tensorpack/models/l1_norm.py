@@ -80,7 +80,7 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
             moving_mean_op = tf.assign(moving_mean,momentum*before_mean_op + (1-momentum)*bm ) 
 
             before_std_op= tf.assign(before_std,moving_std)
-            moving_std_op = tf.assign(moving_std, momentum*before_std_op + (1-momentum)*tf.sqrt(bm))
+            moving_std_op = tf.assign(moving_std, momentum*before_std_op + (1-momentum)*tf.sqrt(bv)+0.000001)
 
 
             x_ = (inputs-batch_mean)/batch_std +\
