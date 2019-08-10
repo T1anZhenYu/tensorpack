@@ -5,6 +5,7 @@
 import tensorflow as tf
 import numpy as np 
 from tensorpack import *
+
 def get_dorefa(bitW, bitA, bitG):
     """
     Return the three quantization functions fw, fa, fg, for weights, activations and gradients respectively

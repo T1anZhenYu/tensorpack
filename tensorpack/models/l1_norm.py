@@ -81,39 +81,3 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
             output = gamma * x_ + beta
         return output,gamma,beta,moving_mean,moving_std
 
-
-@layer_register()
-@convert_to_tflayer_args(
-    args_names=[],
-    name_mapping={
-        'use_bias': 'center',
-        'use_scale': 'scale',
-        'gamma_init': 'gamma_initializer',
-        'decay': 'momentum',
-        'use_local_stat': 'training'
-    })
-def L1norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
-
-              beta_initializer=tf.zeros_initializer(),
-              gamma_initializer=tf.ones_initializer(),
-              bit_activation=2):
-    shape = inputs.get_shape().as_list()
-    with tf.variable_scope('L1norm',reuse=tf.AUTO_REUSE,use_resource=True):
-        gamma =  tf.get_variable('gamma',shape=[shape[-1],1],\
-            dtype = tf.float32,initializer=tf.ones_initializer())
-
-        beta = tf.get_variable('beta',shape=[shape[-1],1],\
-            dtype = tf.float32,initializer=tf.zeros_initializer())
-
-        moving_mean = tf.get_variable('moving_mean',shape=[shape[-1],1],\
-            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
-
-        moving_std = tf.get_variable('moving_std',shape=[shape[-1],1],\
-            dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
-
-        bm, bv = tf.nn.moments(x, axes=[0,1,2])
-
-        x_ = (inputs-tf.expand_dims(bm,axis=-1))/(tf.expand_dims(tf.sqrt(bv),axis=-1))
-
-        output = gamma * x_ + beta
-        return output 
