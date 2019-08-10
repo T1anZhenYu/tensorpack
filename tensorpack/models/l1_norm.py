@@ -80,8 +80,8 @@ def L2norm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
     })
 def L1norm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
     def get_l1norm(x,ave):
-        inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
-        return 4/5*tf.reduce_mean(tf.abs(inputs-tf.expand_dims(ave,axis=0)),axis=0)
+        return 4/5*tf.reduce_mean(tf.abs(x-ave),axis=[0,1,2])
+
     with tf.variable_scope(name, default_name='BatchNorm2d'):
         params_shape = x.get_shape().as_list()
         params_shape = params_shape[-1:]
