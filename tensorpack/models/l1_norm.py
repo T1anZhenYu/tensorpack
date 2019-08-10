@@ -113,7 +113,7 @@ def L1norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
 
         bm, bv = tf.nn.moments(x, axes=[0,1,2])
 
-        x_ = (inputs-tf.expand_dims(bm,axis=-1))/(tf.expand_dims(tf.sqrt(bv)),axis=-1)
+        x_ = (inputs-tf.expand_dims(bm,axis=-1))/(tf.expand_dims(tf.sqrt(bv),axis=-1))
 
         output = gamma * x_ + beta
         return output 
