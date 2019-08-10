@@ -65,7 +65,7 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
         moving_std = tf.get_variable('moving_std',shape=[shape[-1],1],\
             dtype = tf.float32,initializer=tf.zeros_initializer())
         if training:
-            bm, bv = tf.nn.moments(x, axes=[0,1,2])
+            bm, bv = tf.nn.moments(inputs, axes=[0,1,2])
             batch_mean = tf.assign(batch_mean,tf.expand_dims(bm,axis=-1))
             batch_std = tf.assign(batch_std,tf.expand_dims(tf.sqrt(bv),axis=-1))
             moving_mean = tf.assign(moving_mean,momentum*moving_mean+(1-momentum)*tf.expand_dims(bm,axis=-1))
