@@ -82,7 +82,7 @@ def get_dorefa(bitW, bitA, bitG):
   
 
             #fake_output代表这不是真实的输出
-            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  L2norm(inputs=x, training=training)
+            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  L2norm(name+'\L2norm',inputs=x, training=training)
 
             if training:#在train的时候
                 print('in training')
