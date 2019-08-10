@@ -38,11 +38,11 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
               beta_initializer=tf.zeros_initializer(),
               gamma_initializer=tf.ones_initializer(),
               bit_activation=2):
-    '''
+
     ctx = get_current_tower_context()
     if training is None:
         training = ctx.is_training
-    '''
+
     training = bool(training)
 
     shape = inputs.get_shape().as_list()
@@ -59,27 +59,27 @@ def L2norm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
         batch_std = tf.get_variable('batch_std',shape=[shape[-1],1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable = False)
 
-        m_mean = tf.get_variable('mm',shape=[shape[-1],1],\
+        moving_mean = tf.get_variable('moving_mean',shape=[shape[-1],1],\
             dtype = tf.float32,initializer=tf.zeros_initializer())
 
-        m_std = tf.get_variable('ms',shape=[shape[-1],1],\
+        moving_std = tf.get_variable('moving_std',shape=[shape[-1],1],\
             dtype = tf.float32,initializer=tf.zeros_initializer())
         if training:
             bm, bv = tf.nn.moments(x, axes=[0,1,2])
             batch_mean = tf.assign(batch_mean,tf.expand_dims(bm,axis=-1))
             batch_std = tf.assign(batch_std,tf.expand_dims(tf.sqrt(bv),axis=-1))
-            m_mean = tf.assign(m_mean,momentum*m_mean+(1-momentum)*tf.expand_dims(bm,axis=-1))
-            m_std = tf.assign(m_std,momentum*m_std+(1-momentum)*tf.expand_dims(tf.sqrt(bv),axis=-1))  
+            moving_mean = tf.assign(moving_mean,momentum*moving_mean+(1-momentum)*tf.expand_dims(bm,axis=-1))
+            moving_std = tf.assign(moving_std,momentum*moving_std+(1-momentum)*tf.expand_dims(tf.sqrt(bv),axis=-1))  
 
-            x_ = (inputs-batch_mean)/batch_std +m_mean -m_mean +m_std-m_std
+            x_ = (inputs-batch_mean)/batch_std +moving_mean -moving_mean +moving_std-moving_std
 
             output = gamma * x_ + beta 
             
 
         else:
-            x_ = (inputs-m_mean)/m_std
+            x_ = (inputs-moving_mean)/moving_std
             output = gamma * x_ + beta
-        return output 
+        return output,gamma,beta,moving_mean,moving_std
 
 
 @layer_register()
