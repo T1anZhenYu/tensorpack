@@ -79,11 +79,10 @@ def get_dorefa(bitW, bitA, bitG):
 
             #为了方便计算导数，这里引入了bn。momentum是用来计算movingmean和movingvar的。center表示
             #是否使用beta，scale表示是否使用gamma
-            tf_args = dict(
-                momentum=momentum)   
-            layer = L2norm(**tf_args)  
+  
+
             #fake_output代表这不是真实的输出
-            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  layer.apply(x, training=training)
+            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  L2norm(x, training=training)
 
             if training:#在train的时候
                 print('in training')
@@ -99,12 +98,12 @@ def get_dorefa(bitW, bitA, bitG):
                 print('in inference')
                 #不知道为什么，直接调用layer.moving_mean和layer.moving_var得不到正确的值，
                 #只能采用下面的方法计算出来
-                xnn,layer_gamma,layer_beta,layer_mm,layer_ms = layer.apply(x, training=training)
+                #xnn,layer_gamma,layer_beta,layer_mm,layer_ms = L2norm(x, training=training)
 
                 i1 = x[0,0,0,:]
                 i2 = x[1,1,1,:]
-                x1 = xnn[0,0,0,:]
-                x2 = xnn[1,1,1,:]
+                x1 = fake_output[0,0,0,:]
+                x2 = fake_output[1,1,1,:]
 
                 mean0 = i1-x1*(i1-i2)/(x1-x2)
                 var0 = (i1-i2)/(x1-x2)
