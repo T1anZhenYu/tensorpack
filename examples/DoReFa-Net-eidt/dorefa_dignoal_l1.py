@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 # File: dorefa.py
 # Author: Yuxin Wu
-#这个代码是利用对角采样计算均值，是基于dorefa_total的
+#这个代码实现了量化bn的核心功能，主要是fg函数。
 import tensorflow as tf
 import numpy as np 
 from tensorpack import *
+
+
 def get_dorefa(bitW, bitA, bitG):
     """
     Return the three quantization functions fw, fa, fg, for weights, activations and gradients respectively
@@ -57,12 +59,7 @@ def get_dorefa(bitW, bitA, bitG):
 
     def activate(x):
         return fa(nonlin(x))
-    def fg(x,name,training,momentum = 0.9,kernel_size=4):#bitG == 32
-        def get_l1norm(x,ave):
-            return 4/5*tf.reduce_mean(tf.abs(x-ave),axis=[0,1,2])
-        def get_std(x,ave):#根据采样后的均值计算方差
-            inputs = tf.reshape(x,[-1,tf.shape(x)[-1]])
-            return tf.sqrt(tf.reduce_mean(tf.square(inputs-tf.expand_dims(ave,axis=0)),axis=0))
+    def fg(x,name,training,momentum = 0.9):#bitG == 32
         def dignoal(x,kernel_size):#利用对角采样计算均值，
             b = tf.shape(x)[0]
             w = tf.shape(x)[1]
@@ -82,8 +79,6 @@ def get_dorefa(bitW, bitA, bitG):
 
 
             ave = tf.reduce_sum(x_,axis=[0,1,2])/tf.expand_dims(tf.cast(num,dtype=tf.float32),axis=-1)
-
-
             return ave
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
 
@@ -93,32 +88,35 @@ def get_dorefa(bitW, bitA, bitG):
             batch_size0 = tf.shape(x)[0]#because placehoder,batch size is always None,needs this operation to use it as a real number
             w = shape[1]
             h = shape[2]
-
+            #batch_mean 用来存储当前batch的均值
             batch_mean = tf.get_variable('batch_mean',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
-
+            #batch_var 用来存储当前batch的标准差
             batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
-            tf_args = dict(
-                momentum=momentum,center=True, scale=True,name = name+'/bn')   
-            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms = L1norm(name+'L1norm',x, train=training)
 
-            if training:
+            #为了方便计算导数，这里引入了bn。momentum是用来计算movingmean和movingvar的。center表示
+            #是否使用beta，scale表示是否使用gamma
+  
+
+            #fake_output代表这不是真实的输出
+            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  L1norm(name+'L2norm',x, train=training)
+
+            if training:#在train的时候
                 print('in training')
-                #bm, bv = tf.nn.moments(x, axes=[0,1,2])
-                bm = dignoal(x,kernel_size)
-                l1 = get_l1norm(x,bm)
-
+                bm = dignoal(x,kernel_size)#计算当前batch的均值方差
+                bv = layer_ms
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
-                batch_var = batch_var.assign(tf.expand_dims(l1,axis=-1))
-
+                batch_var = batch_var.assign(tf.expand_dims(tf.sqrt(bv),axis=-1))
+                #计算量化区间的起止点。
                 quan_points = batch_var*quan_points0/tf.expand_dims(layer_gamma,axis=-1)+\
                 batch_mean - batch_var*tf.expand_dims(layer_beta/layer_gamma,axis=-1)
-
                 # adjust quan_points
             else:
                 print('in inference')
-
+                #不知道为什么，直接调用layer.moving_mean和layer.moving_var得不到正确的值，
+                #只能采用下面的方法计算出来
+                #xnn,layer_gamma,layer_beta,layer_mm,layer_ms = L2norm(x, training=training)
 
                 i1 = x[0,0,0,:]
                 i2 = x[1,1,1,:]
@@ -128,8 +126,6 @@ def get_dorefa(bitW, bitA, bitG):
                 mean0 = i1-x1*(i1-i2)/(x1-x2)
                 var0 = (i1-i2)/(x1-x2)
                 #quantize BN during inference
-
-                #add_moving_summary(tf.identity(quan_points[3],name='origin_quan_points_3')) 
 
                 moving_mean_ = tf.identity(mean0,name='moving_mean_')
                 moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
