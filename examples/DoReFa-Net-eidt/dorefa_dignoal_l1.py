@@ -59,7 +59,7 @@ def get_dorefa(bitW, bitA, bitG):
 
     def activate(x):
         return fa(nonlin(x))
-    def fg(x,name,training,momentum = 0.9):#bitG == 32
+    def fg(x,name,training,momentum = 0.9,kernel_size=4):#bitG == 32
         def dignoal(x,kernel_size):#利用对角采样计算均值，
             b = tf.shape(x)[0]
             w = tf.shape(x)[1]
