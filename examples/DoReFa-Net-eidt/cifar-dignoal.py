@@ -97,7 +97,7 @@ class Model(ModelDesc):
                       #最后一层不做量化
                       .BatchNorm('bn6')
                       .apply(nonlin)
-                      .FullyConnected('fc1', 10)())
+                      .FullyConnected('fc1', 100)())
 
         tf.nn.softmax(logits, name='output')
     
