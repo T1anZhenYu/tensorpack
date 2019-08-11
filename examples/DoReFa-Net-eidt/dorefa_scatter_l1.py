@@ -113,12 +113,11 @@ def get_dorefa(bitW, bitA, bitG):
                 # adjust quan_points
             else:
                 print('in inference')
-                xnn = layer.apply(x, training=training, scope=tf.get_variable_scope())
 
                 i1 = x[0,0,0,:]
                 i2 = x[1,1,1,:]
-                x1 = xnn[0,0,0,:]
-                x2 = xnn[1,1,1,:]
+                x1 = fake_output[0,0,0,:]
+                x2 = fake_output[1,1,1,:]
 
                 mean0 = i1-x1*(i1-i2)/(x1-x2)
                 var0 = (i1-i2)/(x1-x2)
