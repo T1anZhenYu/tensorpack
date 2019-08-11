@@ -13,7 +13,7 @@ from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 
-from dorefa_scatter import get_dorefa
+from dorefa_scatter_l1 import get_dorefa
 
 """
 这个代码是用对角采样计算均值和方差。模型的变动就是用fg代替BN和Activation
@@ -65,31 +65,31 @@ class Model(ModelDesc):
                       .apply(activate)
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')
-                      .apply(fg,'fg1',is_training,kernel_size=18,scatter_rate=0)#模型的核心变动，用fg代替bn和activate
+                      .apply(fg,'fg1',is_training,kernel_size=18,scatter_rate=1)#模型的核心变动，用fg代替bn和activate
                       #.BatchNorm('bn1')
                       #.apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')
                       .MaxPooling('pool1', 2, padding='SAME')
-                      .apply(fg,'fg2',training=is_training,kernel_size=9,scatter_rate=0)#注意，这里要先maxpooling再做量化。
+                      .apply(fg,'fg2',training=is_training,kernel_size=9,scatter_rate=1)#注意，这里要先maxpooling再做量化。
                       #因为原来的模型maxpooling是在bn之后的
                       #.BatchNorm('bn2')
                       #.MaxPooling('pool1', 2, padding='SAME')
                       #.apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')
-                      .apply(fg,'fg3',is_training,kernel_size=7,scatter_rate=0)
+                      .apply(fg,'fg3',is_training,kernel_size=7,scatter_rate=1)
                       #.BatchNorm('bn3')
                       #.apply(activate)
                       # 7
 
                       .Conv2D('conv4', 128, 3, padding='SAME')
-                      .apply(fg,'fg4',is_training,kernel_size=7,scatter_rate=0)
+                      .apply(fg,'fg4',is_training,kernel_size=7,scatter_rate=1)
                       #.BatchNorm('bn4')
                       #.apply(activate)
 
                       .Conv2D('conv5', 128, 3, padding='VALID')
-                      .apply(fg,'fg5',is_training,kernel_size=5,scatter_rate=0)
+                      .apply(fg,'fg5',is_training,kernel_size=5,scatter_rate=1)
                       #.BatchNorm('bn5').apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
