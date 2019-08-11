@@ -13,7 +13,7 @@ from tensorpack.dataflow import dataset
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 
-from dorefa_dignoal_l1 import get_dorefa
+from dorefa_dignoal import get_dorefa
 
 """
 这个代码是用对角采样计算均值和方差。模型的变动就是用fg代替BN和Activation
@@ -157,7 +157,7 @@ def get_config():
             #DumpTensors(['fg1/batch_mean:0','fg1/batch_var:0','fg1/realbatch_mean:0','fg1/realbatch_var:0'])
         ],
         model=Model(),
-        max_epoch=200,
+        max_epoch=300,
     )
 
 
