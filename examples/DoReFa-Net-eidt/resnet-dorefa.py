@@ -171,7 +171,7 @@ def get_config():
             #DumpTensors(['fg1/moving_mean','fg1/moving_var','fg1/batch_mean','fg1/batch_var'])
         ],
         model=Model(),
-        max_epoch=200,
+        max_epoch=300,
     )
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -199,3 +199,5 @@ if __name__ == '__main__':
     elif args.run:
         assert args.load.endswith('.npz')
         run_image(Model(), DictRestore(dict(np.load(args.load))), args.run)
+    config = get_config()
+    launch_train_with_config(config, SimpleTrainer())
