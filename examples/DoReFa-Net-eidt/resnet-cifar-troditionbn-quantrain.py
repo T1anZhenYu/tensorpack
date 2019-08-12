@@ -38,7 +38,7 @@ class Model(ModelDesc):
 
     def build_graph(self, image, label):
         image = image / 256.0
-
+        is_training = get_current_tower_context().is_training
         fw, fa, fg = get_dorefa(BITW, BITA, BITG)
 
         def new_get_variable(v):
@@ -88,7 +88,7 @@ class Model(ModelDesc):
             return x
 
         with remap_variables(new_get_variable), \
-                argscope(quan_train_L2norm, momentum=0.9, eps=1e-4), \
+                argscope(quan_train_L2norm, momentum=0.9, eps=1e-4,train=is_training), \
                 argscope(Conv2D, use_bias=False, nl=tf.identity):
             logits = (LinearWrap(image)
                       # use explicit padding here, because our private training framework has
