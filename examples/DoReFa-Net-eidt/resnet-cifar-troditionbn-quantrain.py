@@ -88,7 +88,7 @@ class Model(ModelDesc):
             return x
 
         with remap_variables(new_get_variable), \
-                argscope(quan_train_L2norm, momentum=0.9, epsilon=1e-4), \
+                argscope(quan_train_L2norm, momentum=0.9, eps=1e-4), \
                 argscope(Conv2D, use_bias=False, nl=tf.identity):
             logits = (LinearWrap(image)
                       # use explicit padding here, because our private training framework has
