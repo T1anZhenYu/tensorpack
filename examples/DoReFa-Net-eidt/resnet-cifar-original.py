@@ -160,7 +160,7 @@ if __name__ == '__main__':
                         help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
                         default='1,2,4')
     args = parser.parse_args()
-    NUM_UNITS = args.num_units
+    #NUM_UNITS = args.num_units
 
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
