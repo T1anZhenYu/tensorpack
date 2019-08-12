@@ -89,7 +89,7 @@ class Model(ModelDesc):
 
         with remap_variables(new_get_variable), \
                 argscope(BatchNorm, decay=0.9, epsilon=1e-4), \
-                argscope(Conv2D, use_bias=False, nl=tf.identity):
+                argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
                       # use explicit padding here, because our private training framework has
                       # different padding mechanisms from TensorFlow
