@@ -14,7 +14,7 @@ from tensorpack.tfutils.varreplace import remap_variables
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from dorefa import get_dorefa
 from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor
-
+from tensorpack.utils.gpu import get_num_gpu
 """
 This script loads the pre-trained ResNet-18 model with (W,A,G) = (1,4,32)
 It has 59.2% top-1 and 81.5% top-5 validation error on ILSVRC12 validation set.
