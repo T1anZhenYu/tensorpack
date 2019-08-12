@@ -159,6 +159,9 @@ if __name__ == '__main__':
                         help='number of units in each stage',
                         type=int, default=18)
     parser.add_argument('--load', help='load model for training')
+    parser.add_argument('--dorefa',
+                        help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
+                        default='1,2,4')
     args = parser.parse_args()
     NUM_UNITS = args.num_units
 
