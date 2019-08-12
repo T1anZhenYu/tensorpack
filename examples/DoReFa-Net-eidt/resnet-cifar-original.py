@@ -109,6 +109,14 @@ class Model(ModelDesc):
         tf.nn.softmax(logits, name='output')
         return ImageNetModel.compute_loss_and_error(logits, label)
 
+    def optimizer(self):
+        lr = tf.train.exponential_decay(
+            learning_rate=1e-3,
+            global_step=get_global_step_var(),
+            decay_steps=4721 * 100,
+            decay_rate=0.5, staircase=True, name='learning_rate')
+        tf.summary.scalar('lr', lr)
+        return tf.train.AdamOptimizer(lr, epsilon=1e-5)
 
 def get_inference_augmentor():
     return fbresnet_augmentor(False)
