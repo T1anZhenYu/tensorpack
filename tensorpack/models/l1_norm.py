@@ -33,7 +33,7 @@ __all__ = ['quan_all_L2norm','quan_test_L2norm','quan_train_L2norm','L2norm','L1
         'use_local_stat': 'training'
     })
 def quan_all_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None):
-    with tf.variable_scope(name, default_name='BatchNorm2d'):
+    with tf.variable_scope(name, default_name='quan_test_L2norm'):
         params_shape = x.get_shape().as_list()
         params_shape = params_shape[-1:]
         moving_mean = tf.get_variable('mean', shape=params_shape,
@@ -42,13 +42,12 @@ def quan_all_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None):
         moving_variance = tf.get_variable('variance', shape=params_shape,
                                           initializer=tf.ones_initializer,
                                           trainable=False)
-
-        
+  
         def mean_var_with_update():
 
             mean, variance = tf.nn.moments(x, [0,1,2], name='moments')
-            with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
-                                         assign_moving_average(moving_variance, variance, decay)]):
+            with tf.control_dependencies([assign_moving_average(moving_mean, mean, momentum),#计算滑动平均值
+                                         assign_moving_average(moving_variance, variance, momentum)]):
                 return tf.identity(mean), tf.identity(variance)
         if train:#亲测tf.cond的第一个函数不能直接写成ture or false，所以只好用一个很蠢的方法。
             xx = tf.constant(3)
@@ -62,10 +61,18 @@ def quan_all_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None):
                                    initializer=tf.zeros_initializer)
             gamma = tf.get_variable('gamma', params_shape,
                                     initializer=tf.ones_initializer)
-            x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
+            x = tf.nn.batch_normalization(tf.to_bfloat16(x), tf.to_bfloat16(mean),\
+             tf.to_bfloat16(variance), tf.to_bfloat16(beta), tf.to_bfloat16(gamma), tf.to_bfloat16(eps))
+            print('x in bn:',x)
+            x = tf.cast(x,dtype=tf.float32)
         else:
-            x = tf.nn.batch_normalization(x, mean, variance, None, None, eps)
-        return x,gamma,beta,moving_mean,moving_variance
+            x = tf.nn.batch_normalization(tf.to_bfloat16(x), tf.to_bfloat16(mean),\
+             tf.to_bfloat16(variance), None, None, tf.to_bfloat16(eps))
+        return x
+
+
+
+
 @layer_register()
 @convert_to_tflayer_args(
     args_names=[],
@@ -77,7 +84,7 @@ def quan_all_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None):
         'use_local_stat': 'training'
     })
 def quan_test_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None):
-    with tf.variable_scope(name, default_name='BatchNorm2d'):
+    with tf.variable_scope(name, default_name='quan_test_L2norm'):
         params_shape = x.get_shape().as_list()
         params_shape = params_shape[-1:]
         moving_mean = tf.get_variable('mean', shape=params_shape,
@@ -86,13 +93,12 @@ def quan_test_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None):
         moving_variance = tf.get_variable('variance', shape=params_shape,
                                           initializer=tf.ones_initializer,
                                           trainable=False)
-
-        
+  
         def mean_var_with_update():
 
             mean, variance = tf.nn.moments(x, [0,1,2], name='moments')
-            with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
-                                         assign_moving_average(moving_variance, variance, decay)]):
+            with tf.control_dependencies([assign_moving_average(moving_mean, mean, momentum),#计算滑动平均值
+                                         assign_moving_average(moving_variance, variance, momentum)]):
                 return tf.identity(mean), tf.identity(variance)
         if train:#亲测tf.cond的第一个函数不能直接写成ture or false，所以只好用一个很蠢的方法。
             xx = tf.constant(3)
@@ -106,10 +112,16 @@ def quan_test_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None):
                                    initializer=tf.zeros_initializer)
             gamma = tf.get_variable('gamma', params_shape,
                                     initializer=tf.ones_initializer)
-            x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
+            x = tf.nn.batch_normalization(x,mean,\
+             variance,beta, gamma,eps)
+
         else:
-            x = tf.nn.batch_normalization(x, mean, variance, None, None, eps)
-        return x,gamma,beta,moving_mean,moving_variance
+            x = tf.nn.batch_normalization(tf.to_bfloat16(x), tf.to_bfloat16(mean),\
+             tf.to_bfloat16(variance), None, None, tf.to_bfloat16(eps))
+        return x
+
+
+
 @layer_register()
 @convert_to_tflayer_args(
     args_names=[],
