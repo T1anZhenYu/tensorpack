@@ -33,7 +33,7 @@ BITG = 32
 BATCH_SIZE=128
 class Model(ModelDesc):
     def inputs(self):
-        return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
+        return [tf.TensorSpec([None, 32, 32, 3], tf.float32, 'input'),
                 tf.TensorSpec([None], tf.int32, 'label')]
 
     def build_graph(self, image, label):
