@@ -107,8 +107,29 @@ class Model(ModelDesc):
                       .tf.multiply(49)  # this is due to a bug in our model design
                       .FullyConnected('fct', 10)())
         tf.nn.softmax(logits, name='output')
-        cost = ImageNetModel.compute_loss_and_error(logits, label)
-        return cost
+        # compute the number of failed samples
+        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong_tensor')
+        # monitor training error
+        add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
+
+        cost = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=label)
+        cost = tf.reduce_mean(cost, name='cross_entropy_loss')
+        # weight decay on all W of fc layers
+        wd_cost = regularize_cost('fc.*/W', l2_regularizer(1e-7))
+
+        add_param_summary(('.*/W', ['histogram', 'rms']))
+        total_cost = tf.add_n([cost, wd_cost], name='cost')
+        add_moving_summary(cost, wd_cost, total_cost)
+        return total_cost
+
+    def optimizer(self):
+        lr = tf.train.exponential_decay(
+            learning_rate=1e-3,
+            global_step=get_global_step_var(),
+            decay_steps=4721 * 100,
+            decay_rate=0.5, staircase=True, name='learning_rate')
+        tf.summary.scalar('lr', lr)
+        return tf.train.AdamOptimizer(lr, epsilon=1e-5)
 
     def optimizer(self):
         lr = tf.train.exponential_decay(
@@ -124,15 +145,15 @@ def get_inference_augmentor():
 
 
 
-def get_config():
-    logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
+def get_config():#这里是用来声明train的参数
+    logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))#设置log地址
 
     # prepare dataset
-    d1 = dataset.CifarBase('train')
+    d1 = dataset.CifarBase('train')#设置trian数据集
     #d2 = dataset.SVHNDigit('extra')
-    data_train = RandomMixData([d1])
-    data_test = dataset.CifarBase('test')
-
+    data_train = RandomMixData([d1])#这里是将两个以上的数据集mix，对单独的数据集没效果
+    data_test = dataset.CifarBase('test')#设置test数据集
+    #设置train的时候的augmentor的参数。
     augmentors = [
         imgaug.Resize((40, 40)),
         imgaug.Brightness(30),
@@ -140,23 +161,25 @@ def get_config():
     ]
     data_train = AugmentImageComponent(data_train, augmentors)
     data_train = BatchData(data_train, 128)
-    data_train = MultiProcessRunnerZMQ(data_train, 5)
+    data_train = MultiProcessRunnerZMQ(data_train, 5)#这个是用来处理多线程的。
 
-    augmentors = [imgaug.Resize((40, 40))]
+    augmentors = [imgaug.Resize((40, 40))]#这里是设置test的时候的augmentor
     data_test = AugmentImageComponent(data_test, augmentors)
-    data_test = BatchData(data_test, 128, remainder=True)
+    data_test = BatchData(data_test, 128, remainder=True)#remainder的含义：当batchdata不足一个batch时，
+    #是否构建小的batch。True构建，默认False不构建
 
     return TrainConfig(
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
             InferenceRunner(data_test,
-                            [ ClassificationError('wrong-top1', 'val-error-top1'),
-                             ClassificationError('wrong-top5', 'val-error-top5')]),
-            #DumpTensors(['fg1/moving_mean','fg1/moving_var','fg1/batch_mean','fg1/batch_var'])
+                            [ScalarStats('cost'), ClassificationError('wrong_tensor')]),
+            #如果想要在train的时候获取中间变量，可以用下面的指令
+            #DumpTensors(['bn1/mean/EMA:0','conv1/output:0','bn6/mean/EMA:0','conv6/output:0'])
+
         ],
         model=Model(),
-        max_epoch=300,
+        max_epoch=200,
     )
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
