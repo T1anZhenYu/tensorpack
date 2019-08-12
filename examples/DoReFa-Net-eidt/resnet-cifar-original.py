@@ -108,7 +108,7 @@ class Model(ModelDesc):
                       .FullyConnected('fct', 10)())
         tf.nn.softmax(logits, name='output')
         cost = tf.identity(ImageNetModel.compute_loss_and_error(logits, label),name='cost')
-        return cost
+        return logits
 
     def optimizer(self):
         lr = tf.train.exponential_decay(
@@ -151,7 +151,8 @@ def get_config():
         callbacks=[
             ModelSaver(),
             InferenceRunner(data_test,
-                            [ScalarStats('cost'), ClassificationError('wrong-top1')]),
+                            [ ClassificationError('wrong-top1', 'val-error-top1'),
+                             ClassificationError('wrong-top5', 'val-error-top5')]),
             #DumpTensors(['fg1/moving_mean','fg1/moving_var','fg1/batch_mean','fg1/batch_var'])
         ],
         model=Model(),
