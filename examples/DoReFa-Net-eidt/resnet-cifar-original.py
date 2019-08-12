@@ -104,7 +104,7 @@ class Model(ModelDesc):
                       .BatchNorm('lastbn')
                       .apply(nonlin)
                       .GlobalAvgPooling('gap')
-                      .tf.multiply(49)  # this is due to a bug in our model design
+                      #.tf.multiply(49)  # this is due to a bug in our model design
                       .FullyConnected('fct', 10)())
         tf.nn.softmax(logits, name='output')
         # compute the number of failed samples
