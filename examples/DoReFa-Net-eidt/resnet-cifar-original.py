@@ -30,7 +30,7 @@ BITW = 1
 BITA = 4
 BITG = 32
 
-
+BATCH_SIZE=128
 class Model(ModelDesc):
     def inputs(self):
         return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
