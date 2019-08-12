@@ -131,14 +131,6 @@ class Model(ModelDesc):
         tf.summary.scalar('lr', lr)
         return tf.train.AdamOptimizer(lr, epsilon=1e-5)
 
-    def optimizer(self):
-        lr = tf.train.exponential_decay(
-            learning_rate=1e-3,
-            global_step=get_global_step_var(),
-            decay_steps=4721 * 100,
-            decay_rate=0.5, staircase=True, name='learning_rate')
-        tf.summary.scalar('lr', lr)
-        return tf.train.AdamOptimizer(lr, epsilon=1e-5)
 
 def get_inference_augmentor():
     return fbresnet_augmentor(False)
@@ -184,14 +176,11 @@ def get_config():#这里是用来声明train的参数
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', help='the physical ids of GPUs to use')
-    parser.add_argument('--load', help='load a npz pretrained model')
-    parser.add_argument('--data', help='ILSVRC dataset dir')
+
     parser.add_argument('--dorefa',
                         help='number of bits for W,A,G, separated by comma. Defaults to \'1,4,32\'',
                         default='1,4,32')
-    parser.add_argument(
-        '--run', help='run on a list of images with the pretrained model', nargs='*')
-    parser.add_argument('--eval', action='store_true')
+
     args = parser.parse_args()
 
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
