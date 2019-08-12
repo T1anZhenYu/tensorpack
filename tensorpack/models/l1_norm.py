@@ -121,7 +121,7 @@ def quan_test_L2norm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         'use_local_stat': 'training'
     })
 def quan_train_L2norm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
-    with tf.variable_scope(name, default_name='BatchNorm2d'):
+    with tf.variable_scope(name, default_name='quan_train_L2norm'):
         params_shape = x.get_shape().as_list()
         params_shape = params_shape[-1:]
         moving_mean = tf.get_variable('mean', shape=params_shape,
@@ -130,8 +130,7 @@ def quan_train_L2norm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         moving_variance = tf.get_variable('variance', shape=params_shape,
                                           initializer=tf.ones_initializer,
                                           trainable=False)
-
-        
+  
         def mean_var_with_update():
 
             mean, variance = tf.nn.moments(x, [0,1,2], name='moments')
@@ -150,10 +149,17 @@ def quan_train_L2norm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
                                    initializer=tf.zeros_initializer)
             gamma = tf.get_variable('gamma', params_shape,
                                     initializer=tf.ones_initializer)
-            x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
+            x = tf.nn.batch_normalization(tf.to_bfloat16(x), tf.to_bfloat16(mean),\
+             tf.to_bfloat16(variance), tf.to_bfloat16(beta), tf.to_bfloat16(gamma), tf.to_bfloat16(eps))
+            print('x in bn:',x)
         else:
             x = tf.nn.batch_normalization(x, mean, variance, None, None, eps)
         return x,gamma,beta,moving_mean,moving_variance
+
+
+
+
+
 @layer_register()
 @convert_to_tflayer_args(
     args_names=[],
