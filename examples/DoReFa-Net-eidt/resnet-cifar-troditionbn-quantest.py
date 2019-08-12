@@ -38,7 +38,7 @@ class Model(ModelDesc):
 
     def build_graph(self, image, label):
         image = image / 256.0
-
+        is_training = get_current_tower_context().is_training
         fw, fa, fg = get_dorefa(BITW, BITA, BITG)
 
         def new_get_variable(v):
@@ -60,7 +60,7 @@ class Model(ModelDesc):
             def get_stem_full(x):
                 return (LinearWrap(x)
                         .Conv2D('c3x3a', channel, 3)
-                        .BatchNorm('stembn')
+                        .quan_test_L2norm('stembn')
                         .apply(activate)
                         .Conv2D('c3x3b', channel, 3)())
             channel_mismatch = channel != x.get_shape().as_list()[3]
@@ -68,13 +68,13 @@ class Model(ModelDesc):
                 # handling pool1 is to work around an architecture bug in our model
                 if stride != 1 or 'pool1' in x.name:
                     x = AvgPooling('pool', x, stride, stride)
-                x = BatchNorm('bn', x)
+                x = quan_test_L2norm('bn', x)
                 x = activate(x)
                 shortcut = Conv2D('shortcut', x, channel, 1)
                 stem = get_stem_full(x)
             else:
                 shortcut = x
-                x = BatchNorm('bn', x)
+                x = quan_test_L2norm('bn', x)
                 x = activate(x)
                 stem = get_stem_full(x)
             return shortcut + stem
@@ -88,7 +88,7 @@ class Model(ModelDesc):
             return x
 
         with remap_variables(new_get_variable), \
-                argscope(BatchNorm, decay=0.9, epsilon=1e-4), \
+                argscope(quan_test_L2norm, momentum=0.9, eps=1e-4,train=is_training), \
                 argscope(Conv2D, use_bias=False, nl=tf.identity):
             logits = (LinearWrap(image)
                       # use explicit padding here, because our private training framework has
@@ -101,7 +101,7 @@ class Model(ModelDesc):
                       .apply(group, 'conv3', 128, 2, 2)
                       .apply(group, 'conv4', 256, 2, 2)
                       .apply(group, 'conv5', 512, 2, 2)
-                      .BatchNorm('lastbn')
+                      .quan_test_L2norm('lastbn')
                       .apply(nonlin)
                       .GlobalAvgPooling('gap')
                       #.tf.multiply(49)  # this is due to a bug in our model design
