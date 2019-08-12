@@ -12,7 +12,7 @@ from tensorpack import *
 from tensorpack.dataflow import dataset
 from tensorpack.tfutils.varreplace import remap_variables
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
-from dorefa import get_dorefa
+from dorefa_dignoal import get_dorefa
 from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor
 from tensorpack.utils.gpu import get_num_gpu
 """
