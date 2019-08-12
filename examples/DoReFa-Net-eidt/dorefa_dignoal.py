@@ -59,7 +59,7 @@ def get_dorefa(bitW, bitA, bitG):
 
     def activate(x):
         return fa(nonlin(x))
-    def fg(x,name,training,momentum = 0.9,kernel_size=4):#bitG == 32
+    def fg(x,name='fg',training,momentum = 0.9,kernel_size=4):#bitG == 32
         def dignoal(x,kernel_size):#利用对角采样计算均值，
             b = tf.shape(x)[0]
             w = tf.shape(x)[1]
@@ -75,9 +75,6 @@ def get_dorefa(bitW, bitA, bitG):
             tf.cast(b*tf.floormod(w,kernel_size),dtype=tf.float64)*tf.math.floor(h/kernel_size)+\
             tf.cast(b*tf.floormod(h,kernel_size),dtype=tf.float64)*tf.math.floor(w/kernel_size)+\
             tf.cast(b*tf.reduce_min([tf.floormod(w,kernel_size),tf.floormod(h,kernel_size)]),dtype=tf.float64)
-
-
-
             ave = tf.reduce_sum(x_,axis=[0,1,2])/tf.expand_dims(tf.cast(num,dtype=tf.float32),axis=-1)
             return ave
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
