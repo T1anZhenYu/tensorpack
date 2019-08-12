@@ -174,7 +174,7 @@ if __name__ == '__main__':
     dataset_test = get_data('test')
 
     config = TrainConfig(
-        model=Model(n=NUM_UNITS),
+        model=Model(),
         dataflow=dataset_train,
         callbacks=[
             ModelSaver(),
