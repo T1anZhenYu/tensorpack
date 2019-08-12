@@ -134,8 +134,8 @@ def quan_train_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None)
         def mean_var_with_update():
 
             mean, variance = tf.nn.moments(x, [0,1,2], name='moments')
-            with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
-                                         assign_moving_average(moving_variance, variance, decay)]):
+            with tf.control_dependencies([assign_moving_average(moving_mean, mean, momentum),#计算滑动平均值
+                                         assign_moving_average(moving_variance, variance, momentum)]):
                 return tf.identity(mean), tf.identity(variance)
         if train:#亲测tf.cond的第一个函数不能直接写成ture or false，所以只好用一个很蠢的方法。
             xx = tf.constant(3)
@@ -155,7 +155,6 @@ def quan_train_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None)
         else:
             x = tf.nn.batch_normalization(x, mean, variance, None, None, eps)
         return x,gamma,beta,moving_mean,moving_variance
-
 
 
 
