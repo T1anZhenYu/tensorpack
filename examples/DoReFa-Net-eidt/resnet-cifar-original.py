@@ -108,7 +108,7 @@ class Model(ModelDesc):
                       .FullyConnected('fct', 10)())
         tf.nn.softmax(logits, name='output')
         cost = tf.identity(ImageNetModel.compute_loss_and_error(logits, label),name='cost')
-        return logits
+        return cost
 
     def optimizer(self):
         lr = tf.train.exponential_decay(
