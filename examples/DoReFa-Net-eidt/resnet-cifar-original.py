@@ -89,7 +89,7 @@ class Model(ModelDesc):
 
         with remap_variables(new_get_variable), \
                 argscope(BatchNorm, decay=0.9, epsilon=1e-4), \
-                argscope(Conv2D, use_bias=False):
+                argscope(Conv2D, use_bias=False, nl=tf.identity):
             logits = (LinearWrap(image)
                       # use explicit padding here, because our private training framework has
                       # different padding mechanisms from TensorFlow
@@ -155,10 +155,7 @@ def get_data(train_or_test):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', help='comma separated list of GPU(s) to use.')
-    parser.add_argument('-n', '--num_units',
-                        help='number of units in each stage',
-                        type=int, default=18)
-    parser.add_argument('--load', help='load model for training')
+
     parser.add_argument('--dorefa',
                         help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
                         default='1,2,4')
