@@ -107,7 +107,7 @@ class Model(ModelDesc):
                       .tf.multiply(49)  # this is due to a bug in our model design
                       .FullyConnected('fct', 10)())
         tf.nn.softmax(logits, name='output')
-        ImageNetModel.compute_loss_and_error(logits, label)
+        return ImageNetModel.compute_loss_and_error(logits, label)
 
 
 def get_inference_augmentor():
