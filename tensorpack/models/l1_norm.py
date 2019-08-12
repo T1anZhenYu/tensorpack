@@ -29,10 +29,10 @@ __all__ = ['quan_all_L2norm','quan_test_L2norm','quan_train_L2norm','L2norm','L1
         'use_bias': 'center',
         'use_scale': 'scale',
         'gamma_init': 'gamma_initializer',
-        'decay': 'momentum',
+
         'use_local_stat': 'training'
     })
-def quan_all_L2norm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
+def quan_all_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None):
     with tf.variable_scope(name, default_name='BatchNorm2d'):
         params_shape = x.get_shape().as_list()
         params_shape = params_shape[-1:]
@@ -73,10 +73,10 @@ def quan_all_L2norm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         'use_bias': 'center',
         'use_scale': 'scale',
         'gamma_init': 'gamma_initializer',
-        'decay': 'momentum',
+
         'use_local_stat': 'training'
     })
-def quan_test_L2norm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
+def quan_test_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None):
     with tf.variable_scope(name, default_name='BatchNorm2d'):
         params_shape = x.get_shape().as_list()
         params_shape = params_shape[-1:]
@@ -117,10 +117,10 @@ def quan_test_L2norm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         'use_bias': 'center',
         'use_scale': 'scale',
         'gamma_init': 'gamma_initializer',
-        'decay': 'momentum',
+
         'use_local_stat': 'training'
     })
-def quan_train_L2norm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
+def quan_train_L2norm(x, train, eps=1e-05, momentum=0.9, affine=True, name=None):
     with tf.variable_scope(name, default_name='quan_train_L2norm'):
         params_shape = x.get_shape().as_list()
         params_shape = params_shape[-1:]
