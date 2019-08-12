@@ -105,7 +105,7 @@ class Model(ModelDesc):
                       .apply(nonlin)
                       .GlobalAvgPooling('gap')
                       .tf.multiply(49)  # this is due to a bug in our model design
-                      .FullyConnected('fct', 1000)())
+                      .FullyConnected('fct', 10)())
         tf.nn.softmax(logits, name='output')
         ImageNetModel.compute_loss_and_error(logits, label)
 
