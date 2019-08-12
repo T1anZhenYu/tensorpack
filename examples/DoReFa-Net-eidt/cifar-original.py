@@ -21,7 +21,7 @@ from dorefa import get_dorefa#这里实现了对W，A，G的量化，原版。
 BITW = 1#对W的量化bit
 BITA = 2#对A的量化bit
 BITG = 4#对G的量化bit
-#我在测试的时候没有考虑导数的问题，所以三个参量设置成1，2，32.
+#我在测试的时候没有考虑量化导数的问题，所以三个参量设置成1，2，32.
 
 class Model(ModelDesc):
     def inputs(self):
