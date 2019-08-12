@@ -123,31 +123,6 @@ def get_inference_augmentor():
     return fbresnet_augmentor(False)
 
 
-def run_image(model, sess_init, inputs):
-    pred_config = PredictConfig(
-        model=model,
-        session_init=sess_init,
-        input_names=['input'],
-        output_names=['output']
-    )
-    predict_func = OfflinePredictor(pred_config)
-    meta = dataset.ILSVRCMeta()
-    words = meta.get_synset_words_1000()
-
-    transformers = get_inference_augmentor()
-    for f in inputs:
-        assert os.path.isfile(f)
-        img = cv2.imread(f).astype('float32')
-        assert img is not None
-
-        img = transformers.augment(img)[np.newaxis, :, :, :]
-        o = predict_func(img)
-        prob = o[0][0]
-        ret = prob.argsort()[-10:][::-1]
-
-        names = [words[i] for i in ret]
-        print(f + ":")
-        print(list(zip(names, prob[ret])))
 
 def get_config():
     logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
@@ -200,13 +175,5 @@ if __name__ == '__main__':
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-    if args.eval:
-        ds = dataset.ILSVRC12(args.data, 'val', shuffle=False)
-        ds = AugmentImageComponent(ds, get_inference_augmentor())
-        ds = BatchData(ds, 192, remainder=True)
-        eval_classification(Model(), get_model_loader(args.load), ds)
-    elif args.run:
-        assert args.load.endswith('.npz')
-        run_image(Model(), DictRestore(dict(np.load(args.load))), args.run)
     config = get_config()
     launch_train_with_config(config, SimpleTrainer())
