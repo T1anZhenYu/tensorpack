@@ -107,7 +107,8 @@ class Model(ModelDesc):
                       .tf.multiply(49)  # this is due to a bug in our model design
                       .FullyConnected('fct', 10)())
         tf.nn.softmax(logits, name='output')
-        return ImageNetModel.compute_loss_and_error(logits, label)
+        cost = tf.identity(ImageNetModel.compute_loss_and_error(logits, label),name='cost')
+        return cost
 
     def optimizer(self):
         lr = tf.train.exponential_decay(
