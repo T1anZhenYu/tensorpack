@@ -108,85 +108,80 @@ class Model(ModelDesc):
                       .FullyConnected('fct', 10)())
         tf.nn.softmax(logits, name='output')
         # compute the number of failed samples
-        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong_tensor')
+        cost = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=label)
+        cost = tf.reduce_mean(cost, name='cross_entropy_loss')
+
+        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong_vector')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
 
-        cost = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=label)
-        cost = tf.reduce_mean(cost, name='cross_entropy_loss')
         # weight decay on all W of fc layers
-        wd_cost = regularize_cost('fc.*/W', l2_regularizer(1e-7))
+        wd_w = tf.train.exponential_decay(0.0002, get_global_step_var(),
+                                          480000, 0.2, True)
+        wd_cost = tf.multiply(wd_w, regularize_cost('.*/W', tf.nn.l2_loss), name='wd_cost')
+        add_moving_summary(cost, wd_cost)
 
-        add_param_summary(('.*/W', ['histogram', 'rms']))
-        total_cost = tf.add_n([cost, wd_cost], name='cost')
-        add_moving_summary(cost, wd_cost, total_cost)
-        return total_cost
+        add_param_summary(('.*/W', ['histogram']))   # monitor W
+        return tf.add_n([cost, wd_cost], name='cost')
 
     def optimizer(self):
-        lr = tf.train.exponential_decay(
-            learning_rate=1e-3,
-            global_step=get_global_step_var(),
-            decay_steps=4721 * 100,
-            decay_rate=0.5, staircase=True, name='learning_rate')
-        tf.summary.scalar('lr', lr)
-        return tf.train.AdamOptimizer(lr, epsilon=1e-5)
+        lr = tf.get_variable('learning_rate', initializer=0.01, trainable=False)
+        opt = tf.train.MomentumOptimizer(lr, 0.9)
+        return opt
 
 
-def get_inference_augmentor():
-    return fbresnet_augmentor(False)
+def get_data(train_or_test):
+    isTrain = train_or_test == 'train'
+    ds = dataset.Cifar10(train_or_test)
+    pp_mean = ds.get_per_pixel_mean(('train',))
+    if isTrain:
+        augmentors = [
+            imgaug.CenterPaste((40, 40)),
+            imgaug.RandomCrop((32, 32)),
+            imgaug.Flip(horiz=True),
+            imgaug.MapImage(lambda x: x - pp_mean),
+        ]
+    else:
+        augmentors = [
+            imgaug.MapImage(lambda x: x - pp_mean)
+        ]
+    ds = AugmentImageComponent(ds, augmentors)
+    ds = BatchData(ds, BATCH_SIZE, remainder=not isTrain)
+    if isTrain:
+        ds = MultiProcessRunner(ds, 3, 2)
+    return ds
 
 
-
-def get_config():#这里是用来声明train的参数
-    logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))#设置log地址
-
-    # prepare dataset
-    d1 = dataset.CifarBase('train')#设置trian数据集
-    #d2 = dataset.SVHNDigit('extra')
-    data_train = RandomMixData([d1])#这里是将两个以上的数据集mix，对单独的数据集没效果
-    data_test = dataset.CifarBase('test')#设置test数据集
-    #设置train的时候的augmentor的参数。
-    augmentors = [
-        imgaug.Resize((40, 40)),
-        imgaug.Brightness(30),
-        imgaug.Contrast((0.5, 1.5)),
-    ]
-    data_train = AugmentImageComponent(data_train, augmentors)
-    data_train = BatchData(data_train, 128)
-    data_train = MultiProcessRunnerZMQ(data_train, 5)#这个是用来处理多线程的。
-
-    augmentors = [imgaug.Resize((40, 40))]#这里是设置test的时候的augmentor
-    data_test = AugmentImageComponent(data_test, augmentors)
-    data_test = BatchData(data_test, 128, remainder=True)#remainder的含义：当batchdata不足一个batch时，
-    #是否构建小的batch。True构建，默认False不构建
-
-    return TrainConfig(
-        data=QueueInput(data_train),
-        callbacks=[
-            ModelSaver(),
-            InferenceRunner(data_test,
-                            [ScalarStats('cost'), ClassificationError('wrong_tensor')]),
-            #如果想要在train的时候获取中间变量，可以用下面的指令
-            #DumpTensors(['bn1/mean/EMA:0','conv1/output:0','bn6/mean/EMA:0','conv6/output:0'])
-
-        ],
-        model=Model(),
-        max_epoch=200,
-    )
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--gpu', help='the physical ids of GPUs to use')
-
-    parser.add_argument('--dorefa',
-                        help='number of bits for W,A,G, separated by comma. Defaults to \'1,4,32\'',
-                        default='1,4,32')
-
+    parser.add_argument('--gpu', help='comma separated list of GPU(s) to use.')
+    parser.add_argument('-n', '--num_units',
+                        help='number of units in each stage',
+                        type=int, default=18)
+    parser.add_argument('--load', help='load model for training')
     args = parser.parse_args()
-
-    BITW, BITA, BITG = map(int, args.dorefa.split(','))
+    NUM_UNITS = args.num_units
 
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-    config = get_config()
-    launch_train_with_config(config, SimpleTrainer())
+    logger.auto_set_dir()
+
+    dataset_train = get_data('train')
+    dataset_test = get_data('test')
+
+    config = TrainConfig(
+        model=Model(n=NUM_UNITS),
+        dataflow=dataset_train,
+        callbacks=[
+            ModelSaver(),
+            InferenceRunner(dataset_test,
+                            [ScalarStats('cost'), ClassificationError('wrong_vector')]),
+            ScheduledHyperParamSetter('learning_rate',
+                                      [(1, 0.1), (82, 0.01), (123, 0.001), (300, 0.0002)])
+        ],
+        max_epoch=400,
+        session_init=SaverRestore(args.load) if args.load else None
+    )
+    num_gpu = max(get_num_gpu(), 1)
+    launch_train_with_config(config, SyncMultiGPUTrainerParameterServer(num_gpu))
