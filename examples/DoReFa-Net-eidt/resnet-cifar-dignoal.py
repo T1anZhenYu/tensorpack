@@ -61,7 +61,7 @@ class Model(ModelDesc):
             def get_stem_full(x):
                 return (LinearWrap(x)
                         .Conv2D('c3x3a', channel, 3)
-                        .apply(fg,name=name+'fg',training=is_training,kernel_size=100)
+                        .apply(fg,name=name+'fg0',training=is_training,kernel_size=100)
                         #.BatchNorm('stembn')
                         #.apply(activate)
                         .Conv2D('c3x3b', channel, 3)())
@@ -70,12 +70,12 @@ class Model(ModelDesc):
                 # handling pool1 is to work around an architecture bug in our model
                 if stride != 1 or 'pool1' in x.name:
                     x = AvgPooling('pool', x, stride, stride)
-                x = fg(x,name=name+'fg',training = is_training,kernel_size=100)
+                x = fg(x,name=name+'fg1',training = is_training,kernel_size=100)
                 shortcut = Conv2D('shortcut', x, channel, 1)
                 stem = get_stem_full(x)
             else:
                 shortcut = x
-                x = fg(x,name=name+'fg',training=is_training,kernel_size=100)
+                x = fg(x,name=name+'fg1',training=is_training,kernel_size=100)
                 stem = get_stem_full(x)
             return shortcut + stem
 
