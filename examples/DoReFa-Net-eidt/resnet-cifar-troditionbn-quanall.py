@@ -116,18 +116,19 @@ class Model(ModelDesc):
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
 
         # weight decay on all W of fc layers
-        #wd_w = tf.train.exponential_decay(0.0002, get_global_step_var(),480000, 0.2, True)
-        #wd_cost = tf.multiply(wd_w, regularize_cost('.*/W', tf.nn.l2_loss), name='wd_cost')
-        #add_moving_summary(cost, wd_cost)
+        wd_w = tf.train.exponential_decay(0.0001, get_global_step_var(),
+                                          480000, 0.5, True)
+        wd_cost = tf.multiply(wd_w, regularize_cost('.*/W', tf.nn.l2_loss), name='wd_cost')
+        add_moving_summary(cost, wd_cost)
 
         add_param_summary(('.*/W', ['histogram']))   # monitor W
-        return tf.add_n([cost], name='cost')
+        return tf.add_n([cost, wd_cost], name='cost')
 
     def optimizer(self):
         lr = tf.get_variable('learning_rate', initializer=0.01, trainable=False)
         opt = tf.train.MomentumOptimizer(lr, 0.9)
         return opt
-
+1
 
 def get_data(train_or_test):
     isTrain = train_or_test == 'train'
@@ -159,7 +160,7 @@ if __name__ == '__main__':
                         help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
                         default='1,2,4')
     args = parser.parse_args()
-    #NUM_UNITS = args.num_units
+
 
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -179,8 +180,8 @@ if __name__ == '__main__':
             ScheduledHyperParamSetter('learning_rate',
                                       [(1, 0.1), (82, 0.01), (123, 0.001), (300, 0.0002)])
         ],
-        max_epoch=400,
-      
+        max_epoch=250,
+
     )
     num_gpu = max(get_num_gpu(), 1)
-    launch_train_with_config(config, SyncMultiGPUTrainerParameterServer(num_gpu))
+    launch_train_with_config(config, SimpleTrainer())

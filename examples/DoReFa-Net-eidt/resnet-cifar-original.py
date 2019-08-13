@@ -116,7 +116,7 @@ class Model(ModelDesc):
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
 
         # weight decay on all W of fc layers
-        wd_w = tf.train.exponential_decay(0.0003, get_global_step_var(),
+        wd_w = tf.train.exponential_decay(0.0001, get_global_step_var(),
                                           480000, 0.5, True)
         wd_cost = tf.multiply(wd_w, regularize_cost('.*/W', tf.nn.l2_loss), name='wd_cost')
         add_moving_summary(cost, wd_cost)
