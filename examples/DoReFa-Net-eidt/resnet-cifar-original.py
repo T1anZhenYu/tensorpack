@@ -178,7 +178,7 @@ if __name__ == '__main__':
             InferenceRunner(dataset_test,
                             [ScalarStats('cost'), ClassificationError('wrong_vector')]),
             ScheduledHyperParamSetter('learning_rate',
-                                      [(1, 0.1), (82, 0.01), (123, 0.001), (180, 0.0001)])
+                                      [(1, 0.1), (82, 0.01), (123, 0.001), (300, 0.0002)])
         ],
         max_epoch=250,
 
