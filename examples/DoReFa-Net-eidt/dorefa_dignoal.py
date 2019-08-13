@@ -119,10 +119,12 @@ def get_dorefa(bitW, bitA, bitG):
                 #只能采用下面的方法计算出来
                 #xnn,layer_gamma,layer_beta,layer_mm,layer_ms = L2norm(x, training=training)
 
+    
+
                 i1 = x[0,0,0,:]
-                i2 = x[1,1,1,:]
+                i2 = x[1,0,0,:]
                 x1 = fake_output[0,0,0,:]
-                x2 = fake_output[1,1,1,:]
+                x2 = fake_output[1,0,0,:]
 
                 mean0 = i1-x1*(i1-i2)/(x1-x2)
                 var0 = (i1-i2)/(x1-x2)
