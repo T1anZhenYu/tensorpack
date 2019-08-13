@@ -70,8 +70,8 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
             x = tf.cast(x,dtype=tf.float32)
             '''
             x = tf.nn.batch_normalization(tf.math.round(x*8)/8, tf.math.round(mean*8)/8, \
-                tf.math.round(variance*8)/8, tf.math.round(beta*8)/8, tf.math(gamma*8)/8, tf.math.round(eps*8)/8)
-            
+                tf.math.round(variance*8)/8, tf.math.round(beta*8)/8, tf.math.round(gamma*8)/8, tf.math.round(eps*8)/8)
+
         else:
             x = tf.nn.batch_normalization(x, mean, variance, None, None, eps)
         return x
