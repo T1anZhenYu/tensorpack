@@ -81,10 +81,10 @@ class Model(ModelDesc):
 
         def group(x, name, channel, nr_block, stride):
             with tf.variable_scope(name + 'blk1'):
-                x = resblock(x, name,channel, stride)
+                x = resblock(x, name + 'blk1',channel, stride)
             for i in range(2, nr_block + 1):
                 with tf.variable_scope(name + 'blk{}'.format(i)):
-                    x = resblock(x,name, channel, 1)
+                    x = resblock(x,name + 'blk{}', channel, 1)
             return x
 
         with remap_variables(new_get_variable), \
