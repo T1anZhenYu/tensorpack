@@ -184,4 +184,4 @@ if __name__ == '__main__':
 
     )
     num_gpu = max(get_num_gpu(), 1)
-    launch_train_with_config(config, SyncMultiGPUTrainerParameterServer(num_gpu))
+    launch_train_with_config(config, SimpleTrainer())
