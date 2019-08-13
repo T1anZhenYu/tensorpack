@@ -128,7 +128,7 @@ class Model(ModelDesc):
         lr = tf.get_variable('learning_rate', initializer=0.01, trainable=False)
         opt = tf.train.MomentumOptimizer(lr, 0.9)
         return opt
-
+1
 
 def get_data(train_or_test):
     isTrain = train_or_test == 'train'
@@ -178,7 +178,7 @@ if __name__ == '__main__':
             InferenceRunner(dataset_test,
                             [ScalarStats('cost'), ClassificationError('wrong_vector')]),
             ScheduledHyperParamSetter('learning_rate',
-                                      [(1, 0.1), (82, 0.01), (123, 0.001), (300, 0.0002)])
+                                      [(1, 0.1), (82, 0.01), (123, 0.001), (300, 0.0001)])
         ],
         max_epoch=400,
 
