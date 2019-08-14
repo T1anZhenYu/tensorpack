@@ -57,9 +57,9 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         
         def mean_var_with_update():
 
-            mean, variance = tf.nn.moments(nonlin(quantize(x)), [0,1,2], name='moments')
-            mean = nonlin(quantize(mean))
-            variance = nonlin(quantize(variance))
+            mean, variance = tf.nn.moments(quantize(nonlin(x)), [0,1,2], name='moments')
+            mean = quantize(nonlin(mean))
+            variance = quantize(nonlin(variance))
             with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
                 return tf.identity(mean), tf.identity(variance)
@@ -81,11 +81,11 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
             x = tf.cast(x,dtype=tf.float32)
             '''
 
-            x = tf.nn.batch_normalization(nonlin(quantize(x)), nonlin(quantize(mean)), \
-                nonlin(quantize(variance)), nonlin(quantize(beta)), nonlin(quantize(gamma)), eps)
+            x = tf.nn.batch_normalization(quantize(nonlin(x)), quantize(nonlin(mean)), \
+                quantize(nonlin(variance)), quantize(nonlin(beta)), quantize(nonlin(gamma)), eps)
 
         else:
-            x = tf.nn.batch_normalization(x, nonlin(quantize(mean)), nonlin(quantize(variance)),\
+            x = tf.nn.batch_normalization(x, quantize(nonlin(mean)), quantize(nonlin(variance)),\
              None, None, eps)
         return x
 
