@@ -23,7 +23,7 @@ __all__ = ['L2norm','L1norm','L2norm_quan_train']
 # decay: being too close to 1 leads to slow start-up. torch use 0.9.
 # eps: torch: 1e-5. Lasagne: 1e-4
 def nonlin(x):
-    return tf.clip_by_value(x, 0.0, 4.0)
+    return tf.clip_by_value(x, -2.0, 2.0)
 def quantize(x):
     k = 2
     n = float(2 ** k - 1)
