@@ -23,7 +23,15 @@ __all__ = ['L2norm','L1norm','L2norm_quan_train']
 # decay: being too close to 1 leads to slow start-up. torch use 0.9.
 # eps: torch: 1e-5. Lasagne: 1e-4
 
+def quantize(x):
+    k = 4
+    n = float(2 ** k - 1)
 
+    @tf.custom_gradient
+    def _quantize(x):
+        return tf.round(x * n) / n, lambda dy: dy
+
+    return _quantize(x)
 @layer_register()
 @convert_to_tflayer_args(
     args_names=[],
@@ -71,15 +79,7 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
              tf.to_bfloat16(variance), tf.to_bfloat16(beta), tf.to_bfloat16(gamma), tf.to_bfloat16(eps))
             x = tf.cast(x,dtype=tf.float32)
             '''
-            def quantize(x):
-                k = 4
-                n = float(2 ** k - 1)
 
-                @tf.custom_gradient
-                def _quantize(x):
-                    return tf.round(x * n) / n, lambda dy: dy
-
-                return _quantize(x)
             x = tf.nn.batch_normalization(quantize(x), quantize(mean), \
                 quantize(variance), quantize(beta), quantize(gamma), eps)
 
