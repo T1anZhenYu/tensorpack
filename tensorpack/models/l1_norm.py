@@ -76,8 +76,7 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
             gamma = tf.get_variable('gamma', params_shape,
                                     initializer=tf.ones_initializer)
 
-            x = tf.nn.batch_normalization(x, mean, \
-                variance, beta, gamma, eps)
+            x = tf.nn.batch_normalization(x, mean,variance, quantize(nonlin(beta)), quantize(nonlin(gamma)), eps)
 
         else:
             x = tf.nn.batch_normalization(x, quantize(nonlin(mean)), quantize(nonlin(variance)),\
