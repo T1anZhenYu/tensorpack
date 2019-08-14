@@ -69,7 +69,8 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
              tf.to_bfloat16(variance), tf.to_bfloat16(beta), tf.to_bfloat16(gamma), tf.to_bfloat16(eps))
             x = tf.cast(x,dtype=tf.float32)
             '''
-            def quantize(x, k):
+            def quantize(x):
+                k = 16
                 n = float(2 ** k - 1)
 
                 @tf.custom_gradient
