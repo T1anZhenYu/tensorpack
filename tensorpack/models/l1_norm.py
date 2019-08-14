@@ -57,7 +57,7 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         
         def mean_var_with_update():
 
-            mean, variance = tf.nn.moments(x), [0,1,2], name='moments')
+            mean, variance = tf.nn.moments(x, [0,1,2], name='moments')
             mean = quantize(nonlin(mean))
             variance = quantize(nonlin(variance))
             with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
