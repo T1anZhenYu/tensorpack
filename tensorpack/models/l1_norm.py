@@ -23,9 +23,9 @@ __all__ = ['L2norm','L1norm','L2norm_quan_train']
 # decay: being too close to 1 leads to slow start-up. torch use 0.9.
 # eps: torch: 1e-5. Lasagne: 1e-4
 def nonlin(x):
-    return tf.clip_by_value(x, -2.0, 2.0)
+    return tf.clip_by_value(x, -256.0, 256.0)
 def quantize(x):
-    k = 2
+    k = 16
     n = float(2 ** k - 1)
 
     @tf.custom_gradient
@@ -33,6 +33,7 @@ def quantize(x):
         return tf.round(x * n) / n, lambda dy: dy
 
     return _quantize(x)
+
 @layer_register()
 @convert_to_tflayer_args(
     args_names=[],
