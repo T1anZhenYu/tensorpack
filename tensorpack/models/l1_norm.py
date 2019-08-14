@@ -69,8 +69,11 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
              tf.to_bfloat16(variance), tf.to_bfloat16(beta), tf.to_bfloat16(gamma), tf.to_bfloat16(eps))
             x = tf.cast(x,dtype=tf.float32)
             '''
-            x = tf.nn.batch_normalization(tf.math.round(x*16)/16, tf.math.round(mean*16)/16, \
-                tf.math.round(variance*16)/16, tf.math.round(beta*16)/16, tf.math.round(gamma*16)/16, tf.math.round(eps*16)/16)
+            def quan_k(x):
+                k=256
+                return(tf.math.round(x*k)/k)
+            x = tf.nn.batch_normalization(quan_k(x), quan_k(mean), \
+                quan_k(variance), quan_k(beta), quan_k(gamma), quan_k(eps))
 
         else:
             x = tf.nn.batch_normalization(x, mean, variance, None, None, eps)
