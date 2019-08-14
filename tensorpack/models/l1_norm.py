@@ -66,7 +66,7 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
                                     initializer=tf.ones_initializer)
 
             def quan_k(x):
-                k=256
+                k=1024
                 return(tf.math.round(x*k)/k)
             x = tf.nn.batch_normalization(quan_k(x), quan_k(mean), \
                 quan_k(variance), quan_k(beta), quan_k(gamma), quan_k(eps))
