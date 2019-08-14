@@ -64,17 +64,19 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
                                    initializer=tf.zeros_initializer)
             gamma = tf.get_variable('gamma', params_shape,
                                     initializer=tf.ones_initializer)
+            '''
+            x = tf.nn.batch_normalization(tf.to_bfloat16(x),tf.to_bfloat16(mean),\
+             tf.to_bfloat16(variance), tf.to_bfloat16(beta), tf.to_bfloat16(gamma), tf.to_bfloat16(eps))
+            x = tf.cast(x,dtype=tf.float32)
+            '''
+            def quantize(x, k):
+                n = float(2 ** k - 1)
 
-        def quantize(x):
-            k = 16 
-            n = float(2 ** k - 1)
+                @tf.custom_gradient
+                def _quantize(x):
+                    return tf.round(x * n) / n, lambda dy: dy
 
-            @tf.custom_gradient
-            def _quantize(x):
-                return tf.round(x * n) / n, lambda dy: dy
-
-            return _quantize(x)
-            
+                return _quantize(x)
             x = tf.nn.batch_normalization(quantize(x), quantize(mean), \
                 quantize(variance), quantize(beta), quantize(gamma), quantize(eps))
 
