@@ -22,9 +22,10 @@ __all__ = ['L2norm','L1norm','L2norm_quan_train']
 
 # decay: being too close to 1 leads to slow start-up. torch use 0.9.
 # eps: torch: 1e-5. Lasagne: 1e-4
-
+def nonlin(x):
+    return tf.clip_by_value(x, 0.0, 4.0)
 def quantize(x):
-    k = 4
+    k = 2
     n = float(2 ** k - 1)
 
     @tf.custom_gradient
@@ -56,9 +57,9 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         
         def mean_var_with_update():
 
-            mean, variance = tf.nn.moments(x, [0,1,2], name='moments')
-            mean = quantize(mean)
-            variance = quantize(variance)
+            mean, variance = tf.nn.moments(nonlin(quantize(x)), [0,1,2], name='moments')
+            mean = nonlin(quantize(mean))
+            variance = nonlin(quantize(variance))
             with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
                 return tf.identity(mean), tf.identity(variance)
@@ -80,11 +81,12 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
             x = tf.cast(x,dtype=tf.float32)
             '''
 
-            x = tf.nn.batch_normalization(quantize(x), quantize(mean), \
-                quantize(variance), quantize(beta), quantize(gamma), eps)
+            x = tf.nn.batch_normalization(nonlin(quantize(x)), nonlin(quantize(mean)), \
+                nonlin(quantize(variance)), nonlin(quantize(beta)), nonlin(quantize(gamma)), eps)
 
         else:
-            x = tf.nn.batch_normalization(x, quantize(mean), quantize(variance), None, None, eps)
+            x = tf.nn.batch_normalization(x, nonlin(quantize(mean)), nonlin(quantize(variance)),\
+             None, None, eps)
         return x
 
 
