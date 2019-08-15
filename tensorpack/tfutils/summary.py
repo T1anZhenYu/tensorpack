@@ -184,7 +184,7 @@ def add_param_summary(*summary_lists, **kwargs):
     if ctx is not None and not ctx.is_main_training_tower:
         return
 
-    params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+    params = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES)
     with cached_name_scope('param-summary'):
         for p in params:
             name = p.op.name
