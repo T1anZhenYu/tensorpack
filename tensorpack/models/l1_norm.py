@@ -105,7 +105,7 @@ def Lmaxnorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
             x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
         else:
             x = tf.nn.batch_normalization(x, mean, variance, None, None, eps)
-        return x,gamma,beta,moving_mean,moving_variance
+        return x,gamma,beta,moving_mean,moving_variance,mean,variance
 
 
 @layer_register()

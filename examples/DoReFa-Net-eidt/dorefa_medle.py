@@ -83,13 +83,10 @@ def get_dorefa(bitW, bitA, bitG):
             #fake_output代表这不是真实的输出
             #当使用L2norm时，是用的L2norm做方差；用L1norm时，是用的L1norm做方差
             #fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  L2norm(name+'L2norm',x, train=training)
-            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  Lmaxnorm(name+'L1norm',x, train=training)
+            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms,bm,bv =  Lmaxnorm(name+'L1norm',x, train=training)
             if training:#在train的时候
                 print('in training')
-                c_max = tf.reduce_max(x,[0,1,2])
-                c_min = tf.reduce_min(x,[0,1,2])
-                bm = (c_max+c_min)/2#计算当前batch的均值方差
-                bv = c_max
+
                 batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
                 batch_var = batch_var.assign(tf.expand_dims(tf.sqrt(bv),axis=-1))
                 #计算量化区间的起止点。
