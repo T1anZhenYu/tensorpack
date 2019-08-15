@@ -18,7 +18,12 @@ def describe_trainable_vars():
     Skip variables starting with "tower", as they are just duplicates built by data-parallel logic.
     """
     for ele2 in tf.all_variables():
+        print('all_variables')
         print(ele2)
+    model_vars = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES)
+    for item in model_vars:
+        print('tf.GraphKeys.MODEL_VARIABLES')
+        print(item)
     train_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
     if len(train_vars) == 0:
         logger.warn("No trainable variables in the graph!")
