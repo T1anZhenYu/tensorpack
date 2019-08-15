@@ -104,9 +104,9 @@ class Model(ModelDesc):
 
         add_param_summary(('.*/W', ['histogram', 'rms']))
         add_param_summary(('.*/beta', ['histogram', 'rms']))
-        add_param_summary(('.*/mean*', ['histogram', 'rms']))   
+        add_param_summary(('.*/mean/EMA', ['histogram']))   
         add_param_summary(('.*/gamma', ['histogram', 'rms']))   
-        add_param_summary(('.*/variance*', ['histogram', 'rms']))           
+        add_param_summary(('.*/variance/EMA', ['histogram']))           
         total_cost = tf.add_n([cost, wd_cost], name='cost')
         add_moving_summary(cost, wd_cost, total_cost)
         return total_cost
