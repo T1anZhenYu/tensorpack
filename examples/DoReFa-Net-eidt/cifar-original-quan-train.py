@@ -64,30 +64,30 @@ class Model(ModelDesc):
                       # 18
                       .Conv2D('conv1', 64, 3, padding='SAME')#input[none,18,18,48] output[none,18,18,64]
                       .apply(fg)#对导数进行量化
-                      .L2norm_quan_train('bn1').apply(activate)
+                      .L2norm_quan_train('bn1',layer_num=1).apply(activate)
 
                       .Conv2D('conv2', 64, 3, padding='SAME')#input[none 18,18,64] output[none,18,18,64]
                       .apply(fg)
-                      .L2norm_quan_train('bn2')
+                      .L2norm_quan_train('bn2',layer_num=2)
                       .MaxPooling('pool1', 2, padding='SAME')#input[none,18,18,64] output[none,9,9,64]
                       .apply(activate)
                       # 9
                       .Conv2D('conv3', 128, 3, padding='VALID')#input[none,9,9,64] output[none,7,7,128]
                       .apply(fg)
-                      .L2norm_quan_train('bn3').apply(activate)
+                      .L2norm_quan_train('bn3',layer_num=3).apply(activate)
                       # 7
 
                       .Conv2D('conv4', 128, 3, padding='SAME')#input[none,7,7,128] output[none,7,7,128]
                       .apply(fg)
-                      .L2norm_quan_train('bn4').apply(activate)
+                      .L2norm_quan_train('bn4',layer_num=4).apply(activate)
 
                       .Conv2D('conv5', 128, 3, padding='VALID')#input[none,7,7,128] output[none,5,5,128]
                       .apply(fg)
-                      .L2norm_quan_train('bn5').apply(activate)
+                      .L2norm_quan_train('bn5',layer_num=5).apply(activate)
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')#input[none,5,5,128] output[none,1,1,512]
-                      .apply(fg).L2norm_quan_train('bn6')
+                      .apply(fg).L2norm_quan_train('bn6',layer_num=6)
                       .apply(nonlin)#这里只做了clip_relu.并没有过量化。
                       .FullyConnected('fc1', 10)())#fc1 output[none,10]
         tf.nn.softmax(logits, name='output')
