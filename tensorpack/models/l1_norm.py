@@ -56,7 +56,7 @@ def quan(x,max_value):
         'decay': 'momentum',
         'use_local_stat': 'training'
     })
-def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None,layer_num):
+def L2norm_quan_train(x, train, layer_num,eps=1e-05, decay=0.9, affine=True, name=None):
     if layer_num == 1:
         beta_max,gamma_max,variance_max,mean_max = 0.4,1.3,12,8
     elif layer_num == 2:
