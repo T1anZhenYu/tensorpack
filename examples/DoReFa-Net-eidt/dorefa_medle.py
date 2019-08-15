@@ -83,7 +83,7 @@ def get_dorefa(bitW, bitA, bitG):
             #fake_output代表这不是真实的输出
             #当使用L2norm时，是用的L2norm做方差；用L1norm时，是用的L1norm做方差
             #fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  L2norm(name+'L2norm',x, train=training)
-            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  L2norm(name+'L1norm',x, train=training)
+            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  Lmaxnorm(name+'L1norm',x, train=training)
             if training:#在train的时候
                 print('in training')
                 c_max = tf.reduce_max(x,[0,1,2])
