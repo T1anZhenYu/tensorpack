@@ -184,18 +184,11 @@ def add_param_summary(*summary_lists, **kwargs):
     if ctx is not None and not ctx.is_main_training_tower:
         return
 
-    params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-    params2 = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES)
+    params = tf.all_variables()
+
 
     with cached_name_scope('param-summary'):
         for p in params:
-            name = p.op.name
-            for rgx, actions in summary_lists:
-                if not rgx.endswith('$'):
-                    rgx = rgx + '$'
-                if re.match(rgx, name):
-                    add_tensor_summary(p, actions, name=name, collections=collections)
-        for p in params2:
             name = p.op.name
             for rgx, actions in summary_lists:
                 if not rgx.endswith('$'):
