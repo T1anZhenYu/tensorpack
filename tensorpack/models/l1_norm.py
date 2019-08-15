@@ -56,7 +56,20 @@ def quan(x,max_value):
         'decay': 'momentum',
         'use_local_stat': 'training'
     })
-def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
+def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None,layer_num):
+    if layer_num == 1:
+        beta_max,gamma_max,variance_max,mean_max = 0.4,1.3,12,8
+    elif layer_num == 2:
+        beta_max,gamma_max,variance_max,mean_max = 0.6,1.2,18,6
+    elif layer_num == 3:
+        beta_max,gamma_max,variance_max,mean_max = 0.5,1.1,15,12
+    elif layer_num == 4:
+        beta_max,gamma_max,variance_max,mean_max = 0.6,1.2,13,6
+    elif layer_num == 5:
+        beta_max,gamma_max,variance_max,mean_max = 0.5,1.1,12,3
+    elif layer_num == 6:
+        beta_max,gamma_max,variance_max,mean_max = 0.2,1.5,55,8   
+
     with tf.variable_scope(name, default_name='BatchNorm2d'):
         params_shape = x.get_shape().as_list()
         params_shape = params_shape[-1:]
@@ -71,8 +84,8 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         def mean_var_with_update():
 
             mean, variance = tf.nn.moments(x, [0,1,2], name='moments')
-            mean = quan(mean,)
-            variance = quantize(nonlin(variance))
+            mean = quan(mean,mean_max)
+            variance = quan(variance,variance_max)
             with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
                 return tf.identity(mean), tf.identity(variance)
@@ -89,12 +102,12 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
             gamma = tf.get_variable('gamma', params_shape,
                                     initializer=tf.ones_initializer)
 
-            x = tf.nn.batch_normalization(x, mean,variance, quantize(nonlin(beta)), quantize(nonlin(gamma)), eps)
+            x = tf.nn.batch_normalization(x, mean,variance, quan(beta,beta_max), quan(gamma,gamma_max), eps)
 
         else:
             x = tf.nn.batch_normalization(x, mean, variance,\
              None, None, eps)
-        
+
         return x
 
 
