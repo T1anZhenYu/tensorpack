@@ -45,6 +45,7 @@ def quan(x,max_value):
     x = tf.clip_by_value(x, 0.0, 1.0)
     x = quantize(x, bitG) - 0.5
     return x * maxx * 2
+
 @layer_register()
 @convert_to_tflayer_args(
     args_names=[],
@@ -70,7 +71,7 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         def mean_var_with_update():
 
             mean, variance = tf.nn.moments(x, [0,1,2], name='moments')
-            mean = quantize(nonlin(mean))
+            mean = quan(mean,)
             variance = quantize(nonlin(variance))
             with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
@@ -93,6 +94,7 @@ def L2norm_quan_train(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         else:
             x = tf.nn.batch_normalization(x, mean, variance,\
              None, None, eps)
+        
         return x
 
 
