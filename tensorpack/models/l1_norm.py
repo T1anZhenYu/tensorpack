@@ -33,7 +33,18 @@ def quantize(x):
         return tf.round(x * n) / n, lambda dy: dy
 
     return _quantize(x)
+def quan(x,max_value):
 
+    rank = x.get_shape().ndims
+    assert rank is not None
+    maxx = max_value
+    x = x / maxx
+    n = float(2**bitG - 1)
+    x = x * 0.5 + 0.5 + tf.random_uniform(
+        tf.shape(x), minval=-0.5 / n, maxval=0.5 / n)
+    x = tf.clip_by_value(x, 0.0, 1.0)
+    x = quantize(x, bitG) - 0.5
+    return x * maxx * 2
 @layer_register()
 @convert_to_tflayer_args(
     args_names=[],
