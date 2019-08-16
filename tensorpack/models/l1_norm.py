@@ -163,7 +163,7 @@ def L2norm_quan_train(x, train, layer_num,eps=1e-05, decay=0.9, affine=True, nam
             gamma = tf.get_variable('gamma', params_shape,
                                     initializer=tf.ones_initializer)
 
-            x = tf.nn.batch_normalization(x, mean,variance, quan(beta,beta_max), quan(gamma,gamma_max), eps)
+            x = tf.nn.batch_normalization(x, mean,variance, quan_(beta,beta_max), quan_(gamma,gamma_max), eps)
 
         else:
             x = tf.nn.batch_normalization(x, mean, variance,\
