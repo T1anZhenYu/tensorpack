@@ -22,8 +22,8 @@ __all__ = ['L2norm','L1norm','L2norm_quan_train','Lmaxnorm']
 
 # decay: being too close to 1 leads to slow start-up. torch use 0.9.
 # eps: torch: 1e-5. Lasagne: 1e-4
-bitG = 16
-bitg = 16
+bitG = 8
+
 def nonlin(x):
     return tf.clip_by_value(x, -2, 2)
 def quantize(x,k):
@@ -40,11 +40,11 @@ def quan_(x,max_value):
     assert rank is not None
     maxx = max_value
     x = x / maxx
-    n = float(2**bitg - 1)
+    n = float(2**bitG - 1)
     x = x * 0.5 + 0.5 + tf.random_uniform(
         tf.shape(x), minval=-0.5 / n, maxval=0.5 / n)
     x = tf.clip_by_value(x, 0.0, 1.0)
-    x = quantize(x, bitg) - 0.5
+    x = quantize(x, bitG) - 0.5
     return x * maxx * 2
 def quan(x):
 
