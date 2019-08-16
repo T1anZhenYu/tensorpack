@@ -125,7 +125,7 @@ def BNN(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         'use_local_stat': 'training'
     })
 def Lmaxnorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
-    x = quan(x)
+
     with tf.variable_scope(name, default_name='BatchNorm2d'):
         params_shape = x.get_shape().as_list()
         params_shape = params_shape[-1:]
@@ -138,14 +138,16 @@ def Lmaxnorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
 
         c_max = tf.reduce_max(x,[0,1,2])
         c_min = tf.reduce_min(x,[0,1,2])
-        mean = (c_max+c_min)/2
+
+        #mean = (c_max+c_min)/2
 
         def mean_var_with_update():
 
-            mean_, variance = tf.nn.moments(x, [0,1,2], name='moments')
-            with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
+            mean_, variance_ = tf.nn.moments(x, [0,1,2], name='moments')
+            variance = tf.stop_gradient(c_max - c_min- variance_)+variance_
+            with tf.control_dependencies([assign_moving_average(moving_mean, mean_, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
-                return tf.identity(mean), tf.identity(variance)
+                return tf.identity(mean_), tf.identity(variance)
         if train:#亲测tf.cond的第一个函数不能直接写成ture or false，所以只好用一个很蠢的方法。
             xx = tf.constant(3)
             yy = tf.constant(4)
@@ -225,8 +227,7 @@ def L2norm_quan_train(x, train, layer_num,eps=1e-05, decay=0.9, affine=True, nam
             x = tf.nn.batch_normalization(x, mean,variance, beta,gamma, eps)
 
         else:
-            x = tf.nn.batch_normalization(x, mean, variance,\
-             None, None, eps)
+            x = tf.nn.batch_normalization(x, mean, variance,None, None, eps)
 
         return x
 
