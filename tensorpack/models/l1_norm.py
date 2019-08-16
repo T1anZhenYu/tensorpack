@@ -205,6 +205,7 @@ def L2norm_quan_train(x, train, layer_num,eps=1e-05, decay=0.9, affine=True, nam
 
             mean = quan_(mean,mean_max)
             variance = quan_(variance,variance_max)
+            
             with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
                 return tf.identity(mean), tf.identity(variance)
