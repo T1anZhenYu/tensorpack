@@ -91,8 +91,8 @@ def BNN(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         def mean_var_with_update():
 
             mean, variance_ = tf.nn.moments(x, [0,1,2], name='moments')
+            variance = tf.reduce_sum((x - mean)*near_2((x-mean)),[0,1,2])
 
-            
             with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
                 return tf.identity(mean), tf.identity(variance)
@@ -108,7 +108,9 @@ def BNN(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
                                    initializer=tf.zeros_initializer)
             gamma = tf.get_variable('gamma', params_shape,
                                     initializer=tf.ones_initializer)
-            x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
+            x_ = (x-mean)*(1/(tf.sqrt(variance)+eps))
+            x = x_ * near_2(gamma)
+            #x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
         else:
             x = tf.nn.batch_normalization(x, mean, variance, None, None, eps)
         return x,gamma,beta,moving_mean,moving_variance,mean,variance
