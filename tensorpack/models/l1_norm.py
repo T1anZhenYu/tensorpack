@@ -139,11 +139,12 @@ def Lmaxnorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         c_max = tf.reduce_max(x,[0,1,2])
         c_min = tf.reduce_min(x,[0,1,2])
 
-        #mean = (c_max+c_min)/2
+        
 
         def mean_var_with_update():
 
             mean_, variance_ = tf.nn.moments(x, [0,1,2], name='moments')
+            mean = tf.stop_gradient((c_max+c_min)/2 - mean_)+mean_
             variance = tf.stop_gradient(c_max - c_min- variance_)+variance_
             with tf.control_dependencies([assign_moving_average(moving_mean, mean_, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
