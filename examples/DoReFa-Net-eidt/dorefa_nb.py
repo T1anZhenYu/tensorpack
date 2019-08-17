@@ -30,7 +30,7 @@ def get_dorefa(bitW, bitA, bitG):
     /(float(2**bitA-1)) for i in range(len(quan_points0))])#values after quantization 
     
     quan_values = np.append(quan_values,np.array([1.]),axis=-1).astype(np.float32)#append 1 to quan_values
-
+    quan_points0 = np.append(np.insert(quan_points0,0,-1000.),np.array([1000.]))
     def fw(x):
         if bitW == 32:
             return x
