@@ -87,7 +87,7 @@ class Model(ModelDesc):
                       # 5
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .Conv2D('conv6', 512, 5, padding='VALID')#input[none,5,5,128] output[none,1,1,512]
-                      .apply(fg).Lmaxnorm('bn6',layer_num=6)
+                      .apply(fg).Lmaxnorm('bn6')
                       .apply(nonlin)#这里只做了clip_relu.并没有过量化。
                       .FullyConnected('fc1', 10)())#fc1 output[none,10]
         tf.nn.softmax(logits, name='output')
