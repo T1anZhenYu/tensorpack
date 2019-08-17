@@ -130,10 +130,10 @@ def get_config():
     logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
 
     # prepare dataset
-    d1 = dataset.SVHNDigit('train',cifar_classnum=100)
+    d1 = dataset.SVHNDigit('train')
     d2 = dataset.SVHNDigit('extra')
     data_train = RandomMixData([d1,d2])
-    data_test = dataset.SVHNDigit('test',cifar_classnum=100)
+    data_test = dataset.SVHNDigit('test')
 
     augmentors = [
         imgaug.Resize((40, 40)),
