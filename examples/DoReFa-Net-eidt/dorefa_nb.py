@@ -110,18 +110,14 @@ def get_dorefa(bitW, bitA, bitG):
             '''
             inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
 
-            label1 = tf.cast(tf.less_equal(inputs,tf.expand_dims(quan_points[:,0],axis=-1)),dtype=tf.float32)
+            label = []
 
-            label2 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,1],axis=-1)),\
-                tf.math.greater(inputs,tf.expand_dims(quan_points[:,0],axis=-1))),dtype=tf.float32)
-
-            label3 = tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),\
-                tf.math.greater(inputs,tf.expand_dims(quan_points[:,1],axis=-1))),dtype=tf.float32)
-
-            label4 = tf.cast(tf.math.greater(inputs,tf.expand_dims(quan_points[:,2],axis=-1)),dtype=tf.float32)
-
-            xn = label1*quan_values[0]+label2*quan_values[1]+label3*quan_values[2]+\
-            label4*quan_values[3]
+            for i in range(1,len(quan_points0)):
+                label.append(tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,i],axis=-1)),\
+                            tf.math.greater(inputs,tf.expand_dims(quan_points[:,i-1],axis=-1))),dtype=tf.float32))
+            xn = label[0]*quan_values[0]
+            for i in range(1,len(label)):
+                xn += label[i]*quan_values[i]
 
             quan_output = tf.reshape(tf.transpose(xn),[-1,w,h,num_chan])
             if training:
