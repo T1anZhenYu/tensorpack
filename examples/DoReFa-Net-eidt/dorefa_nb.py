@@ -83,7 +83,7 @@ def get_dorefa(bitW, bitA, bitG):
             #fake_output代表这不是真实的输出
             #当使用L2norm时，是用的L2norm做方差；用L1norm时，是用的L1norm做方差
             #fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  L2norm(name+'L2norm',x, train=training)
-            fake_output,layer_gamma,layer_beta,layer_mm,layer_ms,bm,bv =  Lmaxnorm(name+'L1norm',x, train=training)
+            fake_output,layer_gamma,layer_beta,layer_mm,layer_mv,bm,bv =  Lmaxnorm(name+'L1norm',x, train=training)
             if training:#在train的时候
                 print('in training')
 
@@ -99,23 +99,11 @@ def get_dorefa(bitW, bitA, bitG):
                 #只能采用下面的方法计算出来
                 #xnn,layer_gamma,layer_beta,layer_mm,layer_ms = L2norm(x, training=training)
 
-    
+                batch_mean = batch_mean.assign(tf.expand_dims(layer_mm,axis=-1))
+                batch_var = batch_var.assign(tf.expand_dims(tf.sqrt(layer_mv),axis=-1))
 
-                i1 = x[0,0,0,:]
-                i2 = x[1,0,0,:]
-                x1 = fake_output[0,0,0,:]
-                x2 = fake_output[1,0,0,:]
-
-                mean0 = i1-x1*(i1-i2)/(x1-x2)
-                var0 = (i1-i2)/(x1-x2)
-                #quantize BN during inference
-
-                moving_mean_ = tf.identity(mean0,name='moving_mean_')
-                moving_mean_ = tf.expand_dims(moving_mean_,axis=-1)
-                moving_var_ = tf.identity(var0,name='moving_var')
-                moving_var_ = tf.expand_dims(moving_var_,axis = -1)
-
-                quan_points = moving_var_ *quan_points0 + moving_mean_
+                quan_points = batch_var*quan_points0/tf.expand_dims(layer_gamma,axis=-1)+\
+                batch_mean - batch_var*tf.expand_dims(layer_beta/layer_gamma,axis=-1)
 
             '''
             the following part is to use quan_points to quantizate inputs.
