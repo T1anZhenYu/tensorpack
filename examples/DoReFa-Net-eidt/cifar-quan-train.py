@@ -121,10 +121,10 @@ def get_config():#这里是用来声明train的参数
     logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))#设置log地址
 
     # prepare dataset
-    d1 = dataset.CifarBase('train')#设置trian数据集
+    d1 = dataset.CifarBase('train',cifar_classnum=10)#设置trian数据集
     #d2 = dataset.SVHNDigit('extra')
     data_train = RandomMixData([d1])#这里是将两个以上的数据集mix，对单独的数据集没效果
-    data_test = dataset.CifarBase('test')#设置test数据集
+    data_test = dataset.CifarBase('test',cifar_classnum=10)#设置test数据集
     #设置train的时候的augmentor的参数。
     augmentors = [
         imgaug.Resize((40, 40)),
