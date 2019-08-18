@@ -18,7 +18,7 @@ from .common import VariableHolder, layer_register
 from .tflayer import convert_to_tflayer_args, rename_get_variable
 import numpy as np 
 from tensorflow.python.training.moving_averages import assign_moving_average
-__all__ = ['L2norm','L1norm','L2norm_quan_train','Lmaxnorm']
+__all__ = ['L2norm','L1norm','L2norm_quan_train','Lmaxnorm1','Lmaxnorm']
 
 # decay: being too close to 1 leads to slow start-up. torch use 0.9.
 # eps: torch: 1e-5. Lasagne: 1e-4
@@ -124,6 +124,58 @@ def BNN(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         'decay': 'momentum',
         'use_local_stat': 'training'
     })
+def Lmaxnorm1(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
+
+    with tf.variable_scope(name, default_name='BatchNorm2d'):
+        params_shape = x.get_shape().as_list()
+        params_shape = params_shape[-1:]
+        moving_mean = tf.get_variable('mean', shape=params_shape,
+                                      initializer=tf.zeros_initializer,
+                                      trainable=False)
+        moving_variance = tf.get_variable('variance', shape=params_shape,
+                                          initializer=tf.ones_initializer,
+                                          trainable=False)
+
+        c_max = tf.reduce_max(x,[0,1,2])
+        c_min = tf.reduce_min(x,[0,1,2])
+
+        
+
+        def mean_var_with_update():
+
+            mean_, variance_ = tf.nn.moments(x, [0,1,2], name='moments')
+            mean = tf.stop_gradient((c_max+c_min)/2 - mean_)+mean_
+            variance = tf.stop_gradient(c_max - c_min- variance_)+variance_
+            with tf.control_dependencies([assign_moving_average(moving_mean, mean_, decay),#计算滑动平均值
+                                         assign_moving_average(moving_variance, variance, decay)]):
+                return tf.identity(mean_), tf.identity(variance)
+        if train:#亲测tf.cond的第一个函数不能直接写成ture or false，所以只好用一个很蠢的方法。
+            xx = tf.constant(3)
+            yy = tf.constant(4)
+        else:
+            xx = tf.constant(4)
+            yy = tf.constant(3)
+        mean, variance = tf.cond(xx<yy, mean_var_with_update, lambda: (moving_mean, moving_variance))
+        if affine:
+            beta = tf.get_variable('beta', params_shape,
+                                   initializer=tf.zeros_initializer)
+            gamma = tf.get_variable('gamma', params_shape,
+                                    initializer=tf.ones_initializer)
+            x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
+        else:
+            x = tf.nn.batch_normalization(x, mean, variance, None, None, eps)
+        return x,gamma,beta,moving_mean,moving_variance,mean,variance
+        #return x
+@layer_register()
+@convert_to_tflayer_args(
+    args_names=[],
+    name_mapping={
+        'use_bias': 'center',
+        'use_scale': 'scale',
+        'gamma_init': 'gamma_initializer',
+        'decay': 'momentum',
+        'use_local_stat': 'training'
+    })
 def Lmaxnorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
 
     with tf.variable_scope(name, default_name='BatchNorm2d'):
@@ -164,9 +216,7 @@ def Lmaxnorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
             x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
         else:
             x = tf.nn.batch_normalization(x, mean, variance, None, None, eps)
-        #return x,gamma,beta,moving_mean,moving_variance,mean,variance
         return x
-
 @layer_register()
 @convert_to_tflayer_args(
     args_names=[],
