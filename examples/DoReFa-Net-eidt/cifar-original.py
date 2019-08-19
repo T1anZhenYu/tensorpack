@@ -110,7 +110,7 @@ class Model(ModelDesc):
         return total_cost
 
     def optimizer(self):
-        lr = tf.get_variable('learning_rate', initializer=0.01, trainable=False)
+        lr = tf.get_variable('learning_rate', initializer=0.001, trainable=False)
         return tf.train.AdamOptimizer(lr, epsilon=1e-5)
 
 
@@ -142,7 +142,7 @@ def get_config():
         callbacks=[
             ModelSaver(),
             ScheduledHyperParamSetter('learning_rate',
-                                      [(30, 0.001), (120, 0.0001), (200, 0.00001)]),
+                                      [(10, 0.001), (120, 0.0001), (200, 0.00001)]),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
             #DumpTensors(['fg1/batch_mean:0','fg1/batch_var:0','fg1/realbatch_mean:0','fg1/realbatch_var:0'])
