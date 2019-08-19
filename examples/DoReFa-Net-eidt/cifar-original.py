@@ -89,7 +89,7 @@ class Model(ImageNetModel):
             return fa(nonlin(x))
 
         with remap_variables(new_get_variable), \
-                argscope([Conv2D, BatchNorm, MaxPooling], data_format='channels_first'), \
+                argscope([Conv2D, BatchNorm, MaxPooling]), \
                 argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
