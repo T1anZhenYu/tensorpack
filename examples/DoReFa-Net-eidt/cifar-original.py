@@ -110,7 +110,7 @@ class Model(ModelDesc):
         return total_cost
 
     def optimizer(self):
-        lr = tf.get_variable('learning_rate', initializer=2e-4, trainable=False)
+        lr = tf.get_variable('learning_rate', initializer=0.01, trainable=False)
         return tf.train.AdamOptimizer(lr, epsilon=1e-5)
 
 
