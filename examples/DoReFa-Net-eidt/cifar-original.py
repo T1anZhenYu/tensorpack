@@ -65,30 +65,31 @@ class Model(ModelDesc):
     def inputs(self):
         return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
                 tf.TensorSpec([None], tf.int32, 'label')]
-    def get_logits(self, image):
-        if BITW == 't':
-            fw, fa, fg = get_dorefa(32, 32, 32)
-            fw = ternarize
-        else:
-            fw, fa, fg = get_dorefa(BITW, BITA, BITG)
+
+    def build_graph(self, image, label):
+        is_training = get_current_tower_context().is_training
+
+        fw, fa, fg = get_dorefa(BITW, BITA, BITG)
 
         # monkey-patch tf.get_variable to apply fw
-        def new_get_variable(v):
+        def binarize_weight(v):
             name = v.op.name
             # don't binarize first and last layer
-            if not name.endswith('W') or 'conv0' in name or 'fct' in name:
+            if not name.endswith('W') or 'conv0' in name or 'fc' in name:
                 return v
             else:
-                logger.info("Quantizing weight {}".format(v.op.name))
+                logger.info("Binarizing weight {}".format(v.op.name))
                 return fw(v)
 
         def nonlin(x):
             if BITA == 32:
-                return tf.nn.relu(x)    # still use relu for 32bit cases
+                return tf.nn.relu(x)
             return tf.clip_by_value(x, 0.0, 1.0)
 
         def activate(x):
             return fa(nonlin(x))
+
+        image = image / 256.0
 
         with remap_variables(new_get_variable), \
                 argscope([Conv2D, BatchNorm, MaxPooling]), \
@@ -130,20 +131,29 @@ class Model(ModelDesc):
                       .BatchNorm('bnfc1')
                       .apply(nonlin)
                       .FullyConnected('fct', 10, use_bias=True)())
-        add_param_summary(('.*/W', ['histogram', 'rms']))
-        tf.nn.softmax(logits, name='output')  # for prediction
-        return logits
 
+        tf.nn.softmax(logits, name='output')
+    
+        # compute the number of failed samples
+        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
+        # monitor training error
+        add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
+
+        cost = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=label)
+        cost = tf.reduce_mean(cost, name='cross_entropy_loss')
+        # weight decay on all W of fc layers
+        wd_cost = regularize_cost('fc.*/W', l2_regularizer(1e-7))
+
+        add_param_summary(('.*/W', ['histogram', 'rms']))
+        total_cost = tf.add_n([cost, wd_cost], name='cost')
+        add_moving_summary(cost, wd_cost, total_cost)
+        return total_cost
+
+ 
     def optimizer(self):
         lr = tf.get_variable('learning_rate', initializer=2e-4, trainable=False)
         return tf.train.AdamOptimizer(lr, epsilon=1e-5)
 
-
-def get_data(dataset_name):
-    isTrain = dataset_name == 'train'
-    augmentors = fbresnet_augmentor(isTrain)
-    return get_imagenet_dataflow(
-        args.data, dataset_name, BATCH_SIZE, augmentors)
 
 
 def get_config():
