@@ -59,7 +59,7 @@ TOTAL_BATCH_SIZE = 256
 BATCH_SIZE = None
 
 
-class Model(ImageNetModel):
+class Model(ModelDesc):
     weight_decay = 5e-6
     weight_decay_pattern = 'fc.*/W'
 
@@ -127,7 +127,7 @@ class Model(ImageNetModel):
                       .apply(fg)
                       .BatchNorm('bnfc1')
                       .apply(nonlin)
-                      .FullyConnected('fct', 1000, use_bias=True)())
+                      .FullyConnected('fct', 10, use_bias=True)())
         add_param_summary(('.*/W', ['histogram', 'rms']))
         tf.nn.softmax(logits, name='output')  # for prediction
         return logits
