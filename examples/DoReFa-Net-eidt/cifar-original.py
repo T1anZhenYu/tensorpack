@@ -184,8 +184,7 @@ def get_config():
             ScheduledHyperParamSetter(
                 'learning_rate', [(1, 0.1), (82, 0.01), (123, 0.001), (200, 0.0001)]),
             InferenceRunner(data_test,
-                            [ClassificationError('wrong-top1', 'val-error-top1'),
-                             ClassificationError('wrong-top5', 'val-error-top5')])
+                            [ClassificationError('wrong-top1', 'val-error-top1')])
         ],
         model=Model(),
         max_epoch=300,
