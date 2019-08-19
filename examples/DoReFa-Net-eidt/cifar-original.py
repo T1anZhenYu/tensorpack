@@ -142,13 +142,13 @@ def get_config():
         callbacks=[
             ModelSaver(),
             ScheduledHyperParamSetter('learning_rate',
-                                      [(10, 0.001), (120, 0.0001), (200, 0.00001)]),
+                                      [(10, 0.001), (60, 0.0001), (120, 0.00001)]),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
             #DumpTensors(['fg1/batch_mean:0','fg1/batch_var:0','fg1/realbatch_mean:0','fg1/realbatch_var:0'])
         ],
         model=Model(),
-        max_epoch=300,
+        max_epoch=200,
     )
 
 
