@@ -71,14 +71,13 @@ class Model(ModelDesc):
 
         fw, fa, fg = get_dorefa(BITW, BITA, BITG)
 
-        # monkey-patch tf.get_variable to apply fw
-        def binarize_weight(v):
+        def new_get_variable(v):
             name = v.op.name
             # don't binarize first and last layer
-            if not name.endswith('W') or 'conv0' in name or 'fc' in name:
+            if not name.endswith('W') or 'conv0' in name or 'fct' in name:
                 return v
             else:
-                logger.info("Binarizing weight {}".format(v.op.name))
+                logger.info("Quantizing weight {}".format(v.op.name))
                 return fw(v)
 
         def nonlin(x):
