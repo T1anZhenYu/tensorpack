@@ -145,8 +145,26 @@ def get_data(dataset_name):
 
 
 def get_config():
-    data_train = get_data('train')
-    data_test = get_data('val')
+    logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
+
+    # prepare dataset
+    d1 = dataset.CifarBase('train',cifar_classnum=10)
+    #d2 = dataset.SVHNDigit('extra')
+    data_train = RandomMixData([d1])
+    data_test = dataset.CifarBase('test',cifar_classnum=10)
+
+    augmentors = [
+        imgaug.Resize((40, 40)),
+        imgaug.Brightness(30),
+        imgaug.Contrast((0.5, 1.5)),
+    ]
+    data_train = AugmentImageComponent(data_train, augmentors)
+    data_train = BatchData(data_train, 128)
+    data_train = MultiProcessRunnerZMQ(data_train, 5)
+
+    augmentors = [imgaug.Resize((40, 40))]
+    data_test = AugmentImageComponent(data_test, augmentors)
+    data_test = BatchData(data_test, 128, remainder=True)
 
     return TrainConfig(
         dataflow=data_train,
@@ -159,7 +177,6 @@ def get_config():
                              ClassificationError('wrong-top5', 'val-error-top5')])
         ],
         model=Model(),
-        steps_per_epoch=1280000 // TOTAL_BATCH_SIZE,
         max_epoch=300,
     )
 
