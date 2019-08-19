@@ -1,83 +1,49 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# File: alexnet-dorefa.py
-# Author: Yuxin Wu, Yuheng Zou ({wyx,zyh}@megvii.com)
+# File: svhn-digit-dorefa.py
+# Author: Yuxin Wu
 
 import argparse
-import numpy as np
 import os
 import sys
-import cv2
 import tensorflow as tf
-
+from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor, get_imagenet_dataflow
 from tensorpack import *
 from tensorpack.dataflow import dataset
-from tensorpack.tfutils.sessinit import get_model_loader
-from tensorpack.tfutils.summary import add_param_summary
-from tensorpack.tfutils.varreplace import remap_variables
-from tensorpack.utils.gpu import get_num_gpu
 from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
-from dorefa import get_dorefa, ternarize
-from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor, get_imagenet_dataflow
+from tensorpack.tfutils.varreplace import remap_variables
+
+from dorefa_nb import get_dorefa
 
 """
-This is a tensorpack script for the ImageNet results in paper:
-DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients
-http://arxiv.org/abs/1606.06160
-
-The original experiements are performed on a proprietary framework.
-This is our attempt to reproduce it on tensorpack & TensorFlow.
-
-To Train:
-    ./alexnet-dorefa.py --dorefa 1,2,6 --data PATH --gpu 0,1
-
-    PATH should look like:
-    PATH/
-      train/
-        n02134418/
-          n02134418_198.JPEG
-          ...
-        ...
-      val/
-        ILSVRC2012_val_00000001.JPEG
-        ...
-
-    And you'll need the following to be able to fetch data efficiently
-        Fast disk random access (Not necessarily SSD. I used a RAID of HDD, but not sure if plain HDD is enough)
-        More than 20 CPU cores (for data processing)
-        More than 10G of free memory
-    On 8 P100s and dorefa==1,2,6, the training should take about 30 minutes per epoch.
-
-To run pretrained model:
-    ./alexnet-dorefa.py --load alexnet-126.npz --run a.jpg --dorefa 1,2,6
+这个代码是用对角采样计算均值和方差。模型的变动就是用fg代替BN和Activation
+To Run:
+    ./svhn-digit-dorefa.py --dorefa 1,2,4
 """
 
 BITW = 1
 BITA = 2
-BITG = 6
-TOTAL_BATCH_SIZE = 256
-BATCH_SIZE = None
-
+BITG = 4
 
 class Model(ModelDesc):
-    weight_decay = 5e-6
-    weight_decay_pattern = 'fc.*/W'
     def inputs(self):
         return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
                 tf.TensorSpec([None], tf.int32, 'label')]
+
 
     def build_graph(self, image, label):
         is_training = get_current_tower_context().is_training
 
         fw, fa, fg = get_dorefa(BITW, BITA, BITG)
 
-        def new_get_variable(v):
+        # monkey-patch tf.get_variable to apply fw
+        def binarize_weight(v):
             name = v.op.name
             # don't binarize first and last layer
-            if not name.endswith('W') or 'conv0' in name or 'fct' in name:
+            if not name.endswith('W') or 'conv0' in name or 'fc' in name:
                 return v
             else:
-                logger.info("Quantizing weight {}".format(v.op.name))
+                logger.info("Binarizing weight {}".format(v.op.name))
                 return fw(v)
 
         def nonlin(x):
@@ -90,46 +56,48 @@ class Model(ModelDesc):
 
         image = image / 256.0
 
-        with remap_variables(new_get_variable), \
-                argscope([Conv2D, BatchNorm, MaxPooling]), \
-                argscope(BatchNorm, momentum=0.9, epsilon=1e-4), \
+        with remap_variables(binarize_weight), \
+        argscope(BatchNorm, momentum=0.9, epsilon=1e-4),\
                 argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
-                      .Conv2D('conv0', 48, 12, strides=4, padding='VALID', use_bias=True)
+                      .Conv2D('conv0', 48, 5, padding='VALID', use_bias=True)
+                      .MaxPooling('pool0', 2, padding='SAME')
                       .apply(activate)
-                      .Conv2D('conv1', 128, 5, padding='SAME', split=2)
-                      .apply(fg)
-                      .BatchNorm('bn1')
-                      .MaxPooling('pool1', 3, 2, padding='SAME')
-                      .apply(activate)
+                      # 18
+                      .Conv2D('conv1', 64, 3, padding='SAME')
+                      .apply(fg,'fg1',is_training)#模型的核心变动，用fg代替bn和activate
+                      #.BatchNorm('bn1')
+                      #.apply(activate)
 
-                      .Conv2D('conv2', 256, 3)
-                      .apply(fg)
-                      .BatchNorm('bn2')
-                      .MaxPooling('pool2', 3, 1, padding='SAME')
-                      .apply(activate)
+                      .Conv2D('conv2', 64, 3, padding='SAME')
+                      .MaxPooling('pool1', 2, padding='SAME')
+                      .apply(fg,'fg2',training=is_training)#注意，这里要先maxpooling再做量化。
+                      #因为原来的模型maxpooling是在bn之后的
+                      #.BatchNorm('bn2')
+                      #.MaxPooling('pool1', 2, padding='SAME')
+                      #.apply(activate)
+                      # 9
+                      .Conv2D('conv3', 128, 3, padding='VALID')
+                      .apply(fg,'fg3',is_training)
+                      #.BatchNorm('bn3')
+                      #.apply(activate)
+                      # 7
 
-                      .Conv2D('conv3', 256, 3, split=2)
-                      .apply(fg)
-                      .BatchNorm('bn3')
-                      .apply(activate)
+                      .Conv2D('conv4', 128, 3, padding='SAME')
+                      .apply(fg,'fg4',is_training)
+                      #.BatchNorm('bn4')
+                      #.apply(activate)
 
-                      .Conv2D('conv4', 128, 3, split=2)
-                      .apply(fg)
-                      .BatchNorm('bn4')
-                      .MaxPooling('pool4', 3, 1, padding='VALID')
-                      .apply(activate)
-
-                      .FullyConnected('fc0', 512)
-                      .apply(fg)
-                      .BatchNorm('bnfc0')
-                      .apply(activate)
-
-                      .FullyConnected('fc1', 256, use_bias=False)
-                      .apply(fg)
-                      .BatchNorm('bnfc1')
+                      .Conv2D('conv5', 128, 3, padding='VALID')
+                      .apply(fg,'fg5',is_training)
+                      #.BatchNorm('bn5').apply(activate)
+                      # 5
+                      .Dropout(rate=0.5 if is_training else 0.0)
+                      .Conv2D('conv6', 512, 5, padding='VALID')
+                      #最后一层不做量化
+                      .BatchNorm('bn6')
                       .apply(nonlin)
-                      .FullyConnected('fct', 10, use_bias=True)())
+                      .FullyConnected('fc1', 100)())
 
         tf.nn.softmax(logits, name='output')
     
@@ -148,11 +116,14 @@ class Model(ModelDesc):
         add_moving_summary(cost, wd_cost, total_cost)
         return total_cost
 
- 
     def optimizer(self):
-        lr = tf.get_variable('learning_rate', initializer=2e-4, trainable=False)
+        lr = tf.train.exponential_decay(
+            learning_rate=1e-3,
+            global_step=get_global_step_var(),
+            decay_steps=4721 * 100,
+            decay_rate=0.5, staircase=True, name='learning_rate')
+        tf.summary.scalar('lr', lr)
         return tf.train.AdamOptimizer(lr, epsilon=1e-5)
-
 
 
 def get_config():
@@ -178,44 +149,18 @@ def get_config():
     data_test = BatchData(data_test, 128, remainder=True)
 
     return TrainConfig(
-        dataflow=data_train,
+        data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
             ScheduledHyperParamSetter(
-                'learning_rate', [(1, 0.1), (82, 0.01), (123, 0.001), (200, 0.0001)]),
+                'learning_rate', [(60, 0.01), (120, 0.001),(200, 0.0002)]),
             InferenceRunner(data_test,
-                            [ClassificationError('wrong-top1', 'val-error-top1')])
+                            [ScalarStats('cost'), ClassificationError('wrong-top1')]),
+            #DumpTensors(['fg1/batch_mean:0','fg1/batch_var:0','fg1/realbatch_mean:0','fg1/realbatch_var:0'])
         ],
         model=Model(),
         max_epoch=300,
     )
-
-
-def run_image(model, sess_init, inputs):
-    pred_config = PredictConfig(
-        model=model,
-        session_init=sess_init,
-        input_names=['input'],
-        output_names=['output']
-    )
-    predictor = OfflinePredictor(pred_config)
-    meta = dataset.ILSVRCMeta()
-    words = meta.get_synset_words_1000()
-
-    transformers = imgaug.AugmentorList(fbresnet_augmentor(isTrain=False))
-    for f in inputs:
-        assert os.path.isfile(f), f
-        img = cv2.imread(f).astype('float32')
-        assert img is not None
-
-        img = transformers.augment(img)[np.newaxis, :, :, :]
-        outputs = predictor(img)[0]
-        prob = outputs[0]
-        ret = prob.argsort()[-10:][::-1]
-
-        names = [words[i] for i in ret]
-        print(f + ":")
-        print(list(zip(names, prob[ret])))
 
 
 if __name__ == '__main__':
@@ -229,33 +174,21 @@ if __name__ == '__main__':
     parser.add_argument('--eval', action='store_true')
     args = parser.parse_args()
 
-    dorefa = args.dorefa.split(',')
-    if dorefa[0] == 't':
-        assert dorefa[1] == '32' and dorefa[2] == '32'
-        BITW, BITA, BITG = 't', 32, 32
-    else:
-        BITW, BITA, BITG = map(int, dorefa)
-
-    if args.gpu:
-        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-
-    if args.run:
-        assert args.load.endswith('.npz')
-        run_image(Model(), DictRestore(dict(np.load(args.load))), args.run)
-        sys.exit()
     if args.eval:
         BATCH_SIZE = 128
-        ds = get_data('val')
-        eval_classification(Model(), get_model_loader(args.load), ds)
+        data_test = dataset.SVHNDigit('test')
+        augmentors = [
+        imgaug.Resize((40, 40)),
+        imgaug.Brightness(30),
+        imgaug.Contrast((0.5, 1.5)),
+        ]
+        data_test = AugmentImageComponent(data_test, augmentors)
+        data_test = BatchData(data_test, 128, remainder=True)
+        eval_classification(Model(), get_model_loader(args.load), data_test)
         sys.exit()
 
-    nr_tower = max(get_num_gpu(), 1)
-    BATCH_SIZE = TOTAL_BATCH_SIZE // nr_tower
-    logger.set_logger_dir(os.path.join(
-        'train_log', 'alexnet-dorefa-{}'.format(args.dorefa)))
-    logger.info("Batch per tower: {}".format(BATCH_SIZE))
-
+    BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
-    if args.load:
-        config.session_init = SaverRestore(args.load)
-    launch_train_with_config(config, SyncMultiGPUTrainerReplicated(nr_tower))
+    launch_train_with_config(config, SimpleTrainer())
+
+
