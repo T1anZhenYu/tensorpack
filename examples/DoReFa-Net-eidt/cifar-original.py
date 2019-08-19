@@ -141,8 +141,8 @@ def get_config():
         data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-            ScheduledHyperParamSetter(
-                'learning_rate', [(60, 0.01), (120, 0.001),(200, 0.0002)]),
+            ScheduledHyperParamSetter('learning_rate',
+                                      [(1, 0.1), (60, 0.01), (120, 0.001), (200, 0.0001)])
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
             #DumpTensors(['fg1/batch_mean:0','fg1/batch_var:0','fg1/realbatch_mean:0','fg1/realbatch_var:0'])
