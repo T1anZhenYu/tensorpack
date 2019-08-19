@@ -62,7 +62,9 @@ BATCH_SIZE = None
 class Model(ModelDesc):
     weight_decay = 5e-6
     weight_decay_pattern = 'fc.*/W'
-
+    def inputs(self):
+        return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
+                tf.TensorSpec([None], tf.int32, 'label')]
     def get_logits(self, image):
         if BITW == 't':
             fw, fa, fg = get_dorefa(32, 32, 32)
