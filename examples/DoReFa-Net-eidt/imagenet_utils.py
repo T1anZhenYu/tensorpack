@@ -16,7 +16,7 @@ from tensorpack.dataflow import (
     BatchData, MultiThreadMapData, RNGDataFlow, DataFromList, MultiProcessPrefetchData)
 from tensorpack.predict import PredictConfig, FeedfreePredictor
 from tensorpack.utils.stats import RatioCounter
-from tensorpack.models import regularize_cost
+from tensorpack.models import regularize_cost, l2_regularizer
 from tensorpack.tfutils.summary import add_moving_summary
 from tensorpack.utils import logger
 import msgpack
