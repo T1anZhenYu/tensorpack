@@ -115,9 +115,9 @@ class Model(ImageNetModel):
                       #.apply(activate)
 
                       .FullyConnected('fc0', 4096)
-                      .apply(fg,'fg5',is_training)
-                      #.BatchNorm('bnfc0')
-                      #.apply(activate)
+                      #.apply(fg,'fg5',is_training)
+                      .BatchNorm('bnfc0')
+                      .apply(activate)
 
                       .FullyConnected('fc1', 4096, use_bias=False)
                       .apply(fg)
