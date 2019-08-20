@@ -8,11 +8,11 @@ import tqdm
 import multiprocessing
 import tensorflow as tf
 from abc import abstractmethod
-
+from tensorpack.tfutils.optimizer import AccumGradOptimizer
 from tensorpack import ModelDesc
 from tensorpack.input_source import QueueInput, StagingInput
 from tensorpack.dataflow import (
-    imgaug, dataset, AugmentImageComponent, PrefetchDataZMQ,
+    imgaug, dataset, AugmentImageComponent, PrefetchDataZMQ,MultiProcessRunnerZMQ,
     BatchData, MultiThreadMapData, RNGDataFlow, DataFromList, MultiProcessPrefetchData)
 from tensorpack.predict import PredictConfig, FeedfreePredictor
 from tensorpack.utils.stats import RatioCounter
