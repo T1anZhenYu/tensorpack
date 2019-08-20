@@ -12,8 +12,8 @@ import tqdm
 
 from tensorpack import ModelDesc
 from tensorpack.dataflow import (
-    AugmentImageComponent, BatchData, MultiThreadMapData,
-    MultiProcessRunnerZMQ, dataset, imgaug)
+    imgaug, dataset, AugmentImageComponent, PrefetchDataZMQ,
+    BatchData, MultiThreadMapData, RNGDataFlow, DataFromList, MultiProcessPrefetchData)
 from tensorpack.input_source import QueueInput, StagingInput
 from tensorpack.models import regularize_cost, l2_regularizer
 from tensorpack.predict import FeedfreePredictor, PredictConfig
