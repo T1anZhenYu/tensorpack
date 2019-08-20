@@ -2,25 +2,26 @@
 # File: imagenet_utils.py
 
 
-import multiprocessing
-import numpy as np
-import os
-from abc import abstractmethod
 import cv2
-import tensorflow as tf
+import numpy as np
 import tqdm
+import multiprocessing
+import tensorflow as tf
+from abc import abstractmethod
 
 from tensorpack import ModelDesc
+from tensorpack.input_source import QueueInput, StagingInput
 from tensorpack.dataflow import (
     imgaug, dataset, AugmentImageComponent, PrefetchDataZMQ,
     BatchData, MultiThreadMapData, RNGDataFlow, DataFromList, MultiProcessPrefetchData)
-from tensorpack.input_source import QueueInput, StagingInput
-from tensorpack.models import regularize_cost, l2_regularizer
-from tensorpack.predict import FeedfreePredictor, PredictConfig
-from tensorpack.tfutils.summary import add_moving_summary
-from tensorpack.tfutils.optimizer import AccumGradOptimizer
-from tensorpack.utils import logger
+from tensorpack.predict import PredictConfig, FeedfreePredictor
 from tensorpack.utils.stats import RatioCounter
+from tensorpack.models import regularize_cost
+from tensorpack.tfutils.summary import add_moving_summary
+from tensorpack.utils import logger
+import msgpack
+import os
+import pickle
 
 """
 ====== DataFlow =======
