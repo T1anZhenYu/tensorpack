@@ -141,7 +141,7 @@ def get_data(dataset_name):
 
 
 def get_config():
-    data_train = get_data('train')
+    data_train = get_data('val')
     data_test = get_data('val')
 
     return TrainConfig(
