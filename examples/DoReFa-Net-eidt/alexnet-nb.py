@@ -17,9 +17,8 @@ from tensorpack.tfutils.summary import add_param_summary
 from tensorpack.tfutils.varreplace import remap_variables
 from tensorpack.utils.gpu import get_num_gpu
 
-from dorefa import get_dorefa, ternarize
+from dorefa_nb import get_dorefa
 from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor, get_imagenet_dataflow
-
 """
 This is a tensorpack script for the ImageNet results in paper:
 DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients
@@ -64,12 +63,9 @@ class Model(ImageNetModel):
     weight_decay_pattern = 'fc.*/W'
 
     def get_logits(self, image):
-        if BITW == 't':
-            fw, fa, fg = get_dorefa(32, 32, 32)
-            fw = ternarize
-        else:
-            fw, fa, fg = get_dorefa(BITW, BITA, BITG)
 
+        fw, fa, fg = get_dorefa(BITW, BITA, BITG)
+        is_training = get_current_tower_context().is_training
         # monkey-patch tf.get_variable to apply fw
         def new_get_variable(v):
             name = v.op.name
@@ -96,32 +92,32 @@ class Model(ImageNetModel):
                       .Conv2D('conv0', 96, 12, strides=4, padding='VALID', use_bias=True)
                       .apply(activate)
                       .Conv2D('conv1', 256, 5, padding='SAME', split=2)
-                      .apply(fg)
-                      .BatchNorm('bn1')
+                      .apply(fg,'fg1',is_training)
+                      #.BatchNorm('bn1')
                       .MaxPooling('pool1', 3, 2, padding='SAME')
-                      .apply(activate)
+                      #.apply(activate)
 
                       .Conv2D('conv2', 384, 3)
-                      .apply(fg)
-                      .BatchNorm('bn2')
+                      .apply(fg,'fg2',is_training)
+                      #.BatchNorm('bn2')
                       .MaxPooling('pool2', 3, 2, padding='SAME')
-                      .apply(activate)
+                      #.apply(activate)
 
                       .Conv2D('conv3', 384, 3, split=2)
-                      .apply(fg)
-                      .BatchNorm('bn3')
-                      .apply(activate)
+                      .apply(fg,'fg3',is_training)
+                      #.BatchNorm('bn3')
+                      #.apply(activate)
 
                       .Conv2D('conv4', 256, 3, split=2)
-                      .apply(fg)
-                      .BatchNorm('bn4')
+                      .apply(fg,'fg4',is_training)
+                      #.BatchNorm('bn4')
                       .MaxPooling('pool4', 3, 2, padding='VALID')
-                      .apply(activate)
+                      #.apply(activate)
 
                       .FullyConnected('fc0', 4096)
-                      .apply(fg)
-                      .BatchNorm('bnfc0')
-                      .apply(activate)
+                      .apply(fg,'fg5',is_training)
+                      #.BatchNorm('bnfc0')
+                      #.apply(activate)
 
                       .FullyConnected('fc1', 4096, use_bias=False)
                       .apply(fg)
