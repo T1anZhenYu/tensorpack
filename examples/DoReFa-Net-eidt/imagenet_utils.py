@@ -63,7 +63,100 @@ def fbresnet_augmentor(isTrain):
         ]
     return augmentors
 
+class InMemoryData(RNGDataFlow):
 
+    def __init__(self, path, num_samples, shuffle=True):
+        self.path = path
+        self.num_samples = num_samples
+        self.samples = []
+        f = open(self.path, "rb")
+        print('Start loading ...')
+        for i, sample in tqdm.tqdm(enumerate(msgpack.Unpacker(f, use_list=False, raw=True))):
+            self.samples.append(sample)
+            #if i==10000:
+            #    break
+            if i == self.num_samples - 1:
+                break
+        f.close()
+        
+        self._size = num_samples
+        self.shuffle = shuffle
+
+    def __len__(self):
+        return self._size
+
+    def __iter__(self):
+        idxs = list(range(self._size))
+        if self.shuffle:
+            self.rng.shuffle(idxs)
+        for k in idxs:
+            img, label = self.samples[k]
+            img = pickle.loads(img)
+            img = cv2.imdecode(img, cv2.IMREAD_COLOR)
+            #print('Checking img: ',type(img))
+            #print('Checking img: ',img.shape)
+            #print('Checking label: ',type(label))
+            yield [img, label]
+
+
+def get_imagenet_dataflow(
+        dataset_root, name, batch_size,
+        augmentors, parallel=None):
+
+    #See explanations in the tutorial:
+    #http://tensorpack.readthedocs.io/en/latest/tutorial/efficient-dataflow.html
+
+    assert name in ['train', 'val', 'test']
+    assert isinstance(augmentors, list)
+    train_path = os.path.join(dataset_root, 'imagenet-msgpack', 'ILSVRC-train.bin')
+    val_path = os.path.join(dataset_root, 'imagenet-msgpack', 'ILSVRC-val.bin')
+    isTrain = name == 'train'
+    if parallel is None:
+        #parallel = min(40, multiprocessing.cpu_count() - 4)  # assuming hyperthreading
+        parallel = multiprocessing.cpu_count() - 4
+    if isTrain:
+
+        ds = InMemoryData(train_path, 1281167, True)
+        ds = AugmentImageComponent(ds, augmentors, copy=False)
+        if parallel < 16:
+            logger.warn("DataFlow may become the bottleneck when too few processes are used.")
+        #ds = PrefetchDataZMQ(ds, parallel)
+        ds = MultiProcessPrefetchData(ds , 70000, parallel)
+        ds = BatchData(ds, batch_size, remainder=False)
+    else:
+
+        ds = InMemoryData(val_path, 5000, False)
+        ds = AugmentImageComponent(ds, augmentors, copy=False)
+        
+        #ds = MultiThreadMapData(ds, parallel, mapf, buffer_size=2000, strict=True)
+        ds = BatchData(ds, batch_size, remainder=True)
+        ds = MultiProcessPrefetchData(ds , 10000, 1)
+    return ds
+
+
+def eval_on_ILSVRC12(model, sessinit, dataflow):
+    pred_config = PredictConfig(
+        model=model,
+        session_init=sessinit,
+        input_names=['input', 'label'],
+        output_names=['wrong-top1', 'wrong-top5']
+    )
+    acc1, acc5 = RatioCounter(), RatioCounter()
+
+    # This does not have a visible improvement over naive predictor,
+    # but will have an improvement if image_dtype is set to float32.
+    pred = FeedfreePredictor(pred_config, StagingInput(QueueInput(dataflow), device='/gpu:0'))
+    for _ in tqdm.trange(dataflow.size()):
+        top1, top5 = pred()
+        batch_size = top1.shape[0]
+        acc1.feed(top1.sum(), batch_size)
+        acc5.feed(top5.sum(), batch_size)
+
+    print("Top1 Error: {}".format(acc1.ratio))
+    print("Top5 Error: {}".format(acc5.ratio))
+
+
+'''
 def get_imagenet_dataflow(
         datadir, name, batch_size,
         augmentors=None, parallel=None):
@@ -105,7 +198,7 @@ def get_imagenet_dataflow(
         ds = BatchData(ds, batch_size, remainder=True)
         ds = MultiProcessRunnerZMQ(ds, 1)
     return ds
-
+'''
 
 """
 ====== tf.data =======
