@@ -145,7 +145,7 @@ def get_config():
     data_test = get_data('val')
 
     return TrainConfig(
-        session_init = 38,
+        starting_epoch = 38,
         dataflow=data_train,
         callbacks=[
             ModelSaver(),
