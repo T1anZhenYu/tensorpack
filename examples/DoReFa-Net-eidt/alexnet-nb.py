@@ -120,7 +120,7 @@ class Model(ImageNetModel):
                       .apply(activate)
 
                       .FullyConnected('fc1', 4096, use_bias=False)
-                      .apply(fg)
+                      #.apply(fg)
                       .BatchNorm('bnfc1')
                       .apply(nonlin)
                       .FullyConnected('fct', 1000, use_bias=True)())
