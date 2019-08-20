@@ -195,7 +195,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', help='the physical ids of GPUs to use')
     parser.add_argument('--load', help='load a checkpoint, or a npz (given as the pretrained model)')
-    parser.add_argument('--data', help='ILSVRC dataset dir')
+    parser.add_argument('--data', default='/home/jovyan/harvard-heavy/datasets/',help='ILSVRC dataset dir')
     parser.add_argument('--dorefa', required=True,
                         help='number of bits for W,A,G, separated by comma. W="t" means TTQ')
     parser.add_argument('--run', help='run on a list of images with the pretrained model', nargs='*')
