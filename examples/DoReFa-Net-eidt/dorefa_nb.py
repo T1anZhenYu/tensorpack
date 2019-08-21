@@ -76,6 +76,8 @@ def get_dorefa(bitW, bitA, bitG):
             batch_var = tf.get_variable('batch_var',shape=[num_chan,1],\
             dtype = tf.float32,initializer=tf.zeros_initializer(),trainable=False)
 
+
+
             #为了方便计算导数，这里引入了bn。momentum是用来计算movingmean和movingvar的。center表示
             #是否使用beta，scale表示是否使用gamma
   
@@ -126,7 +128,7 @@ def get_dorefa(bitW, bitA, bitG):
             else:
                 return quan_output
 
-    return fw, fa, fg
+    return fw, fa, quan_bn
 
 
 def ternarize(x, thresh=0.05):
