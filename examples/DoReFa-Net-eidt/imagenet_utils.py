@@ -102,7 +102,7 @@ class InMemoryData(RNGDataFlow):
 
 def get_imagenet_dataflow(
         dataset_root, name, batch_size,
-        augmentors, parallel=None):
+        augmentors, parallel=8):
 
     #See explanations in the tutorial:
     #http://tensorpack.readthedocs.io/en/latest/tutorial/efficient-dataflow.html
