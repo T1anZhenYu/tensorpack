@@ -136,45 +136,19 @@ def Lmaxnorm1(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
                                           initializer=tf.ones_initializer,
                                           trainable=False)
 
-        my_bm = tf.get_variable('my_bm', shape=params_shape,
-                                      initializer=tf.zeros_initializer,
-                                      trainable=False)
-        my_bv = tf.get_variable('my_bv', shape=params_shape,
-                                          initializer=tf.ones_initializer,
-                                          trainable=False)
-        real_bm = tf.get_variable('real_bm', shape=params_shape,
-                                      initializer=tf.zeros_initializer,
-                                      trainable=False)
-        real_bv = tf.get_variable('real_bv', shape=params_shape,
-                                          initializer=tf.ones_initializer,
-                                          trainable=False)
-        diff_bm = tf.get_variable('diff_bm', shape=params_shape,
-                                      initializer=tf.zeros_initializer,
-                                      trainable=False)
-        diff_bv = tf.get_variable('diff_bv', shape=params_shape,
-                                          initializer=tf.ones_initializer,
-                                          trainable=False)
-        ratio_bm = tf.get_variable('ratio_bm', shape=params_shape,
-                                      initializer=tf.zeros_initializer,
-                                      trainable=False)
-        ratio_bv = tf.get_variable('ratio_bv', shape=params_shape,
-                                          initializer=tf.ones_initializer,
-                                          trainable=False)
-
-
         c_max = tf.reduce_max(x,[0,1,2])
         c_min = tf.reduce_min(x,[0,1,2])
 
         mean_, variance_ = tf.nn.moments(x, [0,1,2], name='moments')
 
-        my_bm = (c_max+c_min)/2
-        my_bv = (c_max-c_min)         
-        real_bm = mean_
-        real_bv = variance_
-        diff_bm = ((c_max+c_min)/2)-mean_
-        diff_bv = (c_max-c_min)-variance_
-        ratio_bm = (((c_max+c_min)/2))/mean_
-        ratio_bv = (c_max-c_min)/variance_
+        my_bm = tf.identity((c_max+c_min)/2,name='my_bm')
+        my_bv = tf.identity((c_max-c_min),name='my_bv')         
+        real_bm = tf.identity(mean_,name='real_bm')
+        real_bv = tf.identity(variance_,name='real_bv')
+        diff_bm = tf.identity(((c_max+c_min)/2)-mean_,name='diff_bm')
+        diff_bv = tf.identity((c_max-c_min)-variance_,name='diff_bv')
+        ratio_bm = tf.identity((((c_max+c_min)/2))/mean_,name='ratio_bm')
+        ratio_bv = tf.identity((c_max-c_min)/variance_,name='ratio_bv')
 
 
         def mean_var_with_update():
