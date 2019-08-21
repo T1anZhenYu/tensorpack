@@ -148,7 +148,8 @@ def get_config():
     data_train = get_data('train')
     data_test = get_data('val')
 
-    return AutoResumeTrainConfig(
+    return TrainConfig(
+        startepoch = 1,
         dataflow=data_train,
         callbacks=[
             ModelSaver(),
