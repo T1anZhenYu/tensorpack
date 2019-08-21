@@ -149,6 +149,7 @@ def get_config():
     data_test = get_data('val')
 
     return TrainConfig(
+        starting_epoch = 14,
         dataflow=data_train,
         callbacks=[
             ModelSaver(),
