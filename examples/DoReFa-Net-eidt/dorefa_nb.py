@@ -59,7 +59,7 @@ def get_dorefa(bitW, bitA, bitG):
 
     def activate(x):
         return fa(nonlin(x))
-    def fg(x,name,training,momentum = 0.9):#bitG == 32
+    def quan_bn(x,name,training,momentum = 0.9):#bitG == 32
 
         with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
 
