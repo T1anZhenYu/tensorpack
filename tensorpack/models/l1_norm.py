@@ -167,14 +167,14 @@ def Lmaxnorm1(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
 
         mean_, variance_ = tf.nn.moments(x, [0,1,2], name='moments')
 
-        my_bm = tf.assign(my_bm,(c_max+c_min)/2)
-        my_bv = tf.assign(my_bv,(c_max-c_min))            
-        real_bm = tf.assign(real_bm,mean_)
-        real_bv = tf.assign(real_bv,variance_)
-        diff_bm = tf.assign(diff_bm,((c_max+c_min)/2)-mean_)
-        diff_bv = tf.assign(diff_bv,(c_max-c_min)-variance_)
-        ratio_bm = tf.assign(ratio_bm,(((c_max+c_min)/2))/mean_)
-        ratio_bv = tf.assign(ratio_bv,(c_max-c_min)/variance_)
+        my_bm = (c_max+c_min)/2
+        my_bv = (c_max-c_min)         
+        real_bm = mean_
+        real_bv = variance_
+        diff_bm = ((c_max+c_min)/2)-mean_
+        diff_bv = (c_max-c_min)-variance_
+        ratio_bm = (((c_max+c_min)/2))/mean_
+        ratio_bv = (c_max-c_min)/variance_
 
 
         def mean_var_with_update():
