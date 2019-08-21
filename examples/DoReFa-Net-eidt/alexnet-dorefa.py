@@ -148,8 +148,7 @@ def get_config():
     data_train = get_data('train')
     data_test = get_data('val')
 
-    return TrainConfig(
-        starting_epoch = 14,
+    return AutoResumeTrainConfig(
         dataflow=data_train,
         callbacks=[
             ModelSaver(),
