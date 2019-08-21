@@ -136,14 +136,53 @@ def Lmaxnorm1(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
                                           initializer=tf.ones_initializer,
                                           trainable=False)
 
+        my_bm = tf.get_variable('my_bm', shape=params_shape,
+                                      initializer=tf.zeros_initializer,
+                                      trainable=False)
+        my_bv = tf.get_variable('my_bv', shape=params_shape,
+                                          initializer=tf.ones_initializer,
+                                          trainable=False)
+        real_bm = tf.get_variable('real_bm', shape=params_shape,
+                                      initializer=tf.zeros_initializer,
+                                      trainable=False)
+        real_bv = tf.get_variable('real_bv', shape=params_shape,
+                                          initializer=tf.ones_initializer,
+                                          trainable=False)
+        diff_bm = tf.get_variable('diff_bm', shape=params_shape,
+                                      initializer=tf.zeros_initializer,
+                                      trainable=False)
+        diff_bv = tf.get_variable('diff_bv', shape=params_shape,
+                                          initializer=tf.ones_initializer,
+                                          trainable=False)
+        ratio_bm = tf.get_variable('ratio_bm', shape=params_shape,
+                                      initializer=tf.zeros_initializer,
+                                      trainable=False)
+        ratio_bv = tf.get_variable('ratio_bv', shape=params_shape,
+                                          initializer=tf.ones_initializer,
+                                          trainable=False)
+
+
         c_max = tf.reduce_max(x,[0,1,2])
         c_min = tf.reduce_min(x,[0,1,2])
 
-        
+
+
+
 
         def mean_var_with_update():
 
             mean_, variance_ = tf.nn.moments(x, [0,1,2], name='moments')
+
+            tf.assign(my_bm,(c_max+c_min)/2)
+            tf.assign(my_bv,(c_max-c_min))            
+            tf.assign(real_bm,mean_)
+            tf.assign(real_bv,variance_)
+            tf.assign(diff_bm,((c_max+c_min)/2)-mean_)
+            tf.assign(diff_bv,(c_max-c_min)-variance_)
+            tf.assign(ratio_bm,(((c_max+c_min)/2))/mean_)
+            tf.assign(ratio_bv,(c_max-c_min)/variance_)
+
+
             mean = tf.stop_gradient((c_max+c_min)/2 - mean_)+mean_
             variance = tf.stop_gradient(c_max - c_min- variance_)+variance_
             with tf.control_dependencies([assign_moving_average(moving_mean, mean_, decay),#计算滑动平均值
