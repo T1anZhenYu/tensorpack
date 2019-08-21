@@ -91,7 +91,7 @@ class Model(ModelDesc):
                       .Conv2D('conv6', 512, 5, padding='VALID')
                       .apply(fg).BatchNorm('bn6')
                       .apply(nonlin)
-                      .FullyConnected('fc1', 10)())
+                      .FullyConnected('fc1', 100)())
         tf.nn.softmax(logits, name='output')
     
         # compute the number of failed samples
@@ -119,10 +119,10 @@ def get_config():
     logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
 
     # prepare dataset
-    d1 = dataset.CifarBase('train',cifar_classnum=10)
+    d1 = dataset.CifarBase('train',cifar_classnum=100)
     #d2 = dataset.SVHNDigit('extra')
     data_train = RandomMixData([d1])
-    data_test = dataset.CifarBase('test',cifar_classnum=10)
+    data_test = dataset.CifarBase('test',cifar_classnum=100)
 
     augmentors = [
         imgaug.Resize((40, 40)),
