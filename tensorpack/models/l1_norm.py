@@ -177,8 +177,6 @@ def Lmaxnorm1(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         ratio_bv = tf.assign(ratio_bv,(c_max-c_min)/variance_)
 
 
-
-
         def mean_var_with_update():
 
             mean = tf.stop_gradient((c_max+c_min)/2 - mean_)+mean_
