@@ -165,7 +165,8 @@ def get_config():
               'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/diff_bm:0',\
               'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/diff_bv:0',\
               'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/ratio_bv:0',\
-              'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/ratio_bm:0',])
+              'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/ratio_bm:0',\
+              'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/ratio_bv2:0'])
         ],
         model=Model(),
         max_epoch=200,
