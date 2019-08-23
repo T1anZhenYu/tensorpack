@@ -158,15 +158,15 @@ def get_config():
                                       [(10, 0.001), (60, 0.0001), (120, 0.000001)]),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
-            DumpTensors(['quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/my_bv:0',\
-              'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/my_bm:0',\
-              'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/real_bm:0',\
-              'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/real_bv:0',\
-              'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/diff_bm:0',\
-              'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/diff_bv:0',\
-              'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/ratio_bv:0',\
-              'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/ratio_bm:0',\
-              'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/ratio_bv2:0'])
+            # DumpTensors(['quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/my_bv:0',\
+            #   'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/my_bm:0',\
+            #   'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/real_bm:0',\
+            #   'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/real_bv:0',\
+            #   'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/diff_bm:0',\
+            #   'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/diff_bv:0',\
+            #   'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/ratio_bv:0',\
+            #   'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/ratio_bm:0',\
+            #   'quan_bn1/quan_bn1Lmaxnorm/BatchNorm2d/ratio_bv2:0'])
         ],
         model=Model(),
         max_epoch=200,
