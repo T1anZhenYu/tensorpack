@@ -188,7 +188,7 @@ def get_data(train_or_test, dir):
 
 def get_config():
     #logger.auto_set_dir()
-    logger.set_logger_dir('.train_log')
+    logger.set_logger_dir('./train_log')
     # prepare dataset
     dataset_train = get_data('train', dir = '../../../cifar10_data/')
     dataset_test = get_data('test', dir = '../../../cifar10_data/')
