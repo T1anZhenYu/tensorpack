@@ -146,7 +146,7 @@ class Model(ModelDesc):
         total_cost = tf.add_n([cost, wd_cost], name='cost')
         add_moving_summary(cost, wd_cost, total_cost)
         #add_param_summary(relax, ['scalar'])
-        tf.summary.scalar('relax_para', relax)
+        #tf.summary.scalar('relax_para', relax)
         return total_cost
 
     def optimizer(self):
