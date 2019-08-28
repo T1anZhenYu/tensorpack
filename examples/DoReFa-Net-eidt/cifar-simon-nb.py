@@ -165,7 +165,7 @@ class Model(ModelDesc):
 
 
 def get_data(train_or_test, dir):
-    BATCH_SIZE = 512
+    BATCH_SIZE = 128
     isTrain = train_or_test == 'train'
     ds = dataset.Cifar10(train_or_test, dir=dir)
     pp_mean = ds.get_per_pixel_mean()
