@@ -380,9 +380,10 @@ def eval_classification(model, sessinit, dataflow):
  
 
         batch_size = top1.shape[0]
-        acc1.feed(top1.sum(), batch_size)
+        acc1 = top1.sum()/batch_size   
+        #acc1.feed(top1.sum(), batch_size)
 
-    print("Top1 Error: {}".format(acc1.ratio))
+    print("Top1 Error: {}".format(acc1))
 
 
 
