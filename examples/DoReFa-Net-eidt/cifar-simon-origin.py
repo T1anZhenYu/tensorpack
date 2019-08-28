@@ -13,7 +13,7 @@ from tensorpack.dataflow import dataset
 from tensorpack.tfutils.varreplace import remap_variables
 import os
 
-from dorefa_nb import get_dorefa
+from dorefa import get_dorefa
 
 """
 This is a tensorpack script for the SVHN results in paper:
@@ -47,7 +47,7 @@ class Model(ModelDesc):
         is_training = get_current_tower_context().is_training
         print('WAG: ', BITW, BITA, BITG)
         print('is: ', type(is_training))
-        fw, fa,fg, quan_bn = get_dorefa(BITW, BITA, BITG)
+        fw, fa,fg = get_dorefa(BITW, BITA, BITG)
         #fw, fa, fg = get_warmbin(BITW, BITA, BITG)
         #relax = tf.get_variable('relax_para', initializer=1.0, trainable=False)
         #relax = tf.placeholder(tf.float, [], 'relax')
