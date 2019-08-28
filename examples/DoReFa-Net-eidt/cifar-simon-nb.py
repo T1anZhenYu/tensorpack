@@ -119,8 +119,8 @@ class Model(ModelDesc):
 
                       .Conv2D('conv6' , filters=128, padding='VALID')
                       .apply(fg)
-                      #.BatchNorm('bn5').apply(activate)
-                      .apply(quan_bn,'quan_bn_6',is_training)
+                      .BatchNorm('bn5').apply(activate)
+                      #.apply(quan_bn,'quan_bn_6',is_training)
                       # 5
                       .FullyConnected('fc0', 1024 + 512)
                       .apply(fg)
@@ -164,7 +164,7 @@ class Model(ModelDesc):
 
 
 def get_data(train_or_test, dir):
-    BATCH_SIZE = 128
+    BATCH_SIZE = 512
     isTrain = train_or_test == 'train'
     ds = dataset.Cifar10(train_or_test, dir=dir)
     pp_mean = ds.get_per_pixel_mean()
