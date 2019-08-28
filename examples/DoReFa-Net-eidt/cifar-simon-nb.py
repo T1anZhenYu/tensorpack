@@ -89,7 +89,7 @@ class Model(ModelDesc):
 
             
             logits = (LinearWrap(image)
-                      .Conv2D('conv1', filters=64,, use_bias=True)
+                      .Conv2D('conv1', filters=64, use_bias=True)
                       #.BatchNorm('bn0')
                       .MaxPooling('pool0', 2, padding='SAME')
                       .apply(activate)
