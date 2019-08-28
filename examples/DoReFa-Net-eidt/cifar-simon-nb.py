@@ -119,8 +119,8 @@ class Model(ModelDesc):
 
                       .Conv2D('conv6' , filters=128, padding='VALID')
                       .apply(fg)
-                      .BatchNorm('bn5').apply(activate)
-                      #.apply(quan_bn,'quan_bn_6',is_training)
+                      #.BatchNorm('bn5').apply(activate)
+                      .apply(quan_bn,'quan_bn_6',is_training)
                       # 5
                       .FullyConnected('fc0', 1024 + 512)
                       .apply(fg)
