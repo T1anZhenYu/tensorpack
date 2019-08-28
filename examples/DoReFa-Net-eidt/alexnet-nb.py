@@ -64,7 +64,7 @@ class Model(ImageNetModel):
 
     def get_logits(self, image):
 
-        fw, fa, quan_bn = get_dorefa(BITW, BITA, BITG)
+        fw, fa,fg, quan_bn = get_dorefa(BITW, BITA, BITG)
         is_training = get_current_tower_context().is_training
         # monkey-patch tf.get_variable to apply fw
         def new_get_variable(v):

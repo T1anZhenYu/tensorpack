@@ -34,7 +34,7 @@ class Model(ModelDesc):
     def build_graph(self, image, label):
         is_training = get_current_tower_context().is_training
 
-        fw, fa, quan_bn = get_dorefa(BITW, BITA, BITG)
+        fw, fa, fg,quan_bn = get_dorefa(BITW, BITA, BITG)
 
         # monkey-patch tf.get_variable to apply fw
         def binarize_weight(v):

@@ -56,7 +56,28 @@ def get_dorefa(bitW, bitA, bitG):
         if bitA == 32:
             return tf.nn.relu(x)
         return tf.clip_by_value(x, 0.0, 1.0)
+    def fg(x):
+        if bitG == 32:
+            return x
 
+        @tf.custom_gradient
+        def _identity(input):
+            def grad_fg(x):
+
+                rank = x.get_shape().ndims
+                assert rank is not None
+                maxx = tf.reduce_max(tf.abs(x), list(range(1, rank)), keep_dims=True)
+                x = x / maxx
+                n = float(2**bitG - 1)
+                x = x * 0.5 + 0.5 + tf.random_uniform(
+                    tf.shape(x), minval=-0.5 / n, maxval=0.5 / n)
+                x = tf.clip_by_value(x, 0.0, 1.0)
+                x = quantize(x, bitG) - 0.5
+                return x * maxx * 2
+
+            return input, grad_fg
+
+        return _identity(x)
     def activate(x):
         return fa(nonlin(x))
     def quan_bn(x,name,training,momentum = 0.9):#bitG == 32
@@ -128,7 +149,7 @@ def get_dorefa(bitW, bitA, bitG):
             else:
                 return quan_output
 
-    return fw, fa, quan_bn
+    return fw, fa, fg,quan_bn
 
 
 def ternarize(x, thresh=0.05):
