@@ -124,8 +124,8 @@ class Model(ModelDesc):
                       # 5
                       .FullyConnected('fc0', 1024 + 512)
                       .apply(fg)
-                      #.BatchNorm('bn6').apply(activate)
-                      .apply(quan_bn,'quan_bn_7',is_training)
+                      .BatchNorm('bn6').apply(activate)
+                      #.apply(quan_bn,'quan_bn_7',is_training)
                       .tf.nn.dropout(keep_prob)
                       .FullyConnected('fc1', 512) 
                       .apply(fg)
