@@ -206,7 +206,7 @@ def get_config():
                             [ScalarStats('cost'), ClassificationError('wrong_tensor')]),
             ScheduledHyperParamSetter('learning_rate',
                                       [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
-            RelaxSetter(0, args.epoches*390, 1.0, 100.0),
+            #RelaxSetter(0, args.epoches*390, 1.0, 100.0),
             MergeAllSummaries(),
             #MergeAllSummaries(period=1, key='relax')
         ],
