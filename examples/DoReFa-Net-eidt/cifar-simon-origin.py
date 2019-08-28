@@ -78,7 +78,7 @@ class Model(ModelDesc):
         else:
             data_format = 'channels_last'
 
-        image = image / 4.0     # just to make range smaller
+        image = image / 256.0    # just to make range smaller
         
 
         with remap_variables(binarize_weight), \

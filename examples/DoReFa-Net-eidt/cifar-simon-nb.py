@@ -78,7 +78,7 @@ class Model(ModelDesc):
         else:
             data_format = 'channels_last'
 
-        image = image / 4.0     # just to make range smaller
+        image = image / 256.0    # just to make range smaller
         
 
         with remap_variables(binarize_weight), \
@@ -90,10 +90,9 @@ class Model(ModelDesc):
             
             logits = (LinearWrap(image)
                       .Conv2D('conv1', filters=64, use_bias=True)
-                      .BatchNorm('bn0')
-                      #.MaxPooling('pool0', 2, padding='SAME')
-                      .apply(activate)
-                      #.apply(quan_bn,'quan_bn_1',is_training)
+                      #.BatchNorm('bn0')
+                      #.apply(activate)
+                      .apply(quan_bn,'quan_bn_1',is_training)
                       # 18
                       .Conv2D('conv2', filters=64)
                       .apply(quan_bn,'quan_bn_2',is_training)
