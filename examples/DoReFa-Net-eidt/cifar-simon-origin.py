@@ -12,7 +12,7 @@ from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.dataflow import dataset
 from tensorpack.tfutils.varreplace import remap_variables
 import os
-
+from imagenet_utils import ImageNetModel, eval_classification,
 from dorefa import get_dorefa
 
 """
@@ -228,10 +228,19 @@ if __name__ == '__main__':
     					type=str)
     parser.add_argument('--gpu', help='the physical ids of GPUs to use')
     parser.add_argument('--epoches', default='250', type=int)
+    parser.add_argument('--eval', action='store_true')
+
+    parser.add_argument('--load', help='load a checkpoint, or a npz (given as the pretrained model)')
+ 
     args = parser.parse_args()
 
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    if args.eval:
+        BATCH_SIZE = 128
+        ds = get_data('test', dir = './cifar10_data/')
+        eval_classification(Model(), get_model_loader(args.load), ds)
+        sys.exit()
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
     print('check...................')
