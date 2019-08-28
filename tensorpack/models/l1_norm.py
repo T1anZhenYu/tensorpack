@@ -136,8 +136,8 @@ def Lmaxnorm1(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
                                           initializer=tf.ones_initializer,
                                           trainable=False)
 
-        c_max = tf.reduce_max(x,[0,1,2])
-        c_min = tf.reduce_min(x,[0,1,2])
+        c_max = tf.tile(tf.reduce_max(x),[params_shape])
+        c_min = tf.tile(tf.reduce_min(x),[params_shape])
 
         # mean_, variance_ = tf.nn.moments(x, [0,1,2], name='moments')
 
