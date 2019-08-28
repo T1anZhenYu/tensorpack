@@ -367,7 +367,7 @@ def eval_classification(model, sessinit, dataflow):
         model=model,
         session_init=sessinit,
         input_names=['input', 'label'],
-        output_names=['wrong-top1','bn5/output:0','conv5/output:0']
+        output_names=['wrong-top1']
     )
     acc1 = RatioCounter()
 
@@ -375,19 +375,12 @@ def eval_classification(model, sessinit, dataflow):
     pred = FeedfreePredictor(pred_config, StagingInput(QueueInput(dataflow), device='/gpu:0'))
 
     for _ in tqdm.trange(dataflow.size()):
-        top1,afbn5,beforbn5= pred()
+        top1= pred()
         dic ={}
-        dic['bn5/output:0']=afbn5
-        dic['conv5/output:0']=beforbn5   
+ 
 
         batch_size = top1.shape[0]
         acc1.feed(top1.sum(), batch_size)
-        dir = logger.get_logger_dir()
-
-        fname = os.path.join(
-                dir, 'afbn5-{}.npz'.format(int(time.time())))
-        np.savez(fname, **dic)
-
 
     print("Top1 Error: {}".format(acc1.ratio))
 
