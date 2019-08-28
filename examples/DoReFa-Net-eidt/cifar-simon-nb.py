@@ -239,7 +239,7 @@ if __name__ == '__main__':
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     if args.eval:
         BATCH_SIZE = 128
-        ds = get_data('val', dir = './cifar10_data/')
+        ds = get_data('test', dir = './cifar10_data/')
         eval_classification(Model(), get_model_loader(args.load), ds)
         sys.exit()
 
