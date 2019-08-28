@@ -85,7 +85,7 @@ class Model(ModelDesc):
 
                       .Conv2D('conv4', 128, 3, padding='SAME')
                       .apply(quan_bn,'quan_bn4',is_training)
-                      .Conv2D('conv4', 128, 3, padding='SAME')
+                      .Conv2D('conv_new', 128, 3, padding='SAME')
                       .apply(quan_bn,'quan_bn4',is_training)
                       #.BatchNorm('bn4')
                       #.apply(activate)
