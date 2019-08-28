@@ -133,7 +133,7 @@ class Model(ModelDesc):
         #tf.nn.softmax(logits, name='output')
 
         # compute the number of failed samples
-        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong_tensor')
+        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
 
@@ -203,7 +203,7 @@ def get_config():
         callbacks=[
             ModelSaver(),
             InferenceRunner(dataset_test,
-                            [ScalarStats('cost'), ClassificationError('wrong_tensor')]),
+                            [ScalarStats('cost'), ClassificationError('wrong-top1')]),
             ScheduledHyperParamSetter('learning_rate',
                                       [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
             #RelaxSetter(0, args.epoches*390, 1.0, 100.0),
