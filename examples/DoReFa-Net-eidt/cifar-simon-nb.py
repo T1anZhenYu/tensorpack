@@ -89,10 +89,11 @@ class Model(ModelDesc):
 
             
             logits = (LinearWrap(image)
-                      .Conv2D('conv1', filters=64)
+                      .Conv2D('conv1', filters=64,, use_bias=True)
                       #.BatchNorm('bn0')
-                      #.apply(activate)
-                      .apply(quan_bn,'quan_bn_1',is_training)
+                      .MaxPooling('pool0', 2, padding='SAME')
+                      .apply(activate)
+                      #.apply(quan_bn,'quan_bn_1',is_training)
                       # 18
                       .Conv2D('conv2', filters=64)
                       .apply(quan_bn,'quan_bn_2',is_training)
@@ -101,15 +102,15 @@ class Model(ModelDesc):
                       .MaxPooling('pool1', 3, stride=2, padding='SAME') 
 
                       .Conv2D('conv3', filters=128)
-                      .apply(fg)
+                      #.apply(fg)
                       .apply(quan_bn,'quan_bn_3',is_training)
                       #.BatchNorm('bn2').apply(activate)
                       # 9
                       .Conv2D('conv4', filters=128)
-                      .apply(fg)
+                      #.apply(fg)
                       .apply(quan_bn,'quan_bn_4',is_training)
                       #.BatchNorm('bn3').apply(activate)
-                      .MaxPooling('pool1', 3, stride=2, padding='SAME') 
+                      .MaxPooling('pool2', 3, stride=2, padding='SAME') 
                       # 7
 
                       .Conv2D('conv5' , filters=128, padding='VALID')

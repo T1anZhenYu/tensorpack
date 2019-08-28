@@ -109,7 +109,7 @@ class Model(ModelDesc):
                       .apply(fg)
                       #.apply(quan_bn,'quan_bn_3',is_training)
                       .BatchNorm('bn3').apply(activate)
-                      .MaxPooling('pool1', 3, stride=2, padding='SAME') 
+                      .MaxPooling('pool2', 3, stride=2, padding='SAME') 
                       # 7
 
                       .Conv2D('conv3.1' , filters=128, padding='VALID')
