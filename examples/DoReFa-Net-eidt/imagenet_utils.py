@@ -369,23 +369,18 @@ def eval_classification(model, sessinit, dataflow):
         input_names=['input', 'label'],
         output_names=['wrong-top1']
     )
+
     acc1 = RatioCounter()
 
-
+    # This does not have a visible improvement over naive predictor,
+    # but will have an improvement if image_dtype is set to float32.
     pred = FeedfreePredictor(pred_config, StagingInput(QueueInput(dataflow), device='/gpu:0'))
-
     for _ in tqdm.trange(dataflow.size()):
-        top1= pred()[0]
-        print('top1:',top1)
-        dic ={}
- 
-
+        top1, top5 = pred()
         batch_size = top1.shape[0]
-        acc1 = top1.sum()/batch_size   
-        #acc1.feed(top1.sum(), batch_size)
+        acc1.feed(top1.sum(), batch_size)
 
-    print("Top1 Error: {}".format(acc1))
-
+    print("Top1 Error: {}".format(acc1.ratio))
 
 
 class ImageNetModel(ModelDesc):
