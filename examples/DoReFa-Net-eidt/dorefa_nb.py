@@ -144,7 +144,7 @@ def get_dorefa(bitW, bitA, bitG):
 
             quan_output = tf.reshape(tf.transpose(xn),[-1,w,h,num_chan])
             if training:
-                return tf.stop_gradient(quan_output - activate(fake_output)) + activate(fake_output)
+                return activate(fake_output)
 
             else:
                 return quan_output
