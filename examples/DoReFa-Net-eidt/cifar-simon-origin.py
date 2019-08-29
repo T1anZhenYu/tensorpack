@@ -12,7 +12,7 @@ from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from tensorpack.dataflow import dataset
 from tensorpack.tfutils.varreplace import remap_variables
 import os
-
+from imagenet_utils import ImageNetModel, eval_classification
 from dorefa import get_dorefa
 
 """
