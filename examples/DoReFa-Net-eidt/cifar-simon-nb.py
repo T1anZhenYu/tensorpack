@@ -156,13 +156,13 @@ def get_config():
     data_train = get_data('train', dir = './cifar10_data/')
     data_test = get_data('test', dir = './cifar10_data/')
 
-    data_train = AugmentImageComponent(data_train, augmentors)
-    data_train = BatchData(data_train, 128)
-    data_train = MultiProcessRunnerZMQ(data_train, 5)
+    # data_train = AugmentImageComponent(data_train, augmentors)
+    # data_train = BatchData(data_train, 128)
+    # data_train = MultiProcessRunnerZMQ(data_train, 5)
 
-    augmentors = [imgaug.Resize((40, 40))]
-    data_test = AugmentImageComponent(data_test, augmentors)
-    data_test = BatchData(data_test, 128, remainder=True)
+    # augmentors = [imgaug.Resize((40, 40))]
+    # data_test = AugmentImageComponent(data_test, augmentors)
+    # data_test = BatchData(data_test, 128, remainder=True)
 
     return TrainConfig(
         data=QueueInput(data_train),
