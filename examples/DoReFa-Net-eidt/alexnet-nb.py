@@ -129,8 +129,11 @@ class Model(ImageNetModel):
         return logits
 
     def optimizer(self):
-        lr = tf.get_variable('learning_rate', initializer=2e-4, trainable=False)
-        return tf.train.AdamOptimizer(lr, epsilon=1e-5)
+        lr = tf.get_variable('learning_rate', initializer=0.01, trainable=False)
+        # opt = tf.train.MomentumOptimizer(lr, 0.9)
+        opt = tf.train.AdamOptimizer(lr)
+        tf.summary.scalar('lr', lr)
+        return opt
 
 
 def get_data(dataset_name):
@@ -153,7 +156,9 @@ def get_config():
                 'learning_rate', [(60, 4e-5), (75, 8e-6)]),
             InferenceRunner(data_test,
                             [ClassificationError('wrong-top1', 'val-error-top1'),
-                             ClassificationError('wrong-top5', 'val-error-top5')])
+                             ClassificationError('wrong-top5', 'val-error-top5')]),
+            ScheduledHyperParamSetter('learning_rate',
+                                      [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
         ],
         model=Model(),
         steps_per_epoch=1280000 // TOTAL_BATCH_SIZE,
