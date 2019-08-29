@@ -118,8 +118,7 @@ def get_dorefa(bitW, bitA, bitG):
                 # adjust quan_points
             else:
                 print('in inference')
-                #不知道为什么，直接调用layer.moving_mean和layer.moving_var得不到正确的值，
-                #只能采用下面的方法计算出来
+
                 #xnn,layer_gamma,layer_beta,layer_mm,layer_ms = L2norm(x, training=training)
 
                 batch_mean = batch_mean.assign(tf.expand_dims(layer_mm,axis=-1))
