@@ -147,7 +147,7 @@ def get_dorefa(bitW, bitA, bitG):
                 return activate(fake_output)
 
             else:
-                return quan_output
+                return activate(fake_output)
 
     return fw, fa, fg,quan_bn
 
