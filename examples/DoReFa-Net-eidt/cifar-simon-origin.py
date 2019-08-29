@@ -40,7 +40,7 @@ class Model(ModelDesc):
         def binarize_weight(v):
             name = v.op.name
             # don't binarize first and last layer
-            if not name.endswith('W') or 'conv0' in name or 'fc' in name:
+            if not name.endswith('W') or 'conv1' in name or 'fc2' in name:
                 return v
             else:
                 logger.info("Binarizing weight {}".format(v.op.name))
@@ -58,7 +58,7 @@ class Model(ModelDesc):
 
         with remap_variables(binarize_weight), \
         argscope(BatchNorm, momentum=0.9, epsilon=1e-4),\
-                argscope(Conv2D, use_bias=False):
+                argscope(Conv2D, use_bias=False,kernel_size=3):
             logits = (LinearWrap(image)
                       .Conv2D('conv1', filters=64)
                       .BatchNorm('bn0')
