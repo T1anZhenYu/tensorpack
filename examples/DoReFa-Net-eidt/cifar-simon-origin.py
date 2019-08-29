@@ -96,7 +96,7 @@ class Model(ModelDesc):
                       .FullyConnected('fc0', 1024 + 512)
                       .apply(fg)
                       .BatchNorm('bn6').apply(activate)
-                      .tf.nn.dropout(keep_prob)
+                      .Dropout(rate=0.5 if is_training else 0.0)
                       .FullyConnected('fc1', 512) 
                       .apply(fg)
                       .BatchNorm('bn7')
@@ -134,10 +134,10 @@ def get_config():
     logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
 
     # prepare dataset
-    d1 = dataset.SVHNDigit('train')
-    d2 = dataset.SVHNDigit('extra')
-    data_train = RandomMixData([d1,d2])
-    data_test = dataset.SVHNDigit('test')
+    d1 = dataset.CifarBase('train',cifar_classnum=10)
+    #d2 = dataset.SVHNDigit('extra')
+    data_train = RandomMixData([d1])
+    data_test = dataset.CifarBase('test',cifar_classnum=10)
 
     augmentors = [
         imgaug.Resize((40, 40)),
