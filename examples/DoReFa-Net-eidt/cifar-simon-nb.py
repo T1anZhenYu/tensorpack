@@ -195,9 +195,10 @@ if __name__ == '__main__':
         BATCH_SIZE = 128
         data_test = dataset.Cifar10('test')
         augmentors = [
-        imgaug.Resize((32, 32)),
-        imgaug.Brightness(30),
-        imgaug.Contrast((0.5, 1.5)),
+            imgaug.CenterPaste((40, 40)),
+            imgaug.RandomCrop((32, 32)),
+            imgaug.Flip(horiz=True),
+            imgaug.MapImage(lambda x: x - pp_mean),
         ]
         data_test = AugmentImageComponent(data_test, augmentors)
         data_test = BatchData(data_test, 128, remainder=True)
