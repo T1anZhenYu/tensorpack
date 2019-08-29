@@ -189,7 +189,8 @@ if __name__ == '__main__':
     parser.add_argument('--run', help='run on a list of images with the pretrained model', nargs='*')
     parser.add_argument('--eval', action='store_true')
     args = parser.parse_args()
-
+    if args.gpu:
+        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     if args.eval:
         BATCH_SIZE = 128
         data_test = dataset.SVHNDigit('test')
