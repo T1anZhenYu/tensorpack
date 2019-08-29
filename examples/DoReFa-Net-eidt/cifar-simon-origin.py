@@ -54,7 +54,7 @@ class Model(ModelDesc):
         def activate(x):
             return fa(nonlin(x))
 
-        image = image / 256.0
+        image = image / 4
 
         with remap_variables(binarize_weight), \
         argscope(BatchNorm, momentum=0.9, epsilon=1e-4),\
