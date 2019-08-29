@@ -376,6 +376,7 @@ def eval_classification(model, sessinit, dataflow):
 
     for _ in tqdm.trange(dataflow.size()):
         top1= pred()[0]
+        print('top1:',top1)
         dic ={}
  
 
