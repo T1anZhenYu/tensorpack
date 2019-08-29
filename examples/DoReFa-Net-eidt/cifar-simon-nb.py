@@ -40,7 +40,7 @@ class Model(ModelDesc):
         def binarize_weight(v):
             name = v.op.name
             # don't binarize first and last layer
-            if not name.endswith('W') or 'conv0' in name or 'fc' in name:
+            if not name.endswith('W') or 'conv1' in name or 'fc2' in name:
                 return v
             else:
                 logger.info("Binarizing weight {}".format(v.op.name))
