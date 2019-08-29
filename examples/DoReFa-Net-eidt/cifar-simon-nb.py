@@ -195,7 +195,7 @@ if __name__ == '__main__':
         BATCH_SIZE = 128
         data_test = dataset.Cifar10('test')
         augmentors = [
-        imgaug.Resize((40, 40)),
+        imgaug.Resize((32, 32)),
         imgaug.Brightness(30),
         imgaug.Contrast((0.5, 1.5)),
         ]
