@@ -193,7 +193,7 @@ if __name__ == '__main__':
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     if args.eval:
         BATCH_SIZE = 128
-        data_test = dataset.SVHNDigit('test')
+        data_test = get_data('test', dir = './cifar10_data/')
         augmentors = [
         imgaug.Resize((40, 40)),
         imgaug.Brightness(30),
