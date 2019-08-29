@@ -127,21 +127,35 @@ class Model(ModelDesc):
         tf.summary.scalar('lr', lr)
         return opt
 
+def get_data(train_or_test, dir):
+    BATCH_SIZE = 128
+    isTrain = train_or_test == 'train'
+    ds = dataset.Cifar10(train_or_test, dir=dir)
+    pp_mean = ds.get_per_pixel_mean()
+    if isTrain:
+        augmentors = [
+            imgaug.CenterPaste((40, 40)),
+            imgaug.RandomCrop((32, 32)),
+            imgaug.Flip(horiz=True),
+            imgaug.MapImage(lambda x: x - pp_mean),
+        ]
+    else:
+        augmentors = [
+            imgaug.MapImage(lambda x: x - pp_mean)
+        ]
+    ds = AugmentImageComponent(ds, augmentors)
+    ds = BatchData(ds, BATCH_SIZE, remainder=not isTrain)
+    if isTrain:
+        ds = PrefetchData(ds, 3, 2)
+    return ds
 
 def get_config():
     logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
 
     # prepare dataset
-    d1 = dataset.CifarBase('train',cifar_classnum=10)
-    #d2 = dataset.SVHNDigit('extra')
-    data_train = RandomMixData([d1])
-    data_test = dataset.CifarBase('test',cifar_classnum=10)
+    data_train = get_data('train', dir = './cifar10_data/')
+    data_test = get_data('test', dir = './cifar10_data/')
 
-    augmentors = [
-        imgaug.Resize((40, 40)),
-        imgaug.Brightness(30),
-        imgaug.Contrast((0.5, 1.5)),
-    ]
     data_train = AugmentImageComponent(data_train, augmentors)
     data_train = BatchData(data_train, 128)
     data_train = MultiProcessRunnerZMQ(data_train, 5)
