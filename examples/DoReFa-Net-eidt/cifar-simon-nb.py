@@ -194,6 +194,7 @@ if __name__ == '__main__':
     if args.eval:
         BATCH_SIZE = 128
         data_test = dataset.Cifar10('test')
+        pp_mean = data_test.get_per_pixel_mean()
         augmentors = [
             imgaug.CenterPaste((40, 40)),
             imgaug.RandomCrop((32, 32)),
