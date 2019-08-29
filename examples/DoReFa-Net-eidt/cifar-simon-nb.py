@@ -4,31 +4,19 @@
 # Author: Yuxin Wu
 
 import argparse
-import tensorflow as tf
-
-from tensorpack import *
-from tensorpack.callbacks import *
-from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
-from tensorpack.dataflow import dataset
-from tensorpack.tfutils.varreplace import remap_variables
 import os
+import sys
+import tensorflow as tf
+from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor, get_imagenet_dataflow
+from tensorpack import *
+from tensorpack.dataflow import dataset
+from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
+from tensorpack.tfutils.varreplace import remap_variables
 
 from dorefa_nb import get_dorefa
 
 """
-This is a tensorpack script for the SVHN results in paper:
-DoReFa-Net: Training Low Bitwidth Convolutional Neural Networks with Low Bitwidth Gradients
-http://arxiv.org/abs/1606.06160
-The original experiements are performed on a proprietary framework.
-This is our attempt to reproduce it on tensorpack.
-Accuracy:
-    With (W,A,G)=(1,1,4), can reach 3.1~3.2% error after 150 epochs.
-    With the GaussianDeform augmentor, it will reach 2.8~2.9%
-    (we are not using this augmentor in the paper).
-    With (W,A,G)=(1,2,4), error is 3.0~3.1%.
-    With (W,A,G)=(32,32,32), error is about 2.9%.
-Speed:
-    30~35 iteration/s on 1 TitanX Pascal. (4721 iterations / epoch)
+这个代码是用对角采样计算均值和方差。模型的变动就是用fg代替BN和Activation
 To Run:
     ./svhn-digit-dorefa.py --dorefa 1,2,4
 """
@@ -37,29 +25,27 @@ BITW = 1
 BITA = 2
 BITG = 4
 
-
 class Model(ModelDesc):
     def inputs(self):
-        return [tf.placeholder(tf.float32, [None, 32, 32, 3], 'input'),
-                tf.placeholder(tf.int32, [None], 'label')]
+        return [tf.TensorSpec([None, 40, 40, 3], tf.float32, 'input'),
+                tf.TensorSpec([None], tf.int32, 'label')]
+
 
     def build_graph(self, image, label):
         is_training = get_current_tower_context().is_training
-        print('WAG: ', BITW, BITA, BITG)
-        print('is: ', type(is_training))
-        fw, fa,fg, quan_bn = get_dorefa(BITW, BITA, BITG)
-        #fw, fa, fg = get_warmbin(BITW, BITA, BITG)
-        #relax = tf.get_variable('relax_para', initializer=1.0, trainable=False)
-        #relax = tf.placeholder(tf.float, [], 'relax')
+
+        fw, fa, fg,quan_bn = get_dorefa(BITW, BITA, BITG)
+
         # monkey-patch tf.get_variable to apply fw
         def binarize_weight(v):
             name = v.op.name
             # don't binarize first and last layer
-            if not name.endswith('W') or 'conv0' in name or 'fc2' in name:
+            if not name.endswith('W') or 'conv0' in name or 'fc' in name:
                 return v
             else:
                 logger.info("Binarizing weight {}".format(v.op.name))
                 return fw(v)
+
         def nonlin(x):
             if BITA == 32:
                 return tf.nn.relu(x)
@@ -68,28 +54,13 @@ class Model(ModelDesc):
         def activate(x):
             return fa(nonlin(x))
 
-        keep_prob = tf.constant(0.5 if is_training else 1.0)
-
-        if is_training:
-            tf.summary.image("train_image", image, 10)
-        if tf.test.is_gpu_available():
-            image = tf.transpose(image, [0, 3, 1, 2])
-            data_format = 'channels_first'
-        else:
-            data_format = 'channels_last'
-
-        image = image / 4   # just to make range smaller
-        
+        image = image / 256.0
 
         with remap_variables(binarize_weight), \
-                argscope(BatchNorm, momentum=0.9, epsilon=1e-4, center=True, scale=True), \
-                argscope(Conv2D, use_bias=False, kernel_size=3),\
-                argscope(FullyConnected, use_bias=False),\
-                argscope([Conv2D, MaxPooling, BatchNorm], data_format=data_format):
-
-            
+        argscope(BatchNorm, momentum=0.9, epsilon=1e-4),\
+                argscope(Conv2D, use_bias=False):
             logits = (LinearWrap(image)
-                      .Conv2D('conv1', filters=64, use_bias=True)
+                      .Conv2D('conv1', filters=64)
                       #.BatchNorm('bn0')
                       #.apply(activate)
                       .apply(quan_bn,'quan_bn_1',is_training)
@@ -101,12 +72,12 @@ class Model(ModelDesc):
                       .MaxPooling('pool1', 3, stride=2, padding='SAME') 
 
                       .Conv2D('conv3', filters=128)
-                      #.apply(fg)
+                      .apply(fg)
                       .apply(quan_bn,'quan_bn_3',is_training)
                       #.BatchNorm('bn2').apply(activate)
                       # 9
                       .Conv2D('conv4', filters=128)
-                      #.apply(fg)
+                      .apply(fg)
                       .apply(quan_bn,'quan_bn_4',is_training)
                       #.BatchNorm('bn3').apply(activate)
                       .MaxPooling('pool2', 3, stride=2, padding='SAME') 
@@ -119,23 +90,23 @@ class Model(ModelDesc):
 
                       .Conv2D('conv6' , filters=128, padding='VALID')
                       .apply(fg)
-                      .BatchNorm('bn5').apply(activate)
-                      #.apply(quan_bn,'quan_bn_6',is_training)
+                      .apply(quan_bn,'quan_bn_6',is_training)
+                      #.BatchNorm('bn5').apply(activate)
                       # 5
                       .FullyConnected('fc0', 1024 + 512)
                       .apply(fg)
                       .BatchNorm('bn6').apply(activate)
-                      #.apply(quan_bn,'quan_bn_7',is_training)
                       .tf.nn.dropout(keep_prob)
                       .FullyConnected('fc1', 512) 
                       .apply(fg)
                       .BatchNorm('bn7')
                       .tf.nn.relu()
                       .FullyConnected('fc2', 10)())
-        #tf.nn.softmax(logits, name='output')
 
+        tf.nn.softmax(logits, name='output')
+    
         # compute the number of failed samples
-        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong_tensor')
+        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
 
@@ -147,103 +118,79 @@ class Model(ModelDesc):
         add_param_summary(('.*/W', ['histogram', 'rms']))
         total_cost = tf.add_n([cost, wd_cost], name='cost')
         add_moving_summary(cost, wd_cost, total_cost)
-        #add_param_summary(relax, ['scalar'])
-        #tf.summary.scalar('relax_para', relax)
         return total_cost
 
     def optimizer(self):
-        lr = tf.get_variable('learning_rate', initializer=0.01, trainable=False)
-        # opt = tf.train.MomentumOptimizer(lr, 0.9)
-        opt = tf.train.AdamOptimizer(lr)
+        lr = tf.train.exponential_decay(
+            learning_rate=1e-3,
+            global_step=get_global_step_var(),
+            decay_steps=4721 * 100,
+            decay_rate=0.5, staircase=True, name='learning_rate')
         tf.summary.scalar('lr', lr)
-        return opt
-
-
-
-
-
-
-
-def get_data(train_or_test, dir):
-    BATCH_SIZE = 512
-    isTrain = train_or_test == 'train'
-    ds = dataset.Cifar10(train_or_test, dir=dir)
-    pp_mean = ds.get_per_pixel_mean()
-    if isTrain:
-        augmentors = [
-            imgaug.CenterPaste((40, 40)),
-            imgaug.RandomCrop((32, 32)),
-            imgaug.Flip(horiz=True),
-            imgaug.MapImage(lambda x: x - pp_mean),
-        ]
-    else:
-        augmentors = [
-            imgaug.MapImage(lambda x: x - pp_mean)
-        ]
-    ds = AugmentImageComponent(ds, augmentors)
-    ds = BatchData(ds, BATCH_SIZE, remainder=not isTrain)
-    if isTrain:
-        ds = PrefetchData(ds, 3, 2)
-    return ds
+        return tf.train.AdamOptimizer(lr, epsilon=1e-5)
 
 
 def get_config():
-    #logger.auto_set_dir()
-    logger.set_logger_dir('./train_log')
+    logger.set_logger_dir(os.path.join('train_log', 'svhn-dorefa-{}'.format(args.dorefa)))
+
     # prepare dataset
-    dataset_train = get_data('train', dir = './cifar10_data/')
-    dataset_test = get_data('test', dir = './cifar10_data/')
+    d1 = dataset.SVHNDigit('train')
+    d2 = dataset.SVHNDigit('extra')
+    data_train = RandomMixData([d1,d2])
+    data_test = dataset.SVHNDigit('test')
 
+    augmentors = [
+        imgaug.Resize((40, 40)),
+        imgaug.Brightness(30),
+        imgaug.Contrast((0.5, 1.5)),
+    ]
+    data_train = AugmentImageComponent(data_train, augmentors)
+    data_train = BatchData(data_train, 128)
+    data_train = MultiProcessRunnerZMQ(data_train, 5)
 
-    '''
-    class AddTBinTrain(TrainingMonitor):
-        def __init__(name,value):
-        def _trigger_step(self):
-    '''
+    augmentors = [imgaug.Resize((40, 40))]
+    data_test = AugmentImageComponent(data_test, augmentors)
+    data_test = BatchData(data_test, 128, remainder=True)
+
     return TrainConfig(
-        dataflow=dataset_train,
+        data=QueueInput(data_train),
         callbacks=[
             ModelSaver(),
-            InferenceRunner(dataset_test,
-                            [ScalarStats('cost'), ClassificationError('wrong_tensor')]),
-            ScheduledHyperParamSetter('learning_rate',
-                                      [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
-            #RelaxSetter(0, args.epoches*390, 1.0, 100.0),
-            MergeAllSummaries(),
-            #MergeAllSummaries(period=1, key='relax')
+            InferenceRunner(data_test,
+                            [ScalarStats('cost'), ClassificationError('wrong-top1')]),
+            #DumpTensors(['fg1/batch_mean:0','fg1/batch_var:0','fg1/realbatch_mean:0','fg1/realbatch_var:0'])
         ],
-        #monitors=DEFAULT_MONITORS() + [ScalarPrinter(enable_step=True)],
         model=Model(),
-        max_epoch=args.epoches,
+        max_epoch=200,
     )
-
-
-
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dorefa',
-                        help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
-                        default='2,2,32')
-    parser.add_argument('--root_dir', action='store', default='trash/', help='root dir for different experiments',
-    					type=str)
     parser.add_argument('--gpu', help='the physical ids of GPUs to use')
-    parser.add_argument('--epoches', default='250', type=int)
-    parser.add_argument('--eval', action='store_true')
-
     parser.add_argument('--load', help='load a checkpoint, or a npz (given as the pretrained model)')
+    parser.add_argument('--data', help='ILSVRC dataset dir')
+    parser.add_argument('--dorefa', required=True,
+                        help='number of bits for W,A,G, separated by comma. W="t" means TTQ')
+    parser.add_argument('--run', help='run on a list of images with the pretrained model', nargs='*')
+    parser.add_argument('--eval', action='store_true')
     args = parser.parse_args()
 
-    if args.gpu:
-        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     if args.eval:
         BATCH_SIZE = 128
-        ds = get_data('test', dir = './cifar10_data/')
-        eval_classification(Model(), get_model_loader(args.load), ds)
+        data_test = dataset.SVHNDigit('test')
+        augmentors = [
+        imgaug.Resize((40, 40)),
+        imgaug.Brightness(30),
+        imgaug.Contrast((0.5, 1.5)),
+        ]
+        data_test = AugmentImageComponent(data_test, augmentors)
+        data_test = BatchData(data_test, 128, remainder=True)
+        eval_classification(Model(), get_model_loader(args.load), data_test)
         sys.exit()
 
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
-    print('check...................')
     launch_train_with_config(config, SimpleTrainer())
+
+
