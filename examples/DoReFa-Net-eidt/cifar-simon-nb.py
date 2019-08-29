@@ -196,10 +196,7 @@ if __name__ == '__main__':
         data_test = dataset.Cifar10('train')
         pp_mean = data_test.get_per_pixel_mean()
         augmentors = [
-            imgaug.CenterPaste((40, 40)),
-            imgaug.RandomCrop((32, 32)),
-            imgaug.Flip(horiz=True),
-            imgaug.MapImage(lambda x: x - pp_mean),
+            imgaug.MapImage(lambda x: x - pp_mean)
         ]
         data_test = AugmentImageComponent(data_test, augmentors)
         data_test = BatchData(data_test, 128, remainder=True)
