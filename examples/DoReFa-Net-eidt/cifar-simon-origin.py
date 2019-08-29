@@ -81,8 +81,8 @@ class Model(ModelDesc):
         image = image / 4.0     # just to make range smaller
         
 
-        with remap_variables(binarize_weight), \
-                argscope(BatchNorm, momentum=0.9, epsilon=1e-4, center=False, scale=False), \
+        #with remap_variables(binarize_weight), \
+        with argscope(BatchNorm, momentum=0.9, epsilon=1e-4, center=False, scale=False), \
                 argscope(Conv2D, use_bias=False, kernel_size=3),\
                 argscope(FullyConnected, use_bias=False),\
                 argscope([Conv2D, MaxPooling, BatchNorm], data_format=data_format):
