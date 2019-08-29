@@ -78,7 +78,7 @@ class Model(ModelDesc):
         else:
             data_format = 'channels_last'
 
-        image = image / 256   # just to make range smaller
+        image = image / 4   # just to make range smaller
         
 
         with remap_variables(binarize_weight), \
@@ -165,7 +165,7 @@ class Model(ModelDesc):
 
 
 def get_data(train_or_test, dir):
-    BATCH_SIZE = 128
+    BATCH_SIZE = 512
     isTrain = train_or_test == 'train'
     ds = dataset.Cifar10(train_or_test, dir=dir)
     pp_mean = ds.get_per_pixel_mean()
