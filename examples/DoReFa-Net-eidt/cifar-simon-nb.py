@@ -78,11 +78,11 @@ class Model(ModelDesc):
         else:
             data_format = 'channels_last'
 
-        image = image / 4   # just to make range smaller
+        image = image / 256   # just to make range smaller
         
 
         with remap_variables(binarize_weight), \
-                argscope(BatchNorm, momentum=0.9, epsilon=1e-4, center=False, scale=False), \
+                argscope(BatchNorm, momentum=0.9, epsilon=1e-4, center=True, scale=True), \
                 argscope(Conv2D, use_bias=False, kernel_size=3),\
                 argscope(FullyConnected, use_bias=False),\
                 argscope([Conv2D, MaxPooling, BatchNorm], data_format=data_format):
