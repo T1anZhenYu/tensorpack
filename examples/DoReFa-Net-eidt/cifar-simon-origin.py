@@ -91,34 +91,34 @@ class Model(ModelDesc):
             logits = (LinearWrap(image)
                       .Conv2D('conv1.1', filters=64)
                       .BatchNorm('bn0')
-                      .apply(activate)
+                      #.apply(activate)
                       # 18
                       .Conv2D('conv1.2', filters=64)
                       .apply(fg)
-                      .BatchNorm('bn1').apply(activate)
+                      .BatchNorm('bn1')#.apply(activate)
                       .MaxPooling('pool1', 3, stride=2, padding='SAME') 
 
                       .Conv2D('conv2.1', filters=128)
                       .apply(fg)
-                      .BatchNorm('bn2').apply(activate)
+                      .BatchNorm('bn2')#.apply(activate)
                       # 9
                       .Conv2D('conv2.2', filters=128)
                       .apply(fg)
-                      .BatchNorm('bn3').apply(activate)
+                      .BatchNorm('bn3')#.apply(activate)
                       .MaxPooling('pool1', 3, stride=2, padding='SAME') 
                       # 7
 
                       .Conv2D('conv3.1' , filters=128, padding='VALID')
                       .apply(fg)
-                      .BatchNorm('bn4').apply(activate)
+                      .BatchNorm('bn4')#.apply(activate)
 
                       .Conv2D('conv3.2' , filters=128, padding='VALID')
                       .apply(fg)
-                      .BatchNorm('bn5').apply(activate)
+                      .BatchNorm('bn5')#.apply(activate)
                       # 5
                       .FullyConnected('fc0', 1024 + 512)
                       .apply(fg)
-                      .BatchNorm('bn6').apply(activate)
+                      .BatchNorm('bn6')#.apply(activate)
                       .tf.nn.dropout(keep_prob)
                       .FullyConnected('fc1', 512) 
                       .apply(fg)
