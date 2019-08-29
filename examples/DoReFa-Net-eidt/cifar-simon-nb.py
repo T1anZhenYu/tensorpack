@@ -121,13 +121,11 @@ class Model(ModelDesc):
         return total_cost
 
     def optimizer(self):
-        lr = tf.train.exponential_decay(
-            learning_rate=1e-3,
-            global_step=get_global_step_var(),
-            decay_steps=4721 * 100,
-            decay_rate=0.5, staircase=True, name='learning_rate')
+        lr = tf.get_variable('learning_rate', initializer=0.01, trainable=False)
+        # opt = tf.train.MomentumOptimizer(lr, 0.9)
+        opt = tf.train.AdamOptimizer(lr)
         tf.summary.scalar('lr', lr)
-        return tf.train.AdamOptimizer(lr, epsilon=1e-5)
+        return opt
 
 
 def get_config():
@@ -158,10 +156,12 @@ def get_config():
             ModelSaver(),
             InferenceRunner(data_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
+            ScheduledHyperParamSetter('learning_rate',
+                                      [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
             #DumpTensors(['fg1/batch_mean:0','fg1/batch_var:0','fg1/realbatch_mean:0','fg1/realbatch_var:0'])
         ],
         model=Model(),
-        max_epoch=200,
+        max_epoch=250,
     )
 
 
