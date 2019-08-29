@@ -167,8 +167,10 @@ if __name__ == '__main__':
     parser.add_argument('--dorefa',
                         help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
                         default='1,2,4')
+    parser.add_argument('--gpu',default='0,1,2,3')
     args = parser.parse_args()
-
+    if args.gpu:
+        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
     launch_train_with_config(config, SimpleTrainer())
