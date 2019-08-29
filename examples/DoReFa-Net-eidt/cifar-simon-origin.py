@@ -13,7 +13,7 @@ from tensorpack.dataflow import dataset
 from tensorpack.tfutils.varreplace import remap_variables
 import os
 
-from dorefa import get_dorefa, get_hwgq, get_warmbin, Schdule_Relax, RelaxSetter
+from dorefa import get_dorefa
 
 """
 This is a tensorpack script for the SVHN results in paper:
