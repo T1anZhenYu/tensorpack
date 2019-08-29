@@ -193,7 +193,7 @@ if __name__ == '__main__':
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     if args.eval:
         BATCH_SIZE = 128
-        data_test = dataset.Cifar10('trian')
+        data_test = dataset.Cifar10('train')
         pp_mean = data_test.get_per_pixel_mean()
         augmentors = [
             imgaug.CenterPaste((40, 40)),
