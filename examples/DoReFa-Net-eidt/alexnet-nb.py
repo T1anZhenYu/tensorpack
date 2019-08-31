@@ -145,7 +145,7 @@ def get_config():
     data_test = get_data('val')
 
     return TrainConfig(
-        starting_epoch = 1,
+        starting_epoch = 90,
         dataflow=data_train,
         callbacks=[
             ModelSaver(),
@@ -157,7 +157,7 @@ def get_config():
         ],
         model=Model(),
         steps_per_epoch=1280000 // TOTAL_BATCH_SIZE,
-        max_epoch=90,
+        max_epoch=91,
     )
 
 
