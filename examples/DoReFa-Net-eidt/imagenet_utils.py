@@ -361,6 +361,27 @@ def fbresnet_mapper(isTrain):
 
 import time 
 import os
+def eval_classification1(model, sessinit, dataflow):
+
+    pred_config = PredictConfig(
+        model=model,
+        session_init=sessinit,
+        input_names=['input', 'label'],
+        output_names=['wrong-top1',]
+    )
+    acc1 = RatioCounter()
+
+    # This does not have a visible improvement over naive predictor,
+    # but will have an improvement if image_dtype is set to float32.
+    pred = FeedfreePredictor(pred_config, StagingInput(QueueInput(dataflow), device='/gpu:0'))
+    for _ in tqdm.trange(dataflow.size()):
+        top1, top5 = pred()
+        batch_size = top1.shape[0]
+        acc1.feed(top1.sum(), batch_size)
+
+
+    print("Top1 Error: {}".format(acc1.ratio))
+    #print("Top5 Error: {}".format(acc5.ratio))
 def eval_classification(model, sessinit, dataflow):
 
     pred_config = PredictConfig(
