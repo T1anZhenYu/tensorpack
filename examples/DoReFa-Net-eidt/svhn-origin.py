@@ -185,7 +185,7 @@ if __name__ == '__main__':
         ]
         data_test = AugmentImageComponent(data_test, augmentors)
         data_test = BatchData(data_test, 128, remainder=True)
-        eval_classification(Model(), get_model_loader(args.load), data_test)
+        eval_classification1(Model(), get_model_loader(args.load), data_test)
         sys.exit()
     args = parser.parse_args()
     if args.gpu:
