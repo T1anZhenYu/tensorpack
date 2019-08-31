@@ -168,6 +168,24 @@ if __name__ == '__main__':
                         help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
                         default='1,2,4')
     parser.add_argument('--gpu',default='0,1,2,3')
+
+
+        parser.add_argument('--load', help='load a checkpoint, or a npz (given as the pretrained model)')
+    parser.add_argument('--gpu', help='the physical ids of GPUs to use')
+    parser.add_argument('--epoches', default='300', type=int)
+    parser.add_argument('--eval', action='store_true')
+    args = parser.parse_args()
+    if args.eval:
+        BATCH_SIZE = 128
+        data_test = dataset.SVHNDigit('test')
+        pp_mean = data_test.get_per_pixel_mean()
+        augmentors = [
+            imgaug.MapImage(lambda x: x - pp_mean)
+        ]
+        data_test = AugmentImageComponent(data_test, augmentors)
+        data_test = BatchData(data_test, 128, remainder=True)
+        eval_classification(Model(), get_model_loader(args.load), data_test)
+        sys.exit()
     args = parser.parse_args()
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
