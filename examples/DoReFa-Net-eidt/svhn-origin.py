@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
 
     parser.add_argument('--load', help='load a checkpoint, or a npz (given as the pretrained model)')
-    parser.add_argument('--gpu', help='the physical ids of GPUs to use')
+
     parser.add_argument('--epoches', default='300', type=int)
     parser.add_argument('--eval', action='store_true')
     args = parser.parse_args()
