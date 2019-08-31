@@ -180,7 +180,8 @@ if __name__ == '__main__':
         data_test = dataset.SVHNDigit('test')
         pp_mean = data_test.get_per_pixel_mean()
         augmentors = [
-            imgaug.MapImage(lambda x: x - pp_mean)
+            imgaug.MapImage(lambda x: x - pp_mean),
+            imgaug.Resize((40, 40))
         ]
         data_test = AugmentImageComponent(data_test, augmentors)
         data_test = BatchData(data_test, 128, remainder=True)
