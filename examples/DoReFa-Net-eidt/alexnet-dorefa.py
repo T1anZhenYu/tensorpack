@@ -95,6 +95,7 @@ class Model(ImageNetModel):
             logits = (LinearWrap(image)
                       .Conv2D('conv0', 96, 12, strides=4, padding='VALID', use_bias=True)
                       .apply(activate)
+                      
                       .Conv2D('conv1', 256, 5, padding='SAME', split=2)
                       .apply(fg)
                       .BatchNorm('bn1')
