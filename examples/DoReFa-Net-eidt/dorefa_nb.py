@@ -107,41 +107,42 @@ def get_dorefa(bitW, bitA, bitG):
             #当使用L2norm时，是用的L2norm做方差；用L1norm时，是用的L1norm做方差
             #fake_output,layer_gamma,layer_beta,layer_mm,layer_ms =  L2norm(name+'L2norm',x, train=training)
             fake_output,layer_gamma,layer_beta,layer_mm,layer_mv,bm,bv =  Lmaxnorm1(name+'Lmaxnorm',x, train=training)
-            if training:#在train的时候
-                print('in training')
+            # if training:#在train的时候
+            #     print('in training')
 
-                batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
-                batch_var = batch_var.assign(tf.expand_dims(tf.sqrt(bv),axis=-1))
-                #计算量化区间的起止点。
-                quan_points = batch_var*quan_points0/tf.expand_dims(layer_gamma,axis=-1)+\
-                batch_mean - batch_var*tf.expand_dims(layer_beta/layer_gamma,axis=-1)
-                # adjust quan_points
-            else:
-                print('in inference')
+            #     batch_mean = batch_mean.assign(tf.expand_dims(bm,axis=-1))
+            #     batch_var = batch_var.assign(tf.expand_dims(tf.sqrt(bv),axis=-1))
+            #     #计算量化区间的起止点。
+            #     quan_points = batch_var*quan_points0/tf.expand_dims(layer_gamma,axis=-1)+\
+            #     batch_mean - batch_var*tf.expand_dims(layer_beta/layer_gamma,axis=-1)
+            #     # adjust quan_points
+            # else:
+            #     print('in inference')
 
-                #xnn,layer_gamma,layer_beta,layer_mm,layer_ms = L2norm(x, training=training)
+            #     #xnn,layer_gamma,layer_beta,layer_mm,layer_ms = L2norm(x, training=training)
 
-                batch_mean = batch_mean.assign(tf.expand_dims(layer_mm,axis=-1))
-                batch_var = batch_var.assign(tf.expand_dims(tf.sqrt(layer_mv),axis=-1))
+            #     batch_mean = batch_mean.assign(tf.expand_dims(layer_mm,axis=-1))
+            #     batch_var = batch_var.assign(tf.expand_dims(tf.sqrt(layer_mv),axis=-1))
 
-                quan_points = batch_var*quan_points0/tf.expand_dims(layer_gamma,axis=-1)+\
-                batch_mean - batch_var*tf.expand_dims(layer_beta/layer_gamma,axis=-1)
+            #     quan_points = batch_var*quan_points0/tf.expand_dims(layer_gamma,axis=-1)+\
+            #     batch_mean - batch_var*tf.expand_dims(layer_beta/layer_gamma,axis=-1)
 
-            '''
-            the following part is to use quan_points to quantizate inputs.
-            '''
-            inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
+            # '''
+            # the following part is to use quan_points to quantizate inputs.
+            # '''
+            # inputs = tf.transpose(tf.reshape(x,[-1,num_chan]))
 
-            label = []
+            # label = []
 
-            for i in range(1,len(quan_points0)):
-                label.append(tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,i],axis=-1)),\
-                            tf.math.greater(inputs,tf.expand_dims(quan_points[:,i-1],axis=-1))),dtype=tf.float32))
-            xn = label[0]*quan_values[0]
-            for i in range(1,len(label)):
-                xn += label[i]*quan_values[i]
+            # for i in range(1,len(quan_points0)):
+            #     label.append(tf.cast(tf.math.logical_and(tf.math.less_equal(inputs,tf.expand_dims(quan_points[:,i],axis=-1)),\
+            #                 tf.math.greater(inputs,tf.expand_dims(quan_points[:,i-1],axis=-1))),dtype=tf.float32))
+            # xn = label[0]*quan_values[0]
+            # for i in range(1,len(label)):
+            #     xn += label[i]*quan_values[i]
 
-            quan_output = tf.reshape(tf.transpose(xn),[-1,w,h,num_chan])
+            # quan_output = tf.reshape(tf.transpose(xn),[-1,w,h,num_chan])
+            
             if training:
                 return activate(fake_output)
 
