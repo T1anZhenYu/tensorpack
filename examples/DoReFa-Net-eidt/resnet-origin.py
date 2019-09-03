@@ -171,7 +171,7 @@ def get_config():
             InferenceRunner(dataset_test,
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
             ScheduledHyperParamSetter('learning_rate',
-                                      [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
+                                      [(1, 0.1), (82, 0.01), (123, 0.002), (200, 0.001)]),
             MergeAllSummaries(),
             #MergeAllSummaries(period=1, key='relax')
         ],
