@@ -219,3 +219,9 @@ if __name__ == '__main__':
     elif args.run:
         assert args.load.endswith('.npz')
         run_image(Model(), DictRestore(dict(np.load(args.load))), args.run)
+        if args.gpu:
+
+
+    config = get_config()
+    print('check...................')
+    launch_train_with_config(config, SimpleTrainer())
