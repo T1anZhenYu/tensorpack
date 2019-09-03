@@ -107,7 +107,8 @@ class Model(ModelDesc):
                       .tf.multiply(49)  # this is due to a bug in our model design
                       .FullyConnected('fct', 1000)())
         tf.nn.softmax(logits, name='output')
-        ImageNetModel.compute_loss_and_error(logits, label)
+        loss,wrong_top1,wrong_top5 = ImageNetModel.compute_loss_and_error(logits, label)
+        return loss
 
 def get_data(train_or_test, dir):
     BATCH_SIZE = 128
