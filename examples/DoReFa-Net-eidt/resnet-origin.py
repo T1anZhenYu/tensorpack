@@ -33,12 +33,12 @@ BITG = 32
 
 class Model(ModelDesc):
     def inputs(self):
-        return [tf.TensorSpec([None, 224, 224, 3], tf.float32, 'input'),
+        return [tf.TensorSpec([None, 32, 32, 3], tf.float32, 'input'),
                 tf.TensorSpec([None], tf.int32, 'label')]
     def optimizer(self):
         lr = tf.get_variable('learning_rate', initializer=2e-4, trainable=False)
         return tf.train.AdamOptimizer(lr, epsilon=1e-5)
-        
+
     def build_graph(self, image, label):
         image = image / 256.0
 
