@@ -157,7 +157,7 @@ def get_config():
         callbacks=[
             ModelSaver(),
             InferenceRunner(dataset_test,
-                            [ScalarStats('cost'), ClassificationError('wrong_tensor')]),
+                            [ScalarStats('xentropy-loss'), ClassificationError('wrong-top1')]),
             ScheduledHyperParamSetter('learning_rate',
                                       [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
             MergeAllSummaries(),
