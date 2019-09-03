@@ -529,12 +529,12 @@ class ImageNetModel(ModelDesc):
                 x = tf.logical_not(tf.nn.in_top_k(logits, label, topk))
             return tf.cast(x, tf.float32, name=name)
 
-        wrong = prediction_incorrect(logits, label, 1, name='wrong-top1')
-        add_moving_summary(tf.reduce_mean(wrong, name='train-error-top1'))
+        wrong_top1 = prediction_incorrect(logits, label, 1, name='wrong-top1')
+        add_moving_summary(tf.reduce_mean(wrong_top1, name='train-error-top1'))
 
-        wrong = prediction_incorrect(logits, label, 5, name='wrong-top5')
-        add_moving_summary(tf.reduce_mean(wrong, name='train-error-top5'))
-        return loss
+        wrong_top5 = prediction_incorrect(logits, label, 5, name='wrong-top5')
+        add_moving_summary(tf.reduce_mean(wrong_top5, name='train-error-top5'))
+        return loss,wrong_top1,wrong_top5
 
     def create_predict_config(self, session_init):
         """
