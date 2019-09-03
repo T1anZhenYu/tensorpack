@@ -203,6 +203,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--run', help='run on a list of images with the pretrained model', nargs='*')
     parser.add_argument('--eval', action='store_true')
+    parser.add_argument('--epoches',default=200)
     args = parser.parse_args()
 
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
