@@ -109,9 +109,21 @@ class Model(ModelDesc):
                       .GlobalAvgPooling('gap')
                       .tf.multiply(49)  # this is due to a bug in our model design
                       .FullyConnected('fct', 1000)())
-        tf.nn.softmax(logits, name='output')
-        loss,wrong_top1,wrong_top5 = ImageNetModel.compute_loss_and_error(logits, label)
-        return loss
+        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
+        # monitor training error
+        add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
+
+        cost = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=label)
+        cost = tf.reduce_mean(cost, name='cross_entropy_loss')
+        # weight decay on all W of fc layers
+        wd_cost = regularize_cost('fc.*/W', l2_regularizer(1e-7))
+
+        add_param_summary(('.*/W', ['histogram', 'rms']))
+        total_cost = tf.add_n([cost, wd_cost], name='cost')
+        add_moving_summary(cost, wd_cost, total_cost)
+        #add_param_summary(relax, ['scalar'])
+        #tf.summary.scalar('relax_para', relax)
+        return total_cost
 
 
 
