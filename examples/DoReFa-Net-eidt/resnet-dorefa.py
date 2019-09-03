@@ -39,7 +39,7 @@ class Model(ModelDesc):
     def build_graph(self, image, label):
         image = image / 256.0
         is_training = get_current_tower_context().is_training
-        fw, fa, fg = get_dorefa(BITW, BITA, BITG)
+        fw, fa, fg,quan_bn = get_dorefa(BITW, BITA, BITG)
 
         def new_get_variable(v):
             name = v.op.name
@@ -62,19 +62,20 @@ class Model(ModelDesc):
                         .Conv2D('c3x3a', channel, 3)
                         #.BatchNorm('stembn')
                         #.apply(activate)
-                        .apply(fg,name=name+'fg',train=is_training)
+
+                        .apply(quan_bn,name=name+'quan_bn',train=is_training)
                         .Conv2D('c3x3b', channel, 3)())
             channel_mismatch = channel != x.get_shape().as_list()[3]
             if stride != 1 or channel_mismatch or 'pool1' in x.name:
                 # handling pool1 is to work around an architecture bug in our model
                 if stride != 1 or 'pool1' in x.name:
                     x = AvgPooling('pool', x, stride, stride)
-                x = fg(x,,name=name+'pool1-fg',train=is_training)
+                x = quan_bn(x,,name=name+'pool1-quan_bn',train=is_training)
                 shortcut = Conv2D('shortcut', x, channel, 1)
                 stem = get_stem_full(x)
             else:
                 shortcut = x
-                x = fg(x,,name=name+'non-pool1-fg',train=is_training)
+                x = quan_bn(x,,name=name+'non-pool1-quan_bn',train=is_training)
                 stem = get_stem_full(x)
             return shortcut + stem
 
