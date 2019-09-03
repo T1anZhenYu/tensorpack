@@ -109,6 +109,9 @@ class Model(ModelDesc):
         tf.nn.softmax(logits, name='output')
         loss,wrong_top1,wrong_top5 = ImageNetModel.compute_loss_and_error(logits, label)
         return loss
+        def optimizer(self):
+            lr = tf.get_variable('learning_rate', initializer=2e-4, trainable=False)
+            return tf.train.AdamOptimizer(lr, epsilon=1e-5)
 
 def get_data(train_or_test, dir):
     BATCH_SIZE = 128
