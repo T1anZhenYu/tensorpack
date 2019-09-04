@@ -69,14 +69,15 @@ class Model(ModelDesc):
                 # handling pool1 is to work around an architecture bug in our model
                 if stride != 1 or 'pool1' in x.name:
                     x = AvgPooling('pool', x, stride, stride)
-                quan_bn(x,name+'_large_stride_quan_bn_1',is_training)
+                x = quan_bn(x,name+'_large_stride_quan_bn_1',is_training)
                 # x = BatchNorm('bn', x)
                 # x = activate(x)
                 shortcut = Conv2D('shortcut', x, channel, 1)
+
                 stem = get_stem_full(x)
             else:
                 shortcut = x
-                quan_bn(x,name+'_small_stride_quan_bn_1',is_training)
+                x = quan_bn(x,name+'_small_stride_quan_bn_1',is_training)
                 # x = BatchNorm('bn', x)
                 # x = activate(x)
                 stem = get_stem_full(x)
@@ -179,16 +180,16 @@ def get_config():
                                       [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
             #RelaxSetter(0, args.epoches*390, 1.0, 100.0),
             MergeAllSummaries(),
-            DumpTensors(['conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bm:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bv:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bm:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bv:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bm:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bv:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bm:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv2:0',])
-        ],
+        #     DumpTensors(['conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bm:0',\
+        #                  'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bv:0',\
+        #                  'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bm:0',\
+        #                  'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bv:0',\
+        #                  'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bm:0',\
+        #                  'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bv:0',\
+        #                  'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bm:0',\
+        #                  'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv:0',\
+        #                  'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv2:0',])
+         ],
         #monitors=DEFAULT_MONITORS() + [ScalarPrinter(enable_step=True)],
         model=Model(),
         max_epoch=args.epoches,
