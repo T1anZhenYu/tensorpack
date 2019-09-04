@@ -212,7 +212,10 @@ if __name__ == '__main__':
         sys.exit()
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
+    if args.load:
+        config.session_init = SaverRestore(args.load)
     print('check...................')
     launch_train_with_config(config, SimpleTrainer())
