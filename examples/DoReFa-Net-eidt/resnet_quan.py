@@ -61,7 +61,7 @@ class Model(ModelDesc):
             def get_stem_full(x):
                 return (LinearWrap(x)
                         .Conv2D('c3x3a', channel, 3)
-                        .apply(quan_bn,name+'_stem_full_quan_bn_1',is_training)
+                        .apply(quan_bn,name+'stembn',is_training)
                         # .BatchNorm('stembn')
                         # .apply(activate)
                         .Conv2D('c3x3b', channel, 3)())
@@ -70,17 +70,21 @@ class Model(ModelDesc):
                 # handling pool1 is to work around an architecture bug in our model
                 if stride != 1 or 'pool1' in x.name:
                     x = AvgPooling('pool', x, stride, stride)
-                x = quan_bn(x,name+'bn_1',is_training)
+
                 # x = BatchNorm('bn', x)
                 # x = activate(x)
+                x = quan_bn(x,name+'bn_1',is_training)
+
                 shortcut = tf.identity(Conv2D('shortcut', x, channel, 1),'shortcut_tensor')
 
                 stem = tf.identity(get_stem_full(x),'stem_tensor')
             else:
                 shortcut = tf.identity(x,'shortcut_tensor')
-                x = quan_bn(x,name+'bn_1',is_training)
+
                 # x = BatchNorm('bn', x)
                 # x = activate(x)
+                x = quan_bn(x,name+'bn_1',is_training)
+
                 stem = tf.identity(get_stem_full(x),'stem_tensor')
             return shortcut + stem
 
@@ -184,16 +188,16 @@ def get_config():
                                       [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
             #RelaxSetter(0, args.epoches*390, 1.0, 100.0),
             MergeAllSummaries(),
-            DumpTensors(['conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bm:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bv:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bm:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bv:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bm:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bv:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bm:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv2:0',\
-                        ])
+            # DumpTensors(['conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bm:0',\
+            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bv:0',\
+            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bm:0',\
+            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bv:0',\
+            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bm:0',\
+            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bv:0',\
+            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bm:0',\
+            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv:0',\
+            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv2:0',\
+            #             ])
          ],
         #monitors=DEFAULT_MONITORS() + [ScalarPrinter(enable_step=True)],
         model=Model(),
