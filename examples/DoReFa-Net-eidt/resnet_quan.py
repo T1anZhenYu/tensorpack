@@ -69,7 +69,7 @@ class Model(ModelDesc):
                 # handling pool1 is to work around an architecture bug in our model
                 if stride != 1 or 'pool1' in x.name:
                     x = AvgPooling('pool', x, stride, stride)
-                x = quan_bn(x,name+'_large_stride_quan_bn_1',is_training)
+                x = quan_bn(x,name+'_small_stride_quan_bn_1',is_training)
                 # x = BatchNorm('bn', x)
                 # x = activate(x)
                 shortcut = Conv2D('shortcut', x, channel, 1)
