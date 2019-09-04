@@ -77,7 +77,7 @@ class Model(ModelDesc):
 
                 shortcut = tf.identity(Conv2D('shortcut', x, channel, 1),'shortcut_tensor')
 
-                stem = tf.identity(get_stem_full(x),'stem_tensor')
+                stem = tf.identity(get_stem_full(x),name='stem_tensor')
             else:
                 shortcut = tf.identity(x,'shortcut_tensor')
 
@@ -85,7 +85,7 @@ class Model(ModelDesc):
                 # x = activate(x)
                 x = quan_bn(x,name+'bn_1',is_training)
 
-                stem = tf.identity(get_stem_full(x),'stem_tensor')
+                stem = tf.identity(get_stem_full(x),name='stem_tensor')
             return shortcut + stem
 
         def group(x, name, channel, nr_block, stride):
