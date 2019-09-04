@@ -71,8 +71,8 @@ class Model(ModelDesc):
                 if stride != 1 or 'pool1' in x.name:
                     x = AvgPooling('pool', x, stride, stride)
 
-                # x = BatchNorm('bn', x)
-                # x = activate(x)
+                x = BatchNorm('bn', x)
+                x = activate(x)
                 x = quan_bn(x,name+'bn_1',is_training)
 
                 shortcut =Conv2D('shortcut', x, channel, 1)
@@ -81,8 +81,8 @@ class Model(ModelDesc):
             else:
                 shortcut = x
 
-                # x = BatchNorm('bn', x)
-                # x = activate(x)
+                x = BatchNorm('bn', x)
+                x = activate(x)
                 x = quan_bn(x,name+'bn_1',is_training)
 
                 stem = get_stem_full(x)
