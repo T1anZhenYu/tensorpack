@@ -115,7 +115,8 @@ class Model(ModelDesc):
                       .GlobalAvgPooling('gap')
                       .tf.multiply(49)  # this is due to a bug in our model design
                       .FullyConnected('fct', 10)())
-        print([n.name for n in tf.get_default_graph().as_graph_def().node])
+        for n in tf.get_default_graph().as_graph_def().node:
+            print(n.name)
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
