@@ -73,7 +73,7 @@ class Model(ModelDesc):
 
                 x = BatchNorm('bn', x)
                 x = activate(x)
-                x = quan_bn(x,name+'bn_1',is_training)
+                # x = quan_bn(x,name+'bn_1',is_training)
 
                 shortcut =Conv2D('shortcut', x, channel, 1)
 
@@ -83,7 +83,7 @@ class Model(ModelDesc):
 
                 x = BatchNorm('bn', x)
                 x = activate(x)
-                x = quan_bn(x,name+'bn_1',is_training)
+                # x = quan_bn(x,name+'bn_1',is_training)
 
                 stem = get_stem_full(x)
             return shortcut + stem
