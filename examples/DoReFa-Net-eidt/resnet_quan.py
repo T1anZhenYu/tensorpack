@@ -37,6 +37,7 @@ class Model(ModelDesc):
                 tf.TensorSpec([None], tf.int32, 'label')]
 
     def build_graph(self, image, label):
+        print([n.name for n in tf.get_default_graph().as_graph_def().node])
         image = image / 256.0
         is_training = get_current_tower_context().is_training
         fw, fa, fg, quan_bn = get_dorefa(BITW, BITA, BITG)
