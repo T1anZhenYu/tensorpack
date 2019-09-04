@@ -182,7 +182,7 @@ def get_config():
             DumpTensors(['conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bm:0',\
                          'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bv:0',\
                          'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bm:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bm:0',\
+                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bv:0',\
                          'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bm:0',\
                          'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bv:0',\
                          'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bm:0',\
