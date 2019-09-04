@@ -33,7 +33,7 @@ BITG = 32
 
 class Model(ModelDesc):
     def inputs(self):
-        return [tf.TensorSpec([None, 224, 224, 3], tf.float32, 'input'),
+        return [tf.TensorSpec([None, 32,32, 3], tf.float32, 'input'),
                 tf.TensorSpec([None], tf.int32, 'label')]
 
     def build_graph(self, image, label):
@@ -109,101 +109,90 @@ class Model(ModelDesc):
         tf.nn.softmax(logits, name='output')
         ImageNetModel.compute_loss_and_error(logits, label)
 
-def get_data(dataset_name):
-    isTrain = dataset_name == 'train'
-    augmentors = fbresnet_augmentor(isTrain)
-    return get_imagenet_dataflow(
-        args.data, dataset_name, BATCH_SIZE, augmentors)
+def get_data(train_or_test, dir):
+    BATCH_SIZE = 128
+    isTrain = train_or_test == 'train'
+    ds = dataset.Cifar10(train_or_test, dir=dir)
+    pp_mean = ds.get_per_pixel_mean()
+    if isTrain:
+        augmentors = [
+            imgaug.CenterPaste((40, 40)),
+            imgaug.RandomCrop((32, 32)),
+            imgaug.Flip(horiz=True),
+            imgaug.MapImage(lambda x: x - pp_mean),
+        ]
+    else:
+        augmentors = [
+            imgaug.MapImage(lambda x: x - pp_mean)
+        ]
+    ds = AugmentImageComponent(ds, augmentors)
+    ds = BatchData(ds, BATCH_SIZE, remainder=not isTrain)
+    if isTrain:
+        ds = PrefetchData(ds, 3, 2)
+    return ds
 
 
 def get_config():
-    data_train = get_data('train')
-    data_test = get_data('val')
+    #logger.auto_set_dir()
+    logger.set_logger_dir('./train_log')
+    # prepare dataset
+    dataset_train = get_data('train', dir = '.cifar10_data/')
+    dataset_test = get_data('test', dir = '.cifar10_data/')
 
+
+    '''
+    class AddTBinTrain(TrainingMonitor):
+        def __init__(name,value):
+        def _trigger_step(self):
+    '''
     return TrainConfig(
-        startepoch = 90,
-        dataflow=data_train,
+        dataflow=dataset_train,
         callbacks=[
             ModelSaver(),
-            ScheduledHyperParamSetter(
-                'learning_rate', [(60, 4e-5), (75, 8e-6)]),
-            InferenceRunner(data_test,
-                            [ClassificationError('wrong-top1', 'val-error-top1'),
-                             ClassificationError('wrong-top5', 'val-error-top5')])
+            InferenceRunner(dataset_test,
+                            [ScalarStats('cost'), ClassificationError('wrong_tensor')]),
+            ScheduledHyperParamSetter('learning_rate',
+                                      [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
+            RelaxSetter(0, args.epoches*390, 1.0, 100.0),
+            MergeAllSummaries(),
+            #MergeAllSummaries(period=1, key='relax')
         ],
+        #monitors=DEFAULT_MONITORS() + [ScalarPrinter(enable_step=True)],
         model=Model(),
-        steps_per_epoch=1280000 // TOTAL_BATCH_SIZE,
-        max_epoch=91,
+        max_epoch=args.epoches,
     )
-def get_inference_augmentor():
-    return fbresnet_augmentor(False)
 
 
-def run_image(model, sess_init, inputs):
-    pred_config = PredictConfig(
-        model=model,
-        session_init=sess_init,
-        input_names=['input'],
-        output_names=['output']
-    )
-    predict_func = OfflinePredictor(pred_config)
-    meta = dataset.ILSVRCMeta()
-    words = meta.get_synset_words_1000()
 
-    transformers = get_inference_augmentor()
-    for f in inputs:
-        assert os.path.isfile(f)
-        img = cv2.imread(f).astype('float32')
-        assert img is not None
-
-        img = transformers.augment(img)[np.newaxis, :, :, :]
-        o = predict_func(img)
-        prob = o[0][0]
-        ret = prob.argsort()[-10:][::-1]
-
-        names = [words[i] for i in ret]
-        print(f + ":")
-        print(list(zip(names, prob[ret])))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--gpu', help='the physical ids of GPUs to use')
+    parser.add_argument('--dorefa',
+                        help='number of bits for W,A,G, separated by comma. Defaults to \'1,2,4\'',
+                        default='2,2,32')
+    parser.add_argument('--root_dir', action='store', default='trash/', help='root dir for different experiments',
+              type=str)
+
     parser.add_argument('--load', help='load a checkpoint, or a npz (given as the pretrained model)')
-    parser.add_argument('--data', default='/home/jovyan/harvard-heavy/datasets/',help='ILSVRC dataset dir')
-    parser.add_argument('--dorefa', required=True,
-                        help='number of bits for W,A,G, separated by comma. W="t" means TTQ')
-    parser.add_argument('--run', help='run on a list of images with the pretrained model', nargs='*')
+    parser.add_argument('--gpu', help='the physical ids of GPUs to use')
+    parser.add_argument('--epoches', default='300', type=int)
     parser.add_argument('--eval', action='store_true')
     args = parser.parse_args()
-
-    dorefa = args.dorefa.split(',')
-    if dorefa[0] == 't':
-        assert dorefa[1] == '32' and dorefa[2] == '32'
-        BITW, BITA, BITG = 't', 32, 32
-    else:
-        BITW, BITA, BITG = map(int, dorefa)
-
-    if args.gpu:
-        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-
-    if args.run:
-        assert args.load.endswith('.npz')
-        run_image(Model(), DictRestore(dict(np.load(args.load))), args.run)
-        sys.exit()
     if args.eval:
         BATCH_SIZE = 128
-        ds = get_data('val')
-        eval_classification(Model(), get_model_loader(args.load), ds)
+        data_test = dataset.Cifar10('test')
+        pp_mean = data_test.get_per_pixel_mean()
+        augmentors = [
+            imgaug.MapImage(lambda x: x - pp_mean)
+        ]
+        data_test = AugmentImageComponent(data_test, augmentors)
+        data_test = BatchData(data_test, 128, remainder=True)
+        eval_classification(Model(), get_model_loader(args.load), data_test)
         sys.exit()
-
-    nr_tower = max(get_num_gpu(), 1)
-    BATCH_SIZE = TOTAL_BATCH_SIZE // nr_tower
-    logger.set_logger_dir(os.path.join(
-        'train_log', 'alexnet-dorefa-{}'.format(args.dorefa)))
-    logger.info("Batch per tower: {}".format(BATCH_SIZE))
-
+    if args.gpu:
+        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
-    if args.load:
-        config.session_init = SaverRestore(args.load)
-    launch_train_with_config(config, SyncMultiGPUTrainerReplicated(nr_tower))
+    print('check...................')
+    launch_train_with_config(config, SimpleTrainer())
