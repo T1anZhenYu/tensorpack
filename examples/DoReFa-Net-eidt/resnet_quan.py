@@ -38,7 +38,7 @@ class Model(ModelDesc):
 
     def build_graph(self, image, label):
         image = image / 256.0
-
+        is_training = get_current_tower_context().is_training
         fw, fa, fg, quan_bn = get_dorefa(BITW, BITA, BITG)
 
         def new_get_variable(v):
@@ -56,35 +56,38 @@ class Model(ModelDesc):
         def activate(x):
             return fa(nonlin(x))
 
-        def resblock(x, channel, stride):
+        def resblock(x, channel, stride,name):
             def get_stem_full(x):
                 return (LinearWrap(x)
                         .Conv2D('c3x3a', channel, 3)
-                        .BatchNorm('stembn')
-                        .apply(activate)
+                        .apply(quan_bn,name+'_stem_full_quan_bn_1',is_training)
+                        # .BatchNorm('stembn')
+                        # .apply(activate)
                         .Conv2D('c3x3b', channel, 3)())
             channel_mismatch = channel != x.get_shape().as_list()[3]
             if stride != 1 or channel_mismatch or 'pool1' in x.name:
                 # handling pool1 is to work around an architecture bug in our model
                 if stride != 1 or 'pool1' in x.name:
                     x = AvgPooling('pool', x, stride, stride)
-                x = BatchNorm('bn', x)
-                x = activate(x)
+                quan_bn(x,name+'_large_stride_quan_bn_1',is_training)
+                # x = BatchNorm('bn', x)
+                # x = activate(x)
                 shortcut = Conv2D('shortcut', x, channel, 1)
                 stem = get_stem_full(x)
             else:
                 shortcut = x
-                x = BatchNorm('bn', x)
-                x = activate(x)
+                quan_bn(x,name+'_small_stride_quan_bn_1',is_training)
+                # x = BatchNorm('bn', x)
+                # x = activate(x)
                 stem = get_stem_full(x)
             return shortcut + stem
 
         def group(x, name, channel, nr_block, stride):
             with tf.variable_scope(name + 'blk1'):
-                x = resblock(x, channel, stride)
+                x = resblock(x, channel, stride,name + 'blk1')
             for i in range(2, nr_block + 1):
                 with tf.variable_scope(name + 'blk{}'.format(i)):
-                    x = resblock(x, channel, 1)
+                    x = resblock(x, channel, 1,name + 'blk{}'.format(i))
             return x
 
         with remap_variables(new_get_variable), \
