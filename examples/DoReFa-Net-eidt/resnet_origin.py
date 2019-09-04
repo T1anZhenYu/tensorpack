@@ -166,6 +166,7 @@ def get_config():
         def _trigger_step(self):
     '''
     return TrainConfig(
+        starting_epoch = 47,
         dataflow=dataset_train,
         callbacks=[
             ModelSaver(),
