@@ -37,7 +37,7 @@ class Model(ModelDesc):
                 tf.TensorSpec([None], tf.int32, 'label')]
 
     def build_graph(self, image, label):
-        print([n.name for n in tf.get_default_graph().as_graph_def().node])
+
         image = image / 256.0
         is_training = get_current_tower_context().is_training
         fw, fa, fg, quan_bn = get_dorefa(BITW, BITA, BITG)
@@ -111,6 +111,7 @@ class Model(ModelDesc):
                       .GlobalAvgPooling('gap')
                       .tf.multiply(49)  # this is due to a bug in our model design
                       .FullyConnected('fct', 10)())
+        print([n.name for n in tf.get_default_graph().as_graph_def().node])
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
