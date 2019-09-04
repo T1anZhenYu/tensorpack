@@ -72,15 +72,15 @@ class Model(ModelDesc):
                 x = quan_bn(x,name+'bn_1',is_training)
                 # x = BatchNorm('bn', x)
                 # x = activate(x)
-                shortcut = Conv2D('shortcut', x, channel, 1)
+                shortcut = tf.identity(Conv2D('shortcut', x, channel, 1),'shortcut')
 
-                stem = get_stem_full(x)
+                stem = tf.identity(get_stem_full(x),'stem')
             else:
-                shortcut = x
+                shortcut = tf.identity(x,'shortcut')
                 x = quan_bn(x,name+'bn_1',is_training)
                 # x = BatchNorm('bn', x)
                 # x = activate(x)
-                stem = get_stem_full(x)
+                stem = tf.identity(get_stem_full(x),'stem')
             return shortcut + stem
 
         def group(x, name, channel, nr_block, stride):
@@ -188,7 +188,8 @@ def get_config():
                          'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bv:0',\
                          'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bm:0',\
                          'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv:0',\
-                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv2:0',])
+                         'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv2:0',\
+                         'conv2blk1/shortcut','conv2blk1/stem'])
          ],
         #monitors=DEFAULT_MONITORS() + [ScalarPrinter(enable_step=True)],
         model=Model(),
