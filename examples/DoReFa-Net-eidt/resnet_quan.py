@@ -75,17 +75,17 @@ class Model(ModelDesc):
                 # x = activate(x)
                 x = quan_bn(x,name+'bn_1',is_training)
 
-                shortcut = tf.identity(Conv2D('shortcut', x, channel, 1),'shortcut_tensor')
+                shortcut =Conv2D('shortcut', x, channel, 1)
 
-                stem = tf.identity(get_stem_full(x),name='stem_tensor')
+                stem = get_stem_full(x)
             else:
-                shortcut = tf.identity(x,'shortcut_tensor')
+                shortcut = x
 
                 # x = BatchNorm('bn', x)
                 # x = activate(x)
                 x = quan_bn(x,name+'bn_1',is_training)
 
-                stem = tf.identity(get_stem_full(x),name='stem_tensor')
+                stem = get_stem_full(x)
             return shortcut + stem
 
         def group(x, name, channel, nr_block, stride):
@@ -127,8 +127,8 @@ class Model(ModelDesc):
         wd_cost = regularize_cost('fc.*/W', l2_regularizer(1e-7))
 
         add_param_summary(('.*/W', ['histogram', 'rms']))
-        add_tensor_summary(tf.get_default_graph().get_tensor_by_name('conv2blk1/shortcut:0'),['histogram'])
-        add_tensor_summary(tf.get_default_graph().get_tensor_by_name('conv2blk1/stem:0'),['histogram'])
+        #add_tensor_summary(tf.get_default_graph().get_tensor_by_name('conv2blk1/shortcut:0'),['histogram'])
+        #add_tensor_summary(tf.get_default_graph().get_tensor_by_name('conv2blk1/stem:0'),['histogram'])
         total_cost = tf.add_n([cost, wd_cost], name='cost')
         add_moving_summary(cost, wd_cost, total_cost)
         #add_param_summary(relax, ['scalar'])
