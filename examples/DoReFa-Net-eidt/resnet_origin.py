@@ -122,6 +122,13 @@ class Model(ModelDesc):
         #tf.summary.scalar('relax_para', relax)
         return total_cost
 
+    def optimizer(self):
+        lr = tf.get_variable('learning_rate', initializer=0.01, trainable=False)
+        # opt = tf.train.MomentumOptimizer(lr, 0.9)
+        opt = tf.train.AdamOptimizer(lr)
+        tf.summary.scalar('lr', lr)
+        return opt
+
 def get_data(train_or_test, dir):
     BATCH_SIZE = 128
     isTrain = train_or_test == 'train'
