@@ -11,7 +11,7 @@ import tensorflow as tf
 from tensorpack import *
 from tensorpack.dataflow import dataset
 from tensorpack.tfutils.varreplace import remap_variables
-from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
+from tensorpack.tfutils.summary import add_moving_summary, add_param_summary,add_tensor_summary
 from dorefa_nb import get_dorefa
 from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor
 
@@ -120,6 +120,8 @@ class Model(ModelDesc):
         wd_cost = regularize_cost('fc.*/W', l2_regularizer(1e-7))
 
         add_param_summary(('.*/W', ['histogram', 'rms']))
+        add_tensor_summary('conv2blk1/shortcut:0',['histogram'])
+        add_tensor_summary('conv2blk1/stem:0',['histogram'])
         total_cost = tf.add_n([cost, wd_cost], name='cost')
         add_moving_summary(cost, wd_cost, total_cost)
         #add_param_summary(relax, ['scalar'])
@@ -189,7 +191,7 @@ def get_config():
                          'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bm:0',\
                          'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv:0',\
                          'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv2:0',\
-                         'conv2blk1/shortcut','conv2blk1/stem'])
+                        ])
          ],
         #monitors=DEFAULT_MONITORS() + [ScalarPrinter(enable_step=True)],
         model=Model(),
