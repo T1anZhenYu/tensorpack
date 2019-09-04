@@ -11,8 +11,8 @@ import tensorflow as tf
 from tensorpack import *
 from tensorpack.dataflow import dataset
 from tensorpack.tfutils.varreplace import remap_variables
-
-from dorefa import get_dorefa
+from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
+from dorefa_nb import get_dorefa
 from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor
 
 """
@@ -39,7 +39,7 @@ class Model(ModelDesc):
     def build_graph(self, image, label):
         image = image / 256.0
 
-        fw, fa, fg = get_dorefa(BITW, BITA, BITG)
+        fw, fa, fg, quan_bn = get_dorefa(BITW, BITA, BITG)
 
         def new_get_variable(v):
             name = v.op.name
@@ -105,9 +105,29 @@ class Model(ModelDesc):
                       .apply(nonlin)
                       .GlobalAvgPooling('gap')
                       .tf.multiply(49)  # this is due to a bug in our model design
-                      .FullyConnected('fct', 1000)())
-        tf.nn.softmax(logits, name='output')
-        ImageNetModel.compute_loss_and_error(logits, label)
+                      .FullyConnected('fct', 10)())
+        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
+        # monitor training error
+        add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
+
+        cost = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=label)
+        cost = tf.reduce_mean(cost, name='cross_entropy_loss')
+        # weight decay on all W of fc layers
+        wd_cost = regularize_cost('fc.*/W', l2_regularizer(1e-7))
+
+        add_param_summary(('.*/W', ['histogram', 'rms']))
+        total_cost = tf.add_n([cost, wd_cost], name='cost')
+        add_moving_summary(cost, wd_cost, total_cost)
+        #add_param_summary(relax, ['scalar'])
+        #tf.summary.scalar('relax_para', relax)
+        return total_cost
+
+    def optimizer(self):
+        lr = tf.get_variable('learning_rate', initializer=0.01, trainable=False)
+        # opt = tf.train.MomentumOptimizer(lr, 0.9)
+        opt = tf.train.AdamOptimizer(lr)
+        tf.summary.scalar('lr', lr)
+        return opt
 
 def get_data(train_or_test, dir):
     BATCH_SIZE = 128
@@ -146,11 +166,12 @@ def get_config():
         def _trigger_step(self):
     '''
     return TrainConfig(
+        starting_epoch = 47,
         dataflow=dataset_train,
         callbacks=[
             ModelSaver(),
             InferenceRunner(dataset_test,
-                            [ScalarStats('cost'), ClassificationError('wrong_tensor')]),
+                            [ScalarStats('cost'), ClassificationError('wrong-top1')]),
             ScheduledHyperParamSetter('learning_rate',
                                       [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
             #RelaxSetter(0, args.epoches*390, 1.0, 100.0),
@@ -192,7 +213,10 @@ if __name__ == '__main__':
         sys.exit()
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+
     BITW, BITA, BITG = map(int, args.dorefa.split(','))
     config = get_config()
+    if args.load:
+        config.session_init = SaverRestore(args.load)
     print('check...................')
     launch_train_with_config(config, SimpleTrainer())
