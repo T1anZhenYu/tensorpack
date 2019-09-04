@@ -73,15 +73,15 @@ class Model(ModelDesc):
                 x = quan_bn(x,name+'bn_1',is_training)
                 # x = BatchNorm('bn', x)
                 # x = activate(x)
-                shortcut = tf.identity(Conv2D('shortcut', x, channel, 1),'shortcut')
+                shortcut = tf.identity(Conv2D('shortcut', x, channel, 1),'shortcut_tensor')
 
-                stem = tf.identity(get_stem_full(x),'stem')
+                stem = tf.identity(get_stem_full(x),'stem_tensor')
             else:
-                shortcut = tf.identity(x,'shortcut')
+                shortcut = tf.identity(x,'shortcut_tensor')
                 x = quan_bn(x,name+'bn_1',is_training)
                 # x = BatchNorm('bn', x)
                 # x = activate(x)
-                stem = tf.identity(get_stem_full(x),'stem')
+                stem = tf.identity(get_stem_full(x),'stem_tensor')
             return shortcut + stem
 
         def group(x, name, channel, nr_block, stride):
