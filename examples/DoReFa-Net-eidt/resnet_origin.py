@@ -105,9 +105,22 @@ class Model(ModelDesc):
                       .apply(nonlin)
                       .GlobalAvgPooling('gap')
                       .tf.multiply(49)  # this is due to a bug in our model design
-                      .FullyConnected('fct', 1000)())
-        tf.nn.softmax(logits, name='output')
-        ImageNetModel.compute_loss_and_error(logits, label)
+                      .FullyConnected('fct', 10)())
+        wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
+        # monitor training error
+        add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
+
+        cost = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=label)
+        cost = tf.reduce_mean(cost, name='cross_entropy_loss')
+        # weight decay on all W of fc layers
+        wd_cost = regularize_cost('fc.*/W', l2_regularizer(1e-7))
+
+        add_param_summary(('.*/W', ['histogram', 'rms']))
+        total_cost = tf.add_n([cost, wd_cost], name='cost')
+        add_moving_summary(cost, wd_cost, total_cost)
+        #add_param_summary(relax, ['scalar'])
+        #tf.summary.scalar('relax_para', relax)
+        return total_cost
 
 def get_data(train_or_test, dir):
     BATCH_SIZE = 128
@@ -150,7 +163,7 @@ def get_config():
         callbacks=[
             ModelSaver(),
             InferenceRunner(dataset_test,
-                            [ScalarStats('cost'), ClassificationError('wrong_tensor')]),
+                            [ScalarStats('cost'), ClassificationError('wrong-top1')]),
             ScheduledHyperParamSetter('learning_rate',
                                       [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
             #RelaxSetter(0, args.epoches*390, 1.0, 100.0),
