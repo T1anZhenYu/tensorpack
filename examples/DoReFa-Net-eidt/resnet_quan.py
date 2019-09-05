@@ -60,9 +60,9 @@ class Model(ModelDesc):
             def get_stem_full(x):
                 return (LinearWrap(x)
                         .Conv2D('c3x3a', channel, 3)
-                        .BatchNorm('stembn')
-                        .apply(activate)
-                        #.apply(quan_bn,'stembn',is_training)
+                        # .BatchNorm('stembn')
+                        # .apply(activate)
+                        # .apply(quan_bn,'stembn',is_training)
                         .Conv2D('c3x3b', channel, 3)())
             channel_mismatch = channel != x.get_shape().as_list()[3]
             if stride != 1 or channel_mismatch or 'pool1' in x.name:
@@ -177,16 +177,16 @@ def get_config():
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
             ScheduledHyperParamSetter('learning_rate',
                                       [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
-            DumpTensors(['conv2blk1/bn/bnMyrangenorm/Myrangenorm/my_bm:0',\
-                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/my_bv:0',\
-                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/real_bv:0',\
-                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/real_bm:0',\
-                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/diff_bm:0',\
-                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/diff_bv:0',\
-                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bm:0',\
-                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bv:0',\
-                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bv2:0',\
-                ]),
+            # DumpTensors(['conv2blk1/bn/bnMyrangenorm/Myrangenorm/my_bm:0',\
+            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/my_bv:0',\
+            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/real_bv:0',\
+            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/real_bm:0',\
+            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/diff_bm:0',\
+            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/diff_bv:0',\
+            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bm:0',\
+            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bv:0',\
+            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bv2:0',\
+            #     ]),
             MergeAllSummaries(),
             #MergeAllSummaries(period=1, key='relax')
         ],
