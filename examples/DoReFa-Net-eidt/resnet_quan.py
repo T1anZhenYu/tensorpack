@@ -62,7 +62,7 @@ class Model(ModelDesc):
                         .Conv2D('c3x3a', channel, 3)
                         # .BatchNorm('stembn')
                         # .apply(activate)
-                        # .apply(quan_bn,'stembn',is_training)
+                        .apply(quan_bn,'stembn',is_training)
                         .Conv2D('c3x3b', channel, 3)())
             channel_mismatch = channel != x.get_shape().as_list()[3]
             if stride != 1 or channel_mismatch or 'pool1' in x.name:
