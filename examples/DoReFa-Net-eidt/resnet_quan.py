@@ -177,7 +177,16 @@ def get_config():
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
             ScheduledHyperParamSetter('learning_rate',
                                       [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
-            #RelaxSetter(0, args.epoches*390, 1.0, 100.0),
+            DumpTensors(['conv2blk1/bn/bnMyrangenorm/Myrangenorm/my_bm',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/my_bv',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/real_bv',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/real_bm',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/diff_bm',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/diff_bv',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bm',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bv',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bv2',\
+                ]),
             MergeAllSummaries(),
             #MergeAllSummaries(period=1, key='relax')
         ],
