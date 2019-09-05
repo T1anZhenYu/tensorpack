@@ -169,7 +169,7 @@ def get_config():
         def _trigger_step(self):
     '''
     return TrainConfig(
-        starting_epoch = 1,
+        starting_epoch = args.starting_epoch,
         dataflow=dataset_train,
         callbacks=[
             ModelSaver(),
@@ -197,7 +197,7 @@ if __name__ == '__main__':
                         default='2,2,32')
     parser.add_argument('--root_dir', action='store', default='trash/', help='root dir for different experiments',
               type=str)
-
+    parser.add_argument('--starting_epoch',default='1',type=int)
     parser.add_argument('--load', help='load a checkpoint, or a npz (given as the pretrained model)')
     parser.add_argument('--gpu', help='the physical ids of GPUs to use')
     parser.add_argument('--epoches', default='300', type=int)
