@@ -11,7 +11,7 @@ import tensorflow as tf
 from tensorpack import *
 from tensorpack.dataflow import dataset
 from tensorpack.tfutils.varreplace import remap_variables
-from tensorpack.tfutils.summary import add_moving_summary, add_param_summary,add_tensor_summary
+from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
 from dorefa_nb import get_dorefa
 from imagenet_utils import ImageNetModel, eval_classification, fbresnet_augmentor
 
@@ -37,7 +37,6 @@ class Model(ModelDesc):
                 tf.TensorSpec([None], tf.int32, 'label')]
 
     def build_graph(self, image, label):
-
         image = image / 256.0
         is_training = get_current_tower_context().is_training
         fw, fa, fg, quan_bn = get_dorefa(BITW, BITA, BITG)
@@ -57,43 +56,38 @@ class Model(ModelDesc):
         def activate(x):
             return fa(nonlin(x))
 
-        def resblock(x, channel, stride,name):
+        def resblock(x, channel, stride):
             def get_stem_full(x):
                 return (LinearWrap(x)
                         .Conv2D('c3x3a', channel, 3)
-                        .apply(quan_bn,name+'stembn',is_training)
                         # .BatchNorm('stembn')
                         # .apply(activate)
+                        .apply(quan_bn,'stembn',is_training)
                         .Conv2D('c3x3b', channel, 3)())
             channel_mismatch = channel != x.get_shape().as_list()[3]
             if stride != 1 or channel_mismatch or 'pool1' in x.name:
                 # handling pool1 is to work around an architecture bug in our model
                 if stride != 1 or 'pool1' in x.name:
                     x = AvgPooling('pool', x, stride, stride)
-
-                x = BatchNorm('bn', x)
-                x = activate(x)
-                # x = quan_bn(x,name+'bn_1',is_training)
-
-                shortcut =Conv2D('shortcut', x, channel, 1)
-
+                # x = BatchNorm('bn', x)
+                # x = activate(x)
+                x = quan_bn(x,'bn',is_training)
+                shortcut = Conv2D('shortcut', x, channel, 1)
                 stem = get_stem_full(x)
             else:
                 shortcut = x
-
-                x = BatchNorm('bn', x)
-                x = activate(x)
-                # x = quan_bn(x,name+'bn_1',is_training)
-
+                # x = BatchNorm('bn', x)
+                # x = activate(x)
+                x = quan_bn(x,'bn',is_training)
                 stem = get_stem_full(x)
             return shortcut + stem
 
         def group(x, name, channel, nr_block, stride):
             with tf.variable_scope(name + 'blk1'):
-                x = resblock(x, channel, stride,name + 'blk1')
+                x = resblock(x, channel, stride)
             for i in range(2, nr_block + 1):
                 with tf.variable_scope(name + 'blk{}'.format(i)):
-                    x = resblock(x, channel, 1,name + 'blk{}'.format(i))
+                    x = resblock(x, channel, 1)
             return x
 
         with remap_variables(new_get_variable), \
@@ -115,8 +109,6 @@ class Model(ModelDesc):
                       .GlobalAvgPooling('gap')
                       .tf.multiply(49)  # this is due to a bug in our model design
                       .FullyConnected('fct', 10)())
-        # for n in tf.get_default_graph().as_graph_def().node:
-        #     print(n.name)
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
@@ -127,8 +119,6 @@ class Model(ModelDesc):
         wd_cost = regularize_cost('fc.*/W', l2_regularizer(1e-7))
 
         add_param_summary(('.*/W', ['histogram', 'rms']))
-        #add_tensor_summary(tf.get_default_graph().get_tensor_by_name('conv2blk1/shortcut:0'),['histogram'])
-        #add_tensor_summary(tf.get_default_graph().get_tensor_by_name('conv2blk1/stem:0'),['histogram'])
         total_cost = tf.add_n([cost, wd_cost], name='cost')
         add_moving_summary(cost, wd_cost, total_cost)
         #add_param_summary(relax, ['scalar'])
@@ -189,17 +179,8 @@ def get_config():
                                       [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
             #RelaxSetter(0, args.epoches*390, 1.0, 100.0),
             MergeAllSummaries(),
-            # DumpTensors(['conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bm:0',\
-            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/my_bv:0',\
-            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bm:0',\
-            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/real_bv:0',\
-            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bm:0',\
-            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/diff_bv:0',\
-            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bm:0',\
-            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv:0',\
-            #              'conv2blk1/conv2blk1_stem_full_quan_bn_1/conv2blk1_stem_full_quan_bn_1Lmaxnorm/BatchNorm2d/ratio_bv2:0',\
-            #             ])
-         ],
+            #MergeAllSummaries(period=1, key='relax')
+        ],
         #monitors=DEFAULT_MONITORS() + [ScalarPrinter(enable_step=True)],
         model=Model(),
         max_epoch=args.epoches,
