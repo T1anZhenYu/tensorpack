@@ -18,7 +18,7 @@ from .common import VariableHolder, layer_register
 from .tflayer import convert_to_tflayer_args, rename_get_variable
 import numpy as np 
 from tensorflow.python.training.moving_averages import assign_moving_average
-__all__ = ['L2norm','L1norm','L2norm_quan_train','Lmaxnorm1','Lmaxnorm']
+__all__ = ['L2norm','L1norm','L2norm_quan_train','Myrangenorm','Lmaxnorm']
 
 # decay: being too close to 1 leads to slow start-up. torch use 0.9.
 # eps: torch: 1e-5. Lasagne: 1e-4
@@ -124,9 +124,9 @@ def BNN(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         'decay': 'momentum',
         'use_local_stat': 'training'
     })
-def Lmaxnorm1(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
+def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
 
-    with tf.variable_scope(name, default_name='BatchNorm2d'):
+    with tf.variable_scope(name, default_name='Myrangenorm'):
         params_shape = x.get_shape().as_list()
         params_shape = params_shape[-1:]
         moving_mean = tf.get_variable('mean', shape=params_shape,
@@ -140,17 +140,17 @@ def Lmaxnorm1(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         #c_min = tf.tile(tf.expand_dims(tf.reduce_min(x),0),params_shape)
         c_max = tf.reduce_max(x,[0,1,2])
         c_min = tf.reduce_min(x,[0,1,2])
-        mean_, variance_ = tf.nn.moments(x, [0,1,2], name='moments')
+        # mean_, variance_ = tf.nn.moments(x, [0,1,2], name='moments')
 
-        my_bm = tf.identity((c_max+c_min)/2,name='my_bm')
-        my_bv = tf.identity((c_max-c_min),name='my_bv')         
-        real_bm = tf.identity(mean_,name='real_bm')
-        real_bv = tf.identity(variance_,name='real_bv')
-        diff_bm = tf.identity(((c_max+c_min)/2)-mean_,name='diff_bm')
-        diff_bv = tf.identity(tf.sqrt(c_max-c_min)-tf.sqrt(variance_),name='diff_bv')
-        ratio_bm = tf.identity((((c_max+c_min)/2))/mean_,name='ratio_bm')
-        ratio_bv = tf.identity((c_max-c_min)/tf.sqrt(variance_),name='ratio_bv')
-        ratio_bv2 = tf.identity(tf.sqrt(c_max-c_min)/tf.sqrt(variance_),name='ratio_bv2')
+        # my_bm = tf.identity((c_max+c_min)/2,name='my_bm')
+        # my_bv = tf.identity((c_max-c_min),name='my_bv')         
+        # real_bm = tf.identity(mean_,name='real_bm')
+        # real_bv = tf.identity(variance_,name='real_bv')
+        # diff_bm = tf.identity(((c_max+c_min)/2)-mean_,name='diff_bm')
+        # diff_bv = tf.identity(tf.sqrt(c_max-c_min)-tf.sqrt(variance_),name='diff_bv')
+        # ratio_bm = tf.identity((((c_max+c_min)/2))/mean_,name='ratio_bm')
+        # ratio_bv = tf.identity((c_max-c_min)/tf.sqrt(variance_),name='ratio_bv')
+        # ratio_bv2 = tf.identity(tf.sqrt(c_max-c_min)/tf.sqrt(variance_),name='ratio_bv2')
 
 
         def mean_var_with_update():
