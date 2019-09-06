@@ -124,7 +124,7 @@ def BNN(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         'decay': 'momentum',
         'use_local_stat': 'training'
     })
-def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=False, name=None):
+def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
 
     with tf.variable_scope(name, default_name='Myrangenorm'):
         b = tf.shape(x)[0]
@@ -173,7 +173,7 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=False, name=None):
             beta = tf.get_variable('beta', params_shape,
                                    initializer=tf.zeros_initializer)
             gamma = tf.get_variable('gamma', params_shape,
-                                    initializer=tf.ones_initializer)
+                                    initializer=tf.ones_initializer,trainable=False)
             x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
             return x,gamma,beta,moving_mean,moving_variance,mean,variance
         else:
