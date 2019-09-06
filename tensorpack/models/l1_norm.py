@@ -127,6 +127,7 @@ def BNN(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
 def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
 
     with tf.variable_scope(name, default_name='Myrangenorm'):
+        b = tf.shape(x)[0]
         params_shape = x.get_shape().as_list()
         params_shape = params_shape[-1:]
         moving_mean = tf.get_variable('mean', shape=params_shape,
@@ -156,7 +157,7 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         def mean_var_with_update():
 
             mean = (c_max+c_min)/2 
-            variance = c_max - c_min
+            variance = (c_max - c_min)/(2*b)
             with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
                 return tf.identity(mean), tf.identity(variance)
