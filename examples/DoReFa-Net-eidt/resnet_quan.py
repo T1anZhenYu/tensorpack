@@ -80,7 +80,8 @@ class Model(ModelDesc):
                 # x = activate(x)
                 x = quan_bn(x,'bn',is_training)
                 stem = get_stem_full(x)
-            return shortcut + stem
+            #return shortcut + stem
+            return stem
 
         def group(x, name, channel, nr_block, stride):
             with tf.variable_scope(name + 'blk1'):
