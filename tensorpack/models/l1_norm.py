@@ -124,7 +124,7 @@ def BNN(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         'decay': 'momentum',
         'use_local_stat': 'training'
     })
-def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
+def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=False, name=None):
 
     with tf.variable_scope(name, default_name='Myrangenorm'):
         b = tf.shape(x)[0]
