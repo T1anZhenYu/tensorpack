@@ -158,7 +158,7 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         def mean_var_with_update():
 
             mean = (c_max+c_min)/2 
-            variance = (c_max - c_min)*(1+tf.abs(lambda_))
+            variance = (c_max - c_min)*(tf.abs(1+lambda_))
             with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
                 return tf.identity(mean), tf.identity(variance)
