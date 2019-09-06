@@ -158,7 +158,7 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         def mean_var_with_update():
 
             mean = (c_max+c_min)/2 
-            variance = (c_max - c_min)*tf.abs(1+lambda_)
+            variance = (c_max - c_min)*(tf.math.log(b))
             with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
                 return tf.identity(mean), tf.identity(variance)
@@ -173,7 +173,7 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
             beta = tf.get_variable('beta', params_shape,
                                    initializer=tf.zeros_initializer)
             gamma = tf.get_variable('gamma', params_shape,
-                                    initializer=tf.ones_initializer,trainable=False)
+                                    initializer=tf.ones_initializer)
             x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
             return x,gamma,beta,moving_mean,moving_variance,mean,variance
         else:
