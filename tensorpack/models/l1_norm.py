@@ -175,9 +175,10 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=False, name=None):
             gamma = tf.get_variable('gamma', params_shape,
                                     initializer=tf.ones_initializer)
             x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
+            return x,gamma,beta,moving_mean,moving_variance,mean,variance
         else:
             x = tf.nn.batch_normalization(x, mean, variance, None, None, eps)
-        return x,gamma,beta,moving_mean,moving_variance,mean,variance
+            return x,None,None,moving_mean,moving_variance,mean,variance
         #return x
 @layer_register()
 @convert_to_tflayer_args(
