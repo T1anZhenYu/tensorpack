@@ -77,7 +77,7 @@ class Model(ModelDesc):
                 x = BatchNorm('bn', x)
                 x = activate(x)
                 stem = get_stem_full(x)
-            return shortcut + stem
+            return stem
 
         def group(x, name, channel, nr_block, stride):
             with tf.variable_scope(name + 'blk1'):
