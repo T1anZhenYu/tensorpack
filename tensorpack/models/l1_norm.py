@@ -161,9 +161,9 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
             #mean = (c_max+c_min)/2 * theta_
             #variance = (c_max - c_min)*(tf.abs(1+lambda_))
             variance = tf.square(c_max-c_min)/(2*tf.math.log(tf.cast(b,dtype=tf.float32)))
-            with tf.control_dependencies([assign_moving_average(moving_mean, mean_, decay),#计算滑动平均值
+            with tf.control_dependencies([assign_moving_average(moving_mean, mean, decay),#计算滑动平均值
                                          assign_moving_average(moving_variance, variance, decay)]):
-                return tf.identity(mean_), tf.identity(variance)
+                return tf.identity(mean), tf.identity(variance)
         if train:#亲测tf.cond的第一个函数不能直接写成ture or false，所以只好用一个很蠢的方法。
             xx = tf.constant(3)
             yy = tf.constant(4)
