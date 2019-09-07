@@ -105,7 +105,7 @@ class Model(ModelDesc):
                       .apply(nonlin)
                       .GlobalAvgPooling('gap')
                       .tf.multiply(49)  # this is due to a bug in our model design
-                      .FullyConnected('fct', 10)())
+                      .FullyConnected('fct', 100)())
         wrong = tf.cast(tf.logical_not(tf.nn.in_top_k(logits, label, 1)), tf.float32, name='wrong-top1')
         # monitor training error
         add_moving_summary(tf.reduce_mean(wrong, name='train_error'))
@@ -132,7 +132,7 @@ class Model(ModelDesc):
 def get_data(train_or_test, dir):
     BATCH_SIZE = 128
     isTrain = train_or_test == 'train'
-    ds = dataset.Cifar10(train_or_test, dir=dir)
+    ds = dataset.Cifar100(train_or_test, dir=dir)
     pp_mean = ds.get_per_pixel_mean()
     if isTrain:
         augmentors = [
@@ -202,7 +202,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.eval:
         BATCH_SIZE = 128
-        data_test = dataset.Cifar10('test')
+        data_test = dataset.Cifar100('test')
         pp_mean = data_test.get_per_pixel_mean()
         augmentors = [
             imgaug.MapImage(lambda x: x - pp_mean)
