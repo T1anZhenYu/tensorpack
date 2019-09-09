@@ -45,15 +45,27 @@ class Model(ModelDesc):
             else:
                 logger.info("Binarizing weight {}".format(v.op.name))
                 return fw(v)
-        def my_sigmoid(x,name):
+        # def my_sigmoid(x,name):
+        #     params_shape = x.get_shape().as_list()
+        #     params_shape = params_shape[-1:]
+        #     with tf.variable_scope(name,reuse=tf.AUTO_REUSE):
+        #         s_ = tf.get_variable(name+'sigmoid_', params_shape,
+        #                        initializer=tf.ones_initializer)
+        #         y = s_*10*tf.math.sigmoid(x)
+        #         return (tf.stop_gradient(x-tf.nn.relu(x))+tf.nn.relu(x))
+        def my_sigmoid(x, name):
             params_shape = x.get_shape().as_list()
             params_shape = params_shape[-1:]
-            with tf.variable_scope(name,reuse=tf.AUTO_REUSE):
-                s_ = tf.get_variable(name+'sigmoid_', params_shape,
-                               initializer=tf.ones_initializer)
-                x = s_*10*tf.math.sigmoid(x)
-                return (tf.stop_gradient(x-tf.nn.relu(x))+tf.nn.relu(x))
 
+            @tf.custom_gradient
+            def _my_sigmoid(x):
+                with tf.variable_scope(name,reuse=tf.AUTO_REUSE):
+                    s_ = tf.get_variable(name+'sigmoid_', params_shape,
+                                   initializer=tf.ones_initializer)
+                    x = s_*tf.math.sigmoid(x)    
+                return x,lambda dy: dy            
+
+            return _quantize(x)
 
         def nonlin(x,name):
             if BITA == 32:
