@@ -65,7 +65,7 @@ class Model(ModelDesc):
                     x = s_*tf.math.sigmoid(x)    
                 return x,lambda dy: dy            
 
-            return _quantize(x)
+            return _my_sigmoid(x)
 
         def nonlin(x,name):
             if BITA == 32:
