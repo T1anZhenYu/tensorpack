@@ -52,10 +52,16 @@ def get_dorefa(bitW, bitA, bitG):
         if bitA == 32:
             return x
         return quantize(x, bitA)
+
+    def my_sigmoid(x):
+        s_ = tf.get_variable('sigmoid_', params_shape,
+                       initializer=tf.zeros_initializer)
+        return s_*(tf.stop_gradient(tf.math.sigmoid(x)-tf.nn.relu(x))+tf.nn.relu(x))
     def nonlin(x):
         if bitA == 32:
             return tf.nn.relu(x)
-        return tf.clip_by_value(x, 0.0, 1.0)
+        #return tf.clip_by_value(x, 0.0, 1.0)
+        return my_sigmoid(x)
     def fg(x):
         if bitG == 32:
             return x
