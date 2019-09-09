@@ -46,6 +46,8 @@ class Model(ModelDesc):
                 logger.info("Binarizing weight {}".format(v.op.name))
                 return fw(v)
         def my_sigmoid(x):
+            params_shape = x.get_shape().as_list()
+            params_shape = params_shape[-1:]
             s_ = tf.get_variable('sigmoid_', params_shape,
                            initializer=tf.zeros_initializer)
             return s_*(tf.stop_gradient(tf.math.sigmoid(x)-tf.nn.relu(x))+tf.nn.relu(x))
