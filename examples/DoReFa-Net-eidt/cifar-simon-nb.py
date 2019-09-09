@@ -54,11 +54,11 @@ class Model(ModelDesc):
                 return s_*(tf.stop_gradient(tf.math.sigmoid(x)-tf.nn.relu(x))+tf.nn.relu(x))
 
 
-        def nonlin(x):
+        def nonlin(x,name):
             if BITA == 32:
                 return tf.nn.relu(x)
             #return tf.clip_by_value(x, 0.0, 1.0)
-            return my_sigmoid(x)
+            return my_sigmoid(x,name)
 
         def activate(x,name):
             return fa(nonlin(x,name))
