@@ -51,7 +51,8 @@ class Model(ModelDesc):
             with tf.variable_scope(name,reuse=tf.AUTO_REUSE):
                 s_ = tf.get_variable(name+'sigmoid_', params_shape,
                                initializer=tf.ones_initializer)
-                return (tf.stop_gradient(tf.math.sigmoid(x)-tf.nn.relu(x))+tf.nn.relu(x))
+                x = tf.math.sigmoid(x)
+                return (tf.stop_gradient(x-tf.nn.relu(x))+tf.nn.relu(x))
 
 
         def nonlin(x,name):
