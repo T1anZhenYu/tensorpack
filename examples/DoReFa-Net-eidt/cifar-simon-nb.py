@@ -45,10 +45,10 @@ class Model(ModelDesc):
             else:
                 logger.info("Binarizing weight {}".format(v.op.name))
                 return fw(v)
-        def my_sigmoid(x):
+        def my_sigmoid(x,name):
             params_shape = x.get_shape().as_list()
             params_shape = params_shape[-1:]
-            s_ = tf.get_variable('sigmoid_', params_shape,
+            s_ = tf.get_variable(name+'sigmoid_', params_shape,
                            initializer=tf.ones_initializer,reuse=tf.AUTO_REUSE)
             return s_*(tf.stop_gradient(tf.math.sigmoid(x)-tf.nn.relu(x))+tf.nn.relu(x))
 
@@ -59,8 +59,8 @@ class Model(ModelDesc):
             #return tf.clip_by_value(x, 0.0, 1.0)
             return my_sigmoid(x)
 
-        def activate(x):
-            return fa(nonlin(x))
+        def activate(x,name):
+            return fa(nonlin(x,name))
 
         image = image / 4
 
@@ -70,45 +70,46 @@ class Model(ModelDesc):
             logits = (LinearWrap(image)
                       .Conv2D('conv1', filters=64)
                       #.BatchNorm('bn0')
-                      .apply(activate)
+                      .apply(activate,'conv1')
                       #.apply(quan_bn,'quan_bn_1',is_training)
                       # 18
                       .Conv2D('conv2', filters=64)
                       #.apply(quan_bn,'quan_bn_2',is_training)
                       #.apply(fg)
                       #.BatchNorm('bn1')
-                      .apply(activate)
+                      .apply(activate,'conv2')
                       .MaxPooling('pool1', 3, stride=2, padding='SAME') 
 
                       .Conv2D('conv3', filters=128)
                       .apply(fg)
                       #.apply(quan_bn,'quan_bn_3',is_training)
                       #.BatchNorm('bn2')
-                      .apply(activate)
+                      .apply(activate,'conv3')
                       # 9
                       .Conv2D('conv4', filters=128)
                       .apply(fg)
-                      .apply(quan_bn,'quan_bn_4',is_training)
+                      #.apply(quan_bn,'quan_bn_4',is_training)
                       #.BatchNorm('bn3')
-                      .apply(activate)
+                      .apply(activate,'conv4')
                       .MaxPooling('pool2', 3, stride=2, padding='SAME') 
                       # 7
 
                       .Conv2D('conv5' , filters=128, padding='VALID')
                       .apply(fg)
-                      .apply(quan_bn,'quan_bn_5',is_training)
+                      #.apply(quan_bn,'quan_bn_5',is_training)
                       #.BatchNorm('bn4')
-                      .apply(activate)
+                      .apply(activate,'conv5')
 
                       .Conv2D('conv6' , filters=128, padding='VALID')
                       .apply(fg)
-                      .apply(quan_bn,'quan_bn_6',is_training)
+                      #.apply(quan_bn,'quan_bn_6',is_training)
                       #.BatchNorm('bn5')
-                      .apply(activate)
+                      .apply(activate,'conv6')
                       # 5
                       .FullyConnected('fc0', 1024 + 512)
                       .apply(fg)
-                      .BatchNorm('bn6').apply(activate)
+                      #.BatchNorm('bn6')
+                      .apply(activate,'conv7')
                       .Dropout(rate=0.5 if is_training else 0.0)
                       .FullyConnected('fc1', 512) 
                       .apply(fg)
