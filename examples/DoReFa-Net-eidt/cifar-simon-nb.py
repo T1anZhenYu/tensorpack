@@ -49,7 +49,7 @@ class Model(ModelDesc):
             params_shape = x.get_shape().as_list()
             params_shape = params_shape[-1:]
             s_ = tf.get_variable('sigmoid_', params_shape,
-                           initializer=tf.ones_initializer)
+                           initializer=tf.ones_initializer,reuse=tf.AUTO_REUSE)
             return s_*(tf.stop_gradient(tf.math.sigmoid(x)-tf.nn.relu(x))+tf.nn.relu(x))
 
 
