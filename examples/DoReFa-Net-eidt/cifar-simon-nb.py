@@ -56,12 +56,12 @@ class Model(ModelDesc):
         def my_sigmoid(x, name):
             params_shape = x.get_shape().as_list()
             params_shape = params_shape[-1:]
-
+            with tf.variable_scope(name,reuse=tf.AUTO_REUSE):
+                s_ = tf.get_variable(name+'sigmoid_', params_shape,
+                               initializer=tf.ones_initializer)
             @tf.custom_gradient
             def _my_sigmoid(x):
-                with tf.variable_scope(name,reuse=tf.AUTO_REUSE,use_resource=True):
-                    s_ = tf.get_variable(name+'sigmoid_', params_shape,
-                                   initializer=tf.ones_initializer)
+
                     x = s_*tf.math.sigmoid(x)    
                 return x,lambda dy: dy            
 
