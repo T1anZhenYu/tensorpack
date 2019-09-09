@@ -62,7 +62,7 @@ class Model(ModelDesc):
             @tf.custom_gradient
             def _my_sigmoid(x):
 
-                    x = s_*tf.math.sigmoid(x)    
+                x = s_*tf.math.sigmoid(x)    
                 return x,lambda dy: dy            
 
             return _my_sigmoid(x)
