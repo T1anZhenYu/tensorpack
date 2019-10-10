@@ -148,10 +148,10 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         real_bm = tf.identity(mean_,name='real_bm')
         real_bv = tf.identity(variance_,name='real_bv')
 
-        add_tensor_summary(my_bm,name='my_bm',types=['mean','histgram','rms'])
-        add_tensor_summary(my_bv,name='my_bv',types=['mean','histgram','rms'])
-        add_tensor_summary(real_bm,name='real_bm',types=['mean','histgram','rms'])
-        add_tensor_summary(real_bv,name='real_bv',types=['mean','histgram','rms'])
+        add_tensor_summary(my_bm,name='my_bm',types=['mean','histogram','rms'])
+        add_tensor_summary(my_bv,name='my_bv',types=['mean','histogram','rms'])
+        add_tensor_summary(real_bm,name='real_bm',types=['mean','histogram','rms'])
+        add_tensor_summary(real_bv,name='real_bv',types=['mean','histogram','rms'])
         # diff_bm = tf.identity(((c_max+c_min)/2)-mean_,name='diff_bm')
         # diff_bv = tf.identity(tf.sqrt(c_max-c_min)-tf.sqrt(variance_),name='diff_bv')
         # ratio_bm = tf.identity((((c_max+c_min)/2))/mean_,name='ratio_bm')
@@ -159,7 +159,7 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         # ratio_bv2 = tf.identity(tf.sqrt(c_max-c_min)/tf.sqrt(variance_),name='ratio_bv2')
         lambda_ = tf.get_variable('lambda_', params_shape,
                                initializer=tf.zeros_initializer)
-        add_tensor_summary(lambda_,name='lambda_',types=['mean','histgram','rms'])
+        add_tensor_summary(lambda_,name='lambda_',types=['mean','histogram','rms'])
         def mean_var_with_update():
 
             mean = (c_max+c_min)/2
@@ -181,8 +181,8 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
                                    initializer=tf.zeros_initializer)
             gamma = tf.get_variable('gamma', params_shape,
                                     initializer=tf.ones_initializer)
-            add_tensor_summary(gamma,name='gamma',types=['mean','histgram','rms'])
-            add_tensor_summary(beta,name='beta',types=['mean','histgram','rms'])
+            add_tensor_summary(gamma,name='gamma',types=['mean','histogram','rms'])
+            add_tensor_summary(beta,name='beta',types=['mean','histogram','rms'])
             x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, eps)
             return x,gamma,beta,moving_mean,moving_variance,mean,variance
         else:
