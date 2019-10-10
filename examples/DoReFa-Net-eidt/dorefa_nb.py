@@ -60,8 +60,8 @@ def get_dorefa(bitW, bitA, bitG):
     def nonlin(x):
         if bitA == 32:
             return tf.nn.relu(x)
-        #return tf.clip_by_value(x, 0.0, 1.0)
-        return my_sigmoid(x)
+        return tf.clip_by_value(x, 0.0, 1.0)
+        #return my_sigmoid(x)
     def fg(x):
         if bitG == 32:
             return x
