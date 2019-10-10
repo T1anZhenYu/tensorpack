@@ -7,7 +7,7 @@ import six
 import os
 from ..compat import tfv1 as tf  # this should be avoided first in model code
 from tensorflow.python.training import moving_averages
-from tensorpack.tfutils.summary import add_moving_summary, add_param_summary
+from tensorpack.tfutils.summary import add_moving_summary, add_param_summary,add_tensor_summary
 from ..tfutils.collection import backup_collection, restore_collection
 from ..tfutils.common import get_tf_version_tuple
 from ..tfutils.tower import get_current_tower_context
@@ -147,6 +147,10 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         my_bv = tf.identity((c_max-c_min),name='my_bv')         
         real_bm = tf.identity(mean_,name='real_bm')
         real_bv = tf.identity(variance_,name='real_bv')
+
+        add_tensor_summary(my_bm,name='my_bm')
+        add_tensor_summary(my_bv,name='my_bv')
+
         # diff_bm = tf.identity(((c_max+c_min)/2)-mean_,name='diff_bm')
         # diff_bv = tf.identity(tf.sqrt(c_max-c_min)-tf.sqrt(variance_),name='diff_bv')
         # ratio_bm = tf.identity((((c_max+c_min)/2))/mean_,name='ratio_bm')
