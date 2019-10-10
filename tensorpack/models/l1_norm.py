@@ -143,10 +143,10 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         c_min = tf.reduce_min(x,[0,1,2])
         mean_, variance_ = tf.nn.moments(x, [0,1,2], name='moments')
 
-        # my_bm = tf.identity((c_max+c_min)/2,name='my_bm')
-        # my_bv = tf.identity((c_max-c_min),name='my_bv')         
-        # real_bm = tf.identity(mean_,name='real_bm')
-        # real_bv = tf.identity(variance_,name='real_bv')
+        my_bm = tf.identity((c_max+c_min)/2,name='my_bm')
+        my_bv = tf.identity((c_max-c_min),name='my_bv')         
+        real_bm = tf.identity(mean_,name='real_bm')
+        real_bv = tf.identity(variance_,name='real_bv')
         # diff_bm = tf.identity(((c_max+c_min)/2)-mean_,name='diff_bm')
         # diff_bv = tf.identity(tf.sqrt(c_max-c_min)-tf.sqrt(variance_),name='diff_bv')
         # ratio_bm = tf.identity((((c_max+c_min)/2))/mean_,name='ratio_bm')
@@ -154,8 +154,7 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         # ratio_bv2 = tf.identity(tf.sqrt(c_max-c_min)/tf.sqrt(variance_),name='ratio_bv2')
         lambda_ = tf.get_variable('lambda_', params_shape,
                                initializer=tf.zeros_initializer)
-        theta_ = tf.get_variable('theta_',params_shape,
-                                initializer=tf.ones_initializer)
+
         def mean_var_with_update():
 
             mean = (c_max+c_min)/2
@@ -170,7 +169,8 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         else:
             xx = tf.constant(4)
             yy = tf.constant(3)
-        mean, variance = tf.cond(xx<yy, mean_var_with_update, lambda: (moving_mean, moving_variance))
+        mean, variance = tf.cond(xx<yy, mean_var_with_update, 
+            lambda: (moving_mean, moving_variance))
         if affine:
             beta = tf.get_variable('beta', params_shape,
                                    initializer=tf.zeros_initializer)

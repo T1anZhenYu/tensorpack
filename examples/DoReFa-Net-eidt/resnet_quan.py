@@ -178,16 +178,14 @@ def get_config():
                             [ScalarStats('cost'), ClassificationError('wrong-top1')]),
             ScheduledHyperParamSetter('learning_rate',
                                       [(1, 0.01), (82, 0.001), (123, 0.0002), (200, 0.0001)]),
-            # DumpTensors(['conv2blk1/bn/bnMyrangenorm/Myrangenorm/my_bm:0',\
-            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/my_bv:0',\
-            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/real_bv:0',\
-            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/real_bm:0',\
-            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/diff_bm:0',\
-            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/diff_bv:0',\
-            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bm:0',\
-            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bv:0',\
-            #                 'conv2blk1/bn/bnMyrangenorm/Myrangenorm/ratio_bv2:0',\
-            #     ]),
+            DumpTensors(['conv2blk1/bn/bnMyrangenorm/Myrangenorm/my_bm:0',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/my_bv:0',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/real_bv:0',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/real_bm:0',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/lambda_:0',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/beta:0',\
+                            'conv2blk1/bn/bnMyrangenorm/Myrangenorm/gamma:0',\
+                ]),
             MergeAllSummaries(),
             #MergeAllSummaries(period=1, key='relax')
         ],
