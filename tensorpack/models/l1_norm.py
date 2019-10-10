@@ -148,8 +148,8 @@ def Myrangenorm(x, train, eps=1e-05, decay=0.9, affine=True, name=None):
         real_bm = tf.identity(mean_,name='real_bm')
         real_bv = tf.identity(variance_,name='real_bv')
 
-        add_tensor_summary(my_bm,name='my_bm')
-        add_tensor_summary(my_bv,name='my_bv')
+        add_tensor_summary(my_bm,name='my_bm',types=['histogram'])
+        add_tensor_summary(my_bv,name='my_bv',types=['histogram'])
 
         # diff_bm = tf.identity(((c_max+c_min)/2)-mean_,name='diff_bm')
         # diff_bv = tf.identity(tf.sqrt(c_max-c_min)-tf.sqrt(variance_),name='diff_bv')
